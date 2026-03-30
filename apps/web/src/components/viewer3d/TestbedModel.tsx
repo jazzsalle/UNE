@@ -4,11 +4,19 @@ import { useEffect, useRef, useState } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useEquipmentColorizer } from './EquipmentColorizer';
-import type { VisualState } from '@/lib/constants';
+import { GlowEffect } from './effects/GlowEffect';
+import { TankLevel } from './effects/TankLevel';
+import { HeatmapOverlay } from './effects/HeatmapOverlay';
+import { PropagationPath } from './effects/PropagationPath';
+import { COLOR_MAP, type VisualState } from '@/lib/constants';
 
 interface TestbedModelProps {
   equipmentStates?: Record<string, VisualState>;
   onEquipmentClick?: (equipmentId: string) => void;
+  showEffects?: boolean;
+  tankLevels?: Record<string, { level: number; pressure: 'normal' | 'warning' | 'critical' }>;
+  heatmapTarget?: { equipmentId: string; radius: number } | null;
+  propagationPaths?: { from: string; to: string }[];
 }
 
 // Placeholder geometry for when GLB is not available
@@ -64,9 +72,93 @@ function PlaceholderTestbed({ onEquipmentClick }: { onEquipmentClick?: (id: stri
   );
 }
 
-export function TestbedModel({ equipmentStates = {}, onEquipmentClick }: TestbedModelProps) {
+// Equipment positions for effects lookup
+const EQUIPMENT_POSITIONS: Record<string, [number, number, number]> = {
+  'SHP-001': [303, 12.8, -96], 'ARM-101': [272, 8.6, -121],
+  'TK-101': [145, 22.4, -208], 'TK-102': [47, 22.4, -204],
+  'BOG-201': [33, 21.1, -44], 'PMP-301': [141, 25.4, 54],
+  'VAP-401': [133, 30.6, 189], 'REL-701': [144, 30.9, -59],
+  'VAL-601': [-52, 39.8, -48], 'VAL-602': [-3, 39.8, 177],
+  'PIP-501': [60, 24.3, -8],
+};
+
+const EQUIPMENT_SIZES: Record<string, [number, number, number]> = {
+  'SHP-001': [60, 20, 30], 'ARM-101': [15, 25, 10],
+  'TK-101': [30, 40, 30], 'TK-102': [30, 40, 30],
+  'BOG-201': [25, 20, 20], 'PMP-301': [12, 10, 12],
+  'VAP-401': [20, 15, 15], 'REL-701': [10, 10, 10],
+  'VAL-601': [8, 8, 8], 'VAL-602': [8, 8, 8],
+  'PIP-501': [200, 2, 2],
+};
+
+export function TestbedModel({
+  equipmentStates = {}, onEquipmentClick, showEffects = true,
+  tankLevels = {}, heatmapTarget = null, propagationPaths = [],
+}: TestbedModelProps) {
+  // Default tank levels
+  const defaultTankLevels = {
+    'TK-101': tankLevels['TK-101'] || { level: 65, pressure: 'normal' as const },
+    'TK-102': tankLevels['TK-102'] || { level: 72, pressure: 'normal' as const },
+  };
+
   return (
-    <PlaceholderTestbed onEquipmentClick={onEquipmentClick} />
+    <>
+      <PlaceholderTestbed onEquipmentClick={onEquipmentClick} />
+
+      {showEffects && (
+        <>
+          {/* Glow effects for warning/critical equipment */}
+          {Object.entries(equipmentStates).map(([eqId, state]) => {
+            if (state === 'normal' || !EQUIPMENT_POSITIONS[eqId]) return null;
+            return (
+              <GlowEffect
+                key={`glow-${eqId}`}
+                position={EQUIPMENT_POSITIONS[eqId]}
+                size={EQUIPMENT_SIZES[eqId] || [10, 10, 10]}
+                color={COLOR_MAP[state]}
+                pulse={state === 'critical' || state === 'emergency'}
+                intensity={state === 'emergency' ? 0.6 : 0.4}
+              />
+            );
+          })}
+
+          {/* Tank levels */}
+          {Object.entries(defaultTankLevels).map(([tankId, data]) => (
+            <TankLevel
+              key={`tank-${tankId}`}
+              position={EQUIPMENT_POSITIONS[tankId] || [0, 0, 0]}
+              tankHeight={40}
+              tankRadius={14}
+              level={data.level}
+              pressure={data.pressure}
+            />
+          ))}
+
+          {/* Heatmap overlay */}
+          {heatmapTarget && EQUIPMENT_POSITIONS[heatmapTarget.equipmentId] && (
+            <HeatmapOverlay
+              position={EQUIPMENT_POSITIONS[heatmapTarget.equipmentId]}
+              radius={heatmapTarget.radius}
+            />
+          )}
+
+          {/* Propagation paths */}
+          {propagationPaths.map((path, i) => {
+            const fromPos = EQUIPMENT_POSITIONS[path.from];
+            const toPos = EQUIPMENT_POSITIONS[path.to];
+            if (!fromPos || !toPos) return null;
+            return (
+              <PropagationPath
+                key={`path-${i}`}
+                from={fromPos}
+                to={toPos}
+                color="#FFEE58"
+              />
+            );
+          })}
+        </>
+      )}
+    </>
   );
 }
 

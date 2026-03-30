@@ -5,6 +5,7 @@ import { GNB } from '@/components/layout/GNB';
 import { ApiStatusBar } from '@/components/layout/ApiStatusBar';
 import { EmulatorBar } from '@/components/layout/EmulatorBar';
 import { SSEProvider } from '@/components/layout/SSEProvider';
+import { SopPopupOverlay } from '@/components/layout/SopPopupOverlay';
 
 export const metadata: Metadata = {
   title: 'LH2 디지털트윈 - 자율안전관리 플랫폼',
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GNB />
         <ApiStatusBar />
         <main className="flex-1 overflow-hidden">{children}</main>
+        <SopPopupOverlay />
         <EmulatorBar />
       </body>
     </html>

@@ -1,0 +1,22 @@
+{
+  "name": "lh2-digital-twin-poc",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/api"
+  ],
+  "scripts": {
+    "dev:api": "cd apps/api && npm run dev",
+    "dev:web": "cd apps/web && npm run dev",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "build:api": "cd apps/api && npm run build",
+    "build:web": "cd apps/web && npm run build",
+    "build": "npm run build:api && npm run build:web",
+    "seed": "cd apps/api && npx prisma db seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.7.0"
+  }
+}

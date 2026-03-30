@@ -1,0 +1,82 @@
+[
+  {
+    "event_id": "EVT-SC-01-001",
+    "scenario_id": "SC-01",
+    "trigger_equipment_id": "BOG-201",
+    "status": "CLOSED",
+    "opened_at": "2026-01-15T10:00:00+09:00",
+    "closed_at": "2026-01-15T10:24:00+09:00",
+    "severity": "CRITICAL",
+    "summary": "BOG 압축기 트립 → 저장탱크 압력 상승"
+  },
+  {
+    "event_id": "EVT-SC-02-001",
+    "scenario_id": "SC-02",
+    "trigger_equipment_id": "PMP-301",
+    "status": "CLOSED",
+    "opened_at": "2026-01-15T10:00:00+09:00",
+    "closed_at": "2026-01-15T10:24:00+09:00",
+    "severity": "CRITICAL",
+    "summary": "2차 펌프 성능저하/캐비테이션 → 기화기 영향"
+  },
+  {
+    "event_id": "EVT-SC-03-001",
+    "scenario_id": "SC-03",
+    "trigger_equipment_id": "TK-101",
+    "status": "CLOSED",
+    "opened_at": "2026-01-15T10:00:00+09:00",
+    "closed_at": "2026-01-15T10:24:00+09:00",
+    "severity": "CRITICAL",
+    "summary": "저장탱크 압력 상승/BOG 증가 → BOG 처리계 영향"
+  },
+  {
+    "event_id": "EVT-SC-04-001",
+    "scenario_id": "SC-04",
+    "trigger_equipment_id": "VAL-601",
+    "status": "CLOSED",
+    "opened_at": "2026-01-15T10:00:00+09:00",
+    "closed_at": "2026-01-15T10:24:00+09:00",
+    "severity": "CRITICAL",
+    "summary": "출구 배관 밸브 Stuck Close → 무유량/과압"
+  },
+  {
+    "event_id": "EVT-SC-05-001",
+    "scenario_id": "SC-05",
+    "trigger_equipment_id": "PIP-501",
+    "status": "CLOSED",
+    "opened_at": "2026-01-15T10:00:00+09:00",
+    "closed_at": "2026-01-15T10:24:00+09:00",
+    "severity": "WARNING",
+    "summary": "BOG 압축기 전단 저유량 → 압축기 불안정 운전"
+  },
+  {
+    "event_id": "EVT-SC-06-001",
+    "scenario_id": "SC-06",
+    "trigger_equipment_id": "VAP-401",
+    "status": "CLOSED",
+    "opened_at": "2026-01-15T10:00:00+09:00",
+    "closed_at": "2026-01-15T10:24:00+09:00",
+    "severity": "CRITICAL",
+    "summary": "기화기 후단 저온 → 배관 저온 취성 위험"
+  },
+  {
+    "event_id": "EVT-SC-07-001",
+    "scenario_id": "SC-07",
+    "trigger_equipment_id": "TK-101",
+    "status": "CLOSED",
+    "opened_at": "2026-01-16T08:00:00+09:00",
+    "closed_at": "2026-01-17T08:00:00+09:00",
+    "severity": "INFO",
+    "summary": "정상운전 24시간 모니터링 완료. 전 설비 정상범위 유지."
+  },
+  {
+    "event_id": "EVT-SC-08-001",
+    "scenario_id": "SC-08",
+    "trigger_equipment_id": "ARM-101",
+    "status": "CLOSED",
+    "opened_at": "2026-01-15T15:00:00+09:00",
+    "closed_at": "2026-01-15T15:20:00+09:00",
+    "severity": "EMERGENCY",
+    "summary": "하역 중 로딩암 ESD 작동으로 하역 긴급 중단. 플랜지 기밀 이상 감지. 선박 대기, 기지측 밸브 차단, 감량 운전 전환 후 2시간 내 하역 재개."
+  }
+]

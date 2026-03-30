@@ -1,0 +1,110 @@
+[
+  {
+    "equipment_id": "TK-101",
+    "equipment_name": "LH2 저장탱크 #1",
+    "equipment_type": "STORAGE_TANK",
+    "zone_id": "Z-STO",
+    "is_core": true,
+    "glb_object_name": "tank_101",
+    "description": "액화수소 저장탱크, 압력/온도/레벨 중심 감시"
+  },
+  {
+    "equipment_id": "BOG-201",
+    "equipment_name": "BOG 압축기 #1",
+    "equipment_type": "BOG_COMPRESSOR",
+    "zone_id": "Z-BOG",
+    "is_core": true,
+    "glb_object_name": "bog_compressor_201",
+    "description": "BOG 처리용 압축기, 진동/전류/토출압 중심 감시"
+  },
+  {
+    "equipment_id": "PMP-301",
+    "equipment_name": "LH2 이송펌프 #1",
+    "equipment_type": "TRANSFER_PUMP",
+    "zone_id": "Z-PUMP",
+    "is_core": true,
+    "glb_object_name": "pump_301",
+    "description": "저장탱크에서 기화기/출하계통으로 이송하는 핵심 펌프"
+  },
+  {
+    "equipment_id": "VAP-401",
+    "equipment_name": "기화기 #1",
+    "equipment_type": "VAPORIZER",
+    "zone_id": "Z-VAP",
+    "is_core": true,
+    "glb_object_name": "vaporizer_401",
+    "description": "액체수소 기화 설비"
+  },
+  {
+    "equipment_id": "PIP-501",
+    "equipment_name": "메인 이송배관 A",
+    "equipment_type": "MAIN_PIPE",
+    "zone_id": "Z-PIPE",
+    "is_core": true,
+    "glb_object_name": "pipe_main_a",
+    "description": "저장탱크-펌프-기화기 주배관"
+  },
+  {
+    "equipment_id": "VAL-601",
+    "equipment_name": "주요 차단밸브 스테이션 #1",
+    "equipment_type": "VALVE_STATION",
+    "zone_id": "Z-VAL",
+    "is_core": true,
+    "glb_object_name": "valve_station_601",
+    "description": "주요 차단/격리 밸브"
+  },
+  {
+    "equipment_id": "REL-701",
+    "equipment_name": "BOG 재액화기 #1",
+    "equipment_type": "RELIQUEFIER",
+    "zone_id": "Z-BOG",
+    "is_core": false,
+    "glb_object_name": "reliquefier_701",
+    "description": "BOG 재액화 설비"
+  },
+  {
+    "equipment_id": "SHP-001",
+    "equipment_name": "LH2 운반선 #1",
+    "equipment_type": "LH2_CARRIER",
+    "zone_id": "Z-BERTH",
+    "glb_object_name": "ship_carrier_001",
+    "is_core": true,
+    "description": "액화수소 운반선 (하역 시 접안)"
+  },
+  {
+    "equipment_id": "ARM-101",
+    "equipment_name": "로딩암 #1",
+    "equipment_type": "LOADING_ARM",
+    "zone_id": "Z-ARM",
+    "glb_object_name": "loading_arm_101",
+    "is_core": true,
+    "description": "LH2 하역용 로딩암 (선박↔저장탱크 연결)"
+  },
+  {
+    "equipment_id": "TK-102",
+    "equipment_name": "LH2 저장탱크 #2",
+    "equipment_type": "STORAGE_TANK",
+    "zone_id": "Z-STO",
+    "is_core": false,
+    "glb_object_name": "tank_102",
+    "description": "액화수소 저장탱크 2호기 (예비)"
+  },
+  {
+    "equipment_id": "VAL-602",
+    "equipment_name": "주요 차단밸브 스테이션 #2",
+    "equipment_type": "VALVE_STATION",
+    "zone_id": "Z-VAL",
+    "is_core": false,
+    "glb_object_name": "valve_station_602",
+    "description": "배출설비 차단/격리 밸브 (예비)"
+  },
+  {
+    "equipment_id": "SWP-001",
+    "equipment_name": "해수펌프 #1",
+    "equipment_type": "SEAWATER_PUMP",
+    "zone_id": "Z-VAP",
+    "is_core": false,
+    "glb_object_name": "seawater_pump_001",
+    "description": "기화기 해수 공급용 펌프"
+  }
+]

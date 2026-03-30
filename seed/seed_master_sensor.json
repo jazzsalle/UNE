@@ -1,0 +1,256 @@
+[
+  {
+    "sensor_id": "TK-101-PRE-01",
+    "sensor_name": "LH2 저장탱크 #1 PRESSURE",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "TK-101",
+    "unit": "bar(g)"
+  },
+  {
+    "sensor_id": "TK-101-TEM-02",
+    "sensor_name": "LH2 저장탱크 #1 TEMPERATURE",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "TK-101",
+    "unit": "°C"
+  },
+  {
+    "sensor_id": "TK-101-LEV-03",
+    "sensor_name": "LH2 저장탱크 #1 LEVEL",
+    "sensor_type": "LEVEL",
+    "equipment_id": "TK-101",
+    "unit": "%"
+  },
+  {
+    "sensor_id": "BOG-201-PRE-01",
+    "sensor_name": "BOG 압축기 #1 PRESSURE",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "BOG-201",
+    "unit": "bar(g)"
+  },
+  {
+    "sensor_id": "BOG-201-TEM-02",
+    "sensor_name": "BOG 압축기 #1 TEMPERATURE",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "BOG-201",
+    "unit": "°C"
+  },
+  {
+    "sensor_id": "BOG-201-FLO-03",
+    "sensor_name": "BOG 압축기 #1 FLOW",
+    "sensor_type": "FLOW",
+    "equipment_id": "BOG-201",
+    "unit": "kg/h"
+  },
+  {
+    "sensor_id": "BOG-201-VIB-04",
+    "sensor_name": "BOG 압축기 #1 VIBRATION",
+    "sensor_type": "VIBRATION",
+    "equipment_id": "BOG-201",
+    "unit": "mm/s"
+  },
+  {
+    "sensor_id": "BOG-201-CUR-05",
+    "sensor_name": "BOG 압축기 #1 CURRENT",
+    "sensor_type": "CURRENT",
+    "equipment_id": "BOG-201",
+    "unit": "A"
+  },
+  {
+    "sensor_id": "PMP-301-PRE-01",
+    "sensor_name": "LH2 이송펌프 #1 PRESSURE",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "PMP-301",
+    "unit": "bar(g)"
+  },
+  {
+    "sensor_id": "PMP-301-TEM-02",
+    "sensor_name": "LH2 이송펌프 #1 TEMPERATURE",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "PMP-301",
+    "unit": "°C"
+  },
+  {
+    "sensor_id": "PMP-301-FLO-03",
+    "sensor_name": "LH2 이송펌프 #1 FLOW",
+    "sensor_type": "FLOW",
+    "equipment_id": "PMP-301",
+    "unit": "kg/h"
+  },
+  {
+    "sensor_id": "PMP-301-VIB-04",
+    "sensor_name": "LH2 이송펌프 #1 VIBRATION",
+    "sensor_type": "VIBRATION",
+    "equipment_id": "PMP-301",
+    "unit": "mm/s"
+  },
+  {
+    "sensor_id": "PMP-301-CUR-05",
+    "sensor_name": "LH2 이송펌프 #1 CURRENT",
+    "sensor_type": "CURRENT",
+    "equipment_id": "PMP-301",
+    "unit": "A"
+  },
+  {
+    "sensor_id": "VAP-401-PRE-01",
+    "sensor_name": "기화기 #1 PRESSURE",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "VAP-401",
+    "unit": "bar(g)"
+  },
+  {
+    "sensor_id": "VAP-401-TEM-02",
+    "sensor_name": "기화기 #1 TEMPERATURE",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "VAP-401",
+    "unit": "°C"
+  },
+  {
+    "sensor_id": "VAP-401-FLO-03",
+    "sensor_name": "기화기 #1 FLOW",
+    "sensor_type": "FLOW",
+    "equipment_id": "VAP-401",
+    "unit": "kg/h"
+  },
+  {
+    "sensor_id": "PIP-501-PRE-01",
+    "sensor_name": "메인 이송배관 A PRESSURE",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "PIP-501",
+    "unit": "bar(g)"
+  },
+  {
+    "sensor_id": "PIP-501-TEM-02",
+    "sensor_name": "메인 이송배관 A TEMPERATURE",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "PIP-501",
+    "unit": "°C"
+  },
+  {
+    "sensor_id": "PIP-501-FLO-03",
+    "sensor_name": "메인 이송배관 A FLOW",
+    "sensor_type": "FLOW",
+    "equipment_id": "PIP-501",
+    "unit": "kg/h"
+  },
+  {
+    "sensor_id": "VAL-601-PRE-01",
+    "sensor_name": "주요 차단밸브 스테이션 #1 PRESSURE",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "VAL-601",
+    "unit": "bar(g)"
+  },
+  {
+    "sensor_id": "VAL-601-TEM-02",
+    "sensor_name": "주요 차단밸브 스테이션 #1 TEMPERATURE",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "VAL-601",
+    "unit": "°C"
+  },
+  {
+    "sensor_id": "VAL-601-FLO-03",
+    "sensor_name": "주요 차단밸브 스테이션 #1 FLOW",
+    "sensor_type": "FLOW",
+    "equipment_id": "VAL-601",
+    "unit": "kg/h"
+  },
+  {
+    "sensor_id": "REL-701-PRE-01",
+    "sensor_name": "BOG 재액화기 #1 PRESSURE",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "REL-701",
+    "unit": "bar(g)"
+  },
+  {
+    "sensor_id": "REL-701-TEM-02",
+    "sensor_name": "BOG 재액화기 #1 TEMPERATURE",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "REL-701",
+    "unit": "°C"
+  },
+  {
+    "sensor_id": "REL-701-FLO-03",
+    "sensor_name": "BOG 재액화기 #1 FLOW",
+    "sensor_type": "FLOW",
+    "equipment_id": "REL-701",
+    "unit": "kg/h"
+  },
+  {
+    "sensor_id": "REL-701-CUR-04",
+    "sensor_name": "BOG 재액화기 #1 CURRENT",
+    "sensor_type": "CURRENT",
+    "equipment_id": "REL-701",
+    "unit": "A"
+  },
+  {
+    "sensor_id": "SHP-001-PRE-01",
+    "sensor_name": "선박 탱크 압력",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "SHP-001",
+    "unit": "bar(g)",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "sensor_id": "SHP-001-TMP-01",
+    "sensor_name": "선박 탱크 온도",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "SHP-001",
+    "unit": "℃",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "sensor_id": "SHP-001-LVL-01",
+    "sensor_name": "선박 탱크 레벨",
+    "sensor_type": "LEVEL",
+    "equipment_id": "SHP-001",
+    "unit": "%",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "sensor_id": "SHP-001-FLO-01",
+    "sensor_name": "선박 하역 유량",
+    "sensor_type": "FLOW",
+    "equipment_id": "SHP-001",
+    "unit": "m³/h",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "sensor_id": "ARM-101-PRE-01",
+    "sensor_name": "로딩암 배관 압력",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "ARM-101",
+    "unit": "bar(g)",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "sensor_id": "ARM-101-TMP-01",
+    "sensor_name": "로딩암 배관 온도",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "ARM-101",
+    "unit": "℃",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "sensor_id": "ARM-101-FLO-01",
+    "sensor_name": "로딩암 유량",
+    "sensor_type": "FLOW",
+    "equipment_id": "ARM-101",
+    "unit": "m³/h",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "sensor_id": "ARM-101-VIB-01",
+    "sensor_name": "로딩암 진동",
+    "sensor_type": "VIBRATION",
+    "equipment_id": "ARM-101",
+    "unit": "mm/s",
+    "enabled": true,
+    "sample_interval_sec": 5
+  }
+]

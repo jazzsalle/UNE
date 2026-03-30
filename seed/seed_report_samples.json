@@ -1,0 +1,153 @@
+[
+  {
+    "report_id": "RPT-SC-01-001",
+    "template_id": "RPT-TPL-001",
+    "report_type": "EVENT_ACTION",
+    "scenario_id": "SC-01",
+    "event_id": "EVT-SC-01-001",
+    "title": "BOG 압축기 트립 → 저장탱크 압력 상승 조치보고서",
+    "status": "DRAFT",
+    "author_role": "관리자",
+    "generated_summary": {
+      "event_summary": "BOG 압축기 트립 → 저장탱크 압력 상승",
+      "trigger_equipment_id": "BOG-201",
+      "severity": "CRITICAL",
+      "hazop_summary": "저장탱크 압력 상승, PSV 접근, 저장계통 운전제한",
+      "linked_sop_id": "SOP-BOG-TRIP-01",
+      "operator_action_summary": "압축기 정지 확인 후 저장탱크 압력상승률 감시, 필요 시 BOG 우회처리 및 충전/이송부하 저감, 현장 점검 후 단계복구"
+    },
+    "manager_comment": "POC용 자동초안 생성 후 관리자 확인/수정",
+    "created_at": "2026-01-15T10:30:00+09:00",
+    "updated_at": "2026-01-15T10:35:00+09:00"
+  },
+  {
+    "report_id": "RPT-SC-02-001",
+    "template_id": "RPT-TPL-001",
+    "report_type": "EVENT_ACTION",
+    "scenario_id": "SC-02",
+    "event_id": "EVT-SC-02-001",
+    "title": "2차 펌프 성능저하/캐비테이션 → 기화기 영향 조치보고서",
+    "status": "DRAFT",
+    "author_role": "관리자",
+    "generated_summary": {
+      "event_summary": "2차 펌프 성능저하/캐비테이션 → 기화기 영향",
+      "trigger_equipment_id": "PMP-301",
+      "severity": "CRITICAL",
+      "hazop_summary": "기화기 공급 불안정, 하류 배관 압력변동, 장비 손상 확대",
+      "linked_sop_id": "SOP-PUMP-CAV-01",
+      "operator_action_summary": "펌프 부하 저감 또는 정지, 예비펌프 전환, 기화기 유입량 조정, 펌프 분해점검"
+    },
+    "manager_comment": "POC용 자동초안 생성 후 관리자 확인/수정",
+    "created_at": "2026-01-15T10:30:00+09:00",
+    "updated_at": "2026-01-15T10:35:00+09:00"
+  },
+  {
+    "report_id": "RPT-SC-03-001",
+    "template_id": "RPT-TPL-001",
+    "report_type": "EVENT_ACTION",
+    "scenario_id": "SC-03",
+    "event_id": "EVT-SC-03-001",
+    "title": "저장탱크 압력 상승/BOG 증가 → BOG 처리계 영향 조치보고서",
+    "status": "DRAFT",
+    "author_role": "관리자",
+    "generated_summary": {
+      "event_summary": "저장탱크 압력 상승/BOG 증가 → BOG 처리계 영향",
+      "trigger_equipment_id": "TK-101",
+      "severity": "CRITICAL",
+      "hazop_summary": "안전밸브 개방 가능성 증가, 주변 BOG 처리설비 과부하",
+      "linked_sop_id": "SOP-TANK-PRES-01",
+      "operator_action_summary": "부하 저감, BOG 처리계 우선 확보, 비상압력완화 절차 수행, 현장 접근통제"
+    },
+    "manager_comment": "POC용 자동초안 생성 후 관리자 확인/수정",
+    "created_at": "2026-01-15T10:30:00+09:00",
+    "updated_at": "2026-01-15T10:35:00+09:00"
+  },
+  {
+    "report_id": "RPT-SC-04-001",
+    "template_id": "RPT-TPL-001",
+    "report_type": "EVENT_ACTION",
+    "scenario_id": "SC-04",
+    "event_id": "EVT-SC-04-001",
+    "title": "출구 배관 밸브 Stuck Close → 무유량/과압 조치보고서",
+    "status": "DRAFT",
+    "author_role": "OPERATOR",
+    "generated_summary": {
+      "event_overview": "출구 배관 밸브(VAL-601) Stuck Close 발생으로 무유량 및 배관 과압 상태 발생",
+      "trigger_equipment": "VAL-601 (주요 차단밸브 스테이션 #1)",
+      "kogas_diagnosis": "밸브 Stuck Close, 구동기 결빙, 인터록 오동작 (진단확신도: 84%)",
+      "kgs_impact": "배관(PIP-501) 과압 위험 69점, 이송펌프(PMP-301) 과부하 57점",
+      "keti_recommendation": "Option A: 우회 밸브 개방, Option B: 펌프 정지 후 수동 밸브 조작",
+      "safetia_history": "VAL-601 최근 밸브 동작시험 2025-12-10 정상, 특이이력 없음",
+      "sop_execution": "SOP-VAL-STUCK-01 4단계 중 4단계 완료, 우회 밸브 개방으로 유량 회복"
+    },
+    "manager_comment": "",
+    "created_at": "2026-01-15T12:00:00+09:00",
+    "updated_at": "2026-01-15T12:00:00+09:00"
+  },
+  {
+    "report_id": "RPT-SC-05-001",
+    "template_id": "RPT-TPL-001",
+    "report_type": "EVENT_ACTION",
+    "scenario_id": "SC-05",
+    "event_id": "EVT-SC-05-001",
+    "title": "BOG 압축기 전단 저유량 → 압축기 불안정 운전 조치보고서",
+    "status": "DRAFT",
+    "author_role": "OPERATOR",
+    "generated_summary": {
+      "event_overview": "전단 배관(PIP-501) 저유량으로 BOG 압축기(BOG-201) 불안정 운전 발생",
+      "trigger_equipment": "PIP-501 (메인 이송배관 A)",
+      "kogas_diagnosis": "전단 밸브 개도 부족, 결빙, 배관 부분 막힘 (진단확신도: 72%)",
+      "kgs_impact": "BOG 압축기(BOG-201) 서지 위험 61점, 저장탱크(TK-101) 압력상승 49점",
+      "keti_recommendation": "Option A: 전단 밸브 완전 개방 확인, Option B: 압축기 부하 제한",
+      "safetia_history": "PIP-501 최근 배관 점검 2025-11-20, 결빙 방지 히팅 정상",
+      "sop_execution": "SOP-BOG-SURGE-01 5단계 중 5단계 완료, 전단 밸브 재개방으로 유량 회복"
+    },
+    "manager_comment": "",
+    "created_at": "2026-01-15T13:00:00+09:00",
+    "updated_at": "2026-01-15T13:00:00+09:00"
+  },
+  {
+    "report_id": "RPT-SC-06-001",
+    "template_id": "RPT-TPL-001",
+    "report_type": "EVENT_ACTION",
+    "scenario_id": "SC-06",
+    "event_id": "EVT-SC-06-001",
+    "title": "기화기 후단 저온 → 배관 저온 취성 위험 조치보고서",
+    "status": "DRAFT",
+    "author_role": "OPERATOR",
+    "generated_summary": {
+      "event_overview": "기화기(VAP-401) 후단 온도 급강하로 배관(PIP-501) 및 밸브(VAL-601) 저온 취성 위험 발생",
+      "trigger_equipment": "VAP-401 (기화기 #1)",
+      "kogas_diagnosis": "제어밸브 이상, 열교환 불균형, 유량 저하 (진단확신도: 75%)",
+      "kgs_impact": "배관(PIP-501) 저온 취성 위험 74점, 밸브(VAL-601) 저온 고착 위험 62점",
+      "keti_recommendation": "Option A: LH2 공급량 자동 감소, Option B: 예비 기화기 가동",
+      "safetia_history": "VAP-401 최근 기화기 성능시험 2025-11-15 정상, 열매체 교환이력 없음",
+      "sop_execution": "SOP-VAP-COLD-01 4단계 중 4단계 완료, LH2 공급 감량으로 후단 온도 정상화"
+    },
+    "manager_comment": "",
+    "created_at": "2026-01-15T14:00:00+09:00",
+    "updated_at": "2026-01-15T14:00:00+09:00"
+  },
+  {
+    "report_id": "RPT-SC-08-001",
+    "template_id": "RPT-TPL-001",
+    "report_type": "EVENT_ACTION",
+    "scenario_id": "SC-08",
+    "event_id": "EVT-SC-08-001",
+    "title": "하역 중 로딩암 긴급차단 → 저장탱크 공급 중단 조치보고서",
+    "status": "DRAFT",
+    "author_role": "OPERATOR",
+    "generated_summary": {
+      "event_overview": "하역 작업 중 로딩암(ARM-101) ESD 작동으로 LH2 하역 긴급 중단. 플랜지 기밀 이상 감지.",
+      "trigger_equipment": "ARM-101 (로딩암 #1)",
+      "kogas_diagnosis": "로딩암 ESD 작동, 플랜지 기밀 이상 또는 계류 이탈 감지 (진단확신도: 82%)",
+      "kgs_impact": "선박(SHP-001) 압력상승 72점, 저장탱크(TK-101) 공급부족 65점, 배관(PIP-501) 유량감소 52점",
+      "keti_recommendation": "Option A: ESD 원인 제거 후 하역 재개(2~4시간), Option B: 하역 중단 후 감량 운전 전환",
+      "safetia_history": "ARM-101 최근 2025-08-12 플랜지 미세누출 발견 가스켓 교체, 2025-06-20 ESD 동작시험 정상",
+      "sop_execution": "SOP-ARM-ESD-01 7단계 중 7단계 완료, 가스켓 교체 후 기밀시험 통과, 하역 재개"
+    },
+    "manager_comment": "",
+    "created_at": "2026-01-15T15:30:00+09:00",
+    "updated_at": "2026-01-15T15:30:00+09:00"
+  }
+]

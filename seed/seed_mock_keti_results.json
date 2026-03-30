@@ -1,0 +1,74 @@
+[
+  {
+    "scenario_id": "SC-01",
+    "simulation_id": "KETI-SC-01",
+    "trigger_equipment_id": "BOG-201",
+    "simulation_summary": "저장탱크 압력 상승, PSV 접근, 저장계통 운전제한에 대한 30분 예측 결과",
+    "recommended_option_a": "현재 운전 유지 + 감시 강화",
+    "recommended_option_b": "부하 저감 + 우회라인 운전",
+    "expected_stabilization_min": 18
+  },
+  {
+    "scenario_id": "SC-02",
+    "simulation_id": "KETI-SC-02",
+    "trigger_equipment_id": "PMP-301",
+    "simulation_summary": "기화기 공급 불안정, 하류 배관 압력변동, 장비 손상 확대에 대한 30분 예측 결과",
+    "recommended_option_a": "현재 운전 유지 + 감시 강화",
+    "recommended_option_b": "부하 저감 + 우회라인 운전",
+    "expected_stabilization_min": 18
+  },
+  {
+    "scenario_id": "SC-03",
+    "simulation_id": "KETI-SC-03",
+    "trigger_equipment_id": "TK-101",
+    "simulation_summary": "안전밸브 개방 가능성 증가, 주변 BOG 처리설비 과부하에 대한 30분 예측 결과",
+    "recommended_option_a": "현재 운전 유지 + 감시 강화",
+    "recommended_option_b": "부하 저감 + 우회라인 운전",
+    "expected_stabilization_min": 32
+  },
+  {
+    "scenario_id": "SC-04",
+    "simulation_id": "KETI-SC-04",
+    "trigger_equipment_id": "VAL-601",
+    "simulation_summary": "배관 과압, 펌프 비정상운전, 하류 공급중단에 대한 30분 예측 결과",
+    "recommended_option_a": "현재 운전 유지 + 감시 강화",
+    "recommended_option_b": "부하 저감 + 우회라인 운전",
+    "expected_stabilization_min": 18
+  },
+  {
+    "scenario_id": "SC-05",
+    "simulation_id": "KETI-SC-05",
+    "trigger_equipment_id": "PIP-501",
+    "simulation_summary": "압축기 보호정지, BOG 처리계 연쇄 영향에 대한 30분 예측 결과",
+    "recommended_option_a": "현재 운전 유지 + 감시 강화",
+    "recommended_option_b": "부하 저감 + 우회라인 운전",
+    "expected_stabilization_min": 18
+  },
+  {
+    "scenario_id": "SC-06",
+    "simulation_id": "KETI-SC-06",
+    "trigger_equipment_id": "VAP-401",
+    "simulation_summary": "배관 균열 및 누출 가능성, 후단 운전제한에 대한 30분 예측 결과",
+    "recommended_option_a": "현재 운전 유지 + 감시 강화",
+    "recommended_option_b": "부하 저감 + 우회라인 운전",
+    "expected_stabilization_min": 18
+  },
+  {
+    "scenario_id": "SC-07",
+    "simulation_id": "KETI-SC-07",
+    "trigger_equipment_id": "TK-101",
+    "simulation_summary": "해당 없음에 대한 30분 예측 결과",
+    "recommended_option_a": "현재 운전 유지 + 감시 강화",
+    "recommended_option_b": "부하 저감 + 우회라인 운전",
+    "expected_stabilization_min": 18
+  },
+  {
+    "simulation_id": "KETI-SC-08",
+    "scenario_id": "SC-08",
+    "trigger_equipment_id": "ARM-101",
+    "simulation_summary": "로딩암 ESD 작동으로 하역 중단 시, 선박측 탱크 압력은 2시간 내 안전범위 유지. 기지측 저장탱크 레벨은 현재 잔량 기준 48시간 운영 가능. 단, 후단 설비 공급량 10% 감량 운전 권고.",
+    "recommended_option_a": "ESD 원인 제거 후 하역 재개 (예상 소요: 2~4시간). 선박 대기 유지.",
+    "recommended_option_b": "하역 완전 중단 후 로딩암 분리. 저장탱크 잔량으로 감량 운전 전환.",
+    "expected_stabilization_min": 30
+  }
+]

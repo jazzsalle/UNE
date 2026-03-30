@@ -1,0 +1,74 @@
+[
+  {
+    "scenario_id": "SC-01",
+    "history_id": "SAFE-SC-01",
+    "equipment_id": "BOG-201",
+    "last_maintenance_date": "2026-01-18",
+    "past_incident_summary": "저장탱크에서 발생한 BOG를 처리하지 못함",
+    "linked_sop_id": "SOP-BOG-TRIP-01",
+    "operator_note": "압축기 진동·전류 실시간 감시, 예비 압축기/우회라인 준비, 토출측 차압 모니터링 강화"
+  },
+  {
+    "scenario_id": "SC-02",
+    "history_id": "SAFE-SC-02",
+    "equipment_id": "PMP-301",
+    "last_maintenance_date": "2026-01-18",
+    "past_incident_summary": "이송펌프 성능 저하 및 토출유량 감소",
+    "linked_sop_id": "SOP-PUMP-CAV-01",
+    "operator_note": "흡입측 압력/레벨 확보, 펌프 NPSH 검토, 진동/전류 추세 기반 조기정비"
+  },
+  {
+    "scenario_id": "SC-03",
+    "history_id": "SAFE-SC-03",
+    "equipment_id": "TK-101",
+    "last_maintenance_date": "2026-01-18",
+    "past_incident_summary": "저장탱크 압력 상승과 BOG 급증",
+    "linked_sop_id": "SOP-TANK-PRES-01",
+    "operator_note": "단열 상태점검, BOG 발생량 추적, 저장탱크 압력-온도 상관감시, 압축기 가용성 확보"
+  },
+  {
+    "scenario_id": "SC-04",
+    "history_id": "SAFE-SC-04",
+    "equipment_id": "VAL-601",
+    "last_maintenance_date": "2026-01-18",
+    "past_incident_summary": "이송유량 급감 및 상류 압력상승",
+    "linked_sop_id": "SOP-VAL-STUCK-01",
+    "operator_note": "밸브 개도 피드백 이중확인, 결빙 방지 보온/히트트레이싱, 인터록 테스트"
+  },
+  {
+    "scenario_id": "SC-05",
+    "history_id": "SAFE-SC-05",
+    "equipment_id": "PIP-501",
+    "last_maintenance_date": "2026-01-18",
+    "past_incident_summary": "압축기 불안정 운전 및 서지 가능성 증가",
+    "linked_sop_id": "SOP-BOG-SURGE-01",
+    "operator_note": "전단 압력/유량 차이 감시, 밸브 개도 확인, 배관 아이싱 점검"
+  },
+  {
+    "scenario_id": "SC-06",
+    "history_id": "SAFE-SC-06",
+    "equipment_id": "VAP-401",
+    "last_maintenance_date": "2026-01-18",
+    "past_incident_summary": "후단 배관 저온 취성 위험",
+    "linked_sop_id": "SOP-VAP-COLD-01",
+    "operator_note": "후단 온도 하한 인터록, 재질 적합성 검증, 저온구간 열응력 관리"
+  },
+  {
+    "scenario_id": "SC-07",
+    "history_id": "SAFE-SC-07",
+    "equipment_id": "TK-101",
+    "last_maintenance_date": "2026-01-18",
+    "past_incident_summary": "24시간 정상 운전 기준 프로파일",
+    "linked_sop_id": "SOP-NORMAL-OPS-01",
+    "operator_note": "일상점검, 추세분석, 경향감시 유지"
+  },
+  {
+    "history_id": "SAF-SC-08-ARM",
+    "scenario_id": "SC-08",
+    "equipment_id": "ARM-101",
+    "last_maintenance_date": "2025-11-05",
+    "past_incident_summary": "2025-08-12 로딩암 플랜지 미세 누출 발견, 가스켓 교체 완료. 2025-06-20 ESD 밸브 동작시험 정상.",
+    "linked_sop_id": "SOP-ARM-ESD-01",
+    "operator_note": "하역 시작 전 반드시 플랜지 기밀 확인 및 ESD 테스트 수행"
+  }
+]

@@ -1,0 +1,164 @@
+[
+  {
+    "hazop_id": "HZ-LH2-001",
+    "scenario_id": "SC-01",
+    "node": "BOG 압축기 흡입/토출계통",
+    "equipment_id": "BOG-201",
+    "process_parameter": "FLOW",
+    "deviation": "저유량/무유량",
+    "cause": "BOG 압축기 트립 또는 전동기 과전류 보호동작",
+    "event_scenario": "저장탱크에서 발생한 BOG를 처리하지 못함",
+    "hazard_scenario": "저장탱크 압력 상승, PSV 접근, 저장계통 운전제한",
+    "preventive_action": "압축기 진동·전류 실시간 감시, 예비 압축기/우회라인 준비, 토출측 차압 모니터링 강화",
+    "emergency_response": "압축기 정지 확인 후 저장탱크 압력상승률 감시, 필요 시 BOG 우회처리 및 충전/이송부하 저감, 현장 점검 후 단계복구",
+    "linked_sop_id": "SOP-BOG-TRIP-01",
+    "risk_level": "CRITICAL",
+    "impact_chain": [
+      "BOG-201",
+      "TK-101",
+      "REL-701"
+    ],
+    "kgs_impact_score": 88
+  },
+  {
+    "hazop_id": "HZ-LH2-002",
+    "scenario_id": "SC-02",
+    "node": "이송펌프-기화기 계통",
+    "equipment_id": "PMP-301",
+    "process_parameter": "VIBRATION",
+    "deviation": "상승(High)",
+    "cause": "캐비테이션, 베어링 열화, 흡입압 저하",
+    "event_scenario": "이송펌프 성능 저하 및 토출유량 감소",
+    "hazard_scenario": "기화기 공급 불안정, 하류 배관 압력변동, 장비 손상 확대",
+    "preventive_action": "흡입측 압력/레벨 확보, 펌프 NPSH 검토, 진동/전류 추세 기반 조기정비",
+    "emergency_response": "펌프 부하 저감 또는 정지, 예비펌프 전환, 기화기 유입량 조정, 펌프 분해점검",
+    "linked_sop_id": "SOP-PUMP-CAV-01",
+    "risk_level": "CRITICAL",
+    "impact_chain": [
+      "PMP-301",
+      "VAP-401",
+      "PIP-501"
+    ],
+    "kgs_impact_score": 84
+  },
+  {
+    "hazop_id": "HZ-LH2-003",
+    "scenario_id": "SC-03",
+    "node": "저장탱크 상부 가스공간",
+    "equipment_id": "TK-101",
+    "process_parameter": "PRESSURE",
+    "deviation": "상승(High)",
+    "cause": "열유입 증가, BOG 처리지연, 밸브/계측 이상",
+    "event_scenario": "저장탱크 압력 상승과 BOG 급증",
+    "hazard_scenario": "안전밸브 개방 가능성 증가, 주변 BOG 처리설비 과부하",
+    "preventive_action": "단열 상태점검, BOG 발생량 추적, 저장탱크 압력-온도 상관감시, 압축기 가용성 확보",
+    "emergency_response": "부하 저감, BOG 처리계 우선 확보, 비상압력완화 절차 수행, 현장 접근통제",
+    "linked_sop_id": "SOP-TANK-PRES-01",
+    "risk_level": "EMERGENCY",
+    "impact_chain": [
+      "TK-101",
+      "BOG-201",
+      "REL-701",
+      "PIP-501"
+    ],
+    "kgs_impact_score": 93
+  },
+  {
+    "hazop_id": "HZ-LH2-004",
+    "scenario_id": "SC-04",
+    "node": "저장탱크 출구 메인배관 밸브 스테이션",
+    "equipment_id": "VAL-601",
+    "process_parameter": "FLOW",
+    "deviation": "무유량/저유량",
+    "cause": "밸브 Stuck Close, 구동기 결빙, 인터록 오동작",
+    "event_scenario": "이송유량 급감 및 상류 압력상승",
+    "hazard_scenario": "배관 과압, 펌프 비정상운전, 하류 공급중단",
+    "preventive_action": "밸브 개도 피드백 이중확인, 결빙 방지 보온/히트트레이싱, 인터록 테스트",
+    "emergency_response": "밸브 상태 확인 후 우회경로 전환, 상류 펌프 정지 또는 감속, 압력안정화 후 정비",
+    "linked_sop_id": "SOP-VAL-STUCK-01",
+    "risk_level": "CRITICAL",
+    "impact_chain": [
+      "VAL-601",
+      "PIP-501",
+      "PMP-301"
+    ],
+    "kgs_impact_score": 81
+  },
+  {
+    "hazop_id": "HZ-LH2-005",
+    "scenario_id": "SC-05",
+    "node": "BOG 압축기 전단 배관",
+    "equipment_id": "PIP-501",
+    "process_parameter": "FLOW",
+    "deviation": "저유량",
+    "cause": "전단 밸브 개도 부족, 결빙, 배관 부분 막힘",
+    "event_scenario": "압축기 불안정 운전 및 서지 가능성 증가",
+    "hazard_scenario": "압축기 보호정지, BOG 처리계 연쇄 영향",
+    "preventive_action": "전단 압력/유량 차이 감시, 밸브 개도 확인, 배관 아이싱 점검",
+    "emergency_response": "압축기 부하 감소, 흡입라인 점검 및 제상, 보호정지 시 저장계통 압력관리 강화",
+    "linked_sop_id": "SOP-BOG-SURGE-01",
+    "risk_level": "WARNING",
+    "impact_chain": [
+      "PIP-501",
+      "BOG-201",
+      "TK-101"
+    ],
+    "kgs_impact_score": 73
+  },
+  {
+    "hazop_id": "HZ-LH2-006",
+    "scenario_id": "SC-06",
+    "node": "기화기 후단 및 저온 배관",
+    "equipment_id": "VAP-401",
+    "process_parameter": "TEMPERATURE",
+    "deviation": "과도한 저하(Low)",
+    "cause": "제어밸브 이상, 열교환 불균형, 유량 저하",
+    "event_scenario": "후단 배관 저온 취성 위험",
+    "hazard_scenario": "배관 균열 및 누출 가능성, 후단 운전제한",
+    "preventive_action": "후단 온도 하한 인터록, 재질 적합성 검증, 저온구간 열응력 관리",
+    "emergency_response": "유량 조절 및 우회, 저온구간 접근 통제, 누출 여부 확인 후 단계복구",
+    "linked_sop_id": "SOP-VAP-COLD-01",
+    "risk_level": "CRITICAL",
+    "impact_chain": [
+      "VAP-401",
+      "PIP-501",
+      "VAL-601"
+    ],
+    "kgs_impact_score": 86
+  },
+  {
+    "hazop_id": "HZ-LH2-007",
+    "scenario_id": "SC-07",
+    "node": "정상운전 기준 시나리오",
+    "equipment_id": "TK-101",
+    "process_parameter": "STATUS",
+    "deviation": "정상",
+    "cause": "정상 운전상태",
+    "event_scenario": "24시간 정상 운전 기준 프로파일",
+    "hazard_scenario": "해당 없음",
+    "preventive_action": "일상점검, 추세분석, 경향감시 유지",
+    "emergency_response": "해당 없음",
+    "linked_sop_id": "SOP-NORMAL-OPS-01",
+    "risk_level": "INFO",
+    "impact_chain": [
+      "TK-101"
+    ],
+    "kgs_impact_score": 12
+  },
+  {
+    "hazop_id": "HZ-LH2-008",
+    "scenario_id": "SC-08",
+    "equipment_id": "ARM-101",
+    "node": "하역배관-로딩암",
+    "process_parameter": "유량",
+    "deviation": "무유량(No Flow)",
+    "cause": "로딩암 긴급차단(ESD), 선박측 밸브 이상, 로딩암 플랜지 누출 감지, 선박 계류 이탈 감지",
+    "event_scenario": "하역 중단, 선박↔기지 연결 차단",
+    "hazard_scenario": "저장탱크 공급 중단으로 탱크 레벨 저하, 후단 설비(펌프/기화기) 공급 불안정, 선박측 압력 상승",
+    "preventive_action": "로딩암 긴급차단 밸브(ESD) 정기 점검, 플랜지 기밀 시험, 계류 상태 감시 시스템 운영",
+    "emergency_response": "하역 즉시 중단, 로딩암 분리 절차 실행, 선박 탱크 압력 감시 강화, 기지측 밸브 차단 확인",
+    "linked_sop_id": "SOP-ARM-ESD-01",
+    "risk_level": "CRITICAL",
+    "kgs_impact_score": 82
+  }
+]

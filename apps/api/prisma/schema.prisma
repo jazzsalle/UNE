@@ -1,0 +1,215 @@
+// ref: CLAUDE.md §8.1 — Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Zone {
+  zone_id   String @id
+  zone_name String
+  zone_type String
+  equipment EquipmentMaster[]
+}
+
+model EquipmentMaster {
+  equipment_id    String  @id
+  equipment_name  String
+  equipment_type  String
+  zone_id         String
+  glb_object_name String
+  is_core         Boolean @default(true)
+  description     String?
+  zone            Zone    @relation(fields: [zone_id], references: [zone_id])
+  sensors         SensorMaster[]
+  hazops          HazopMaster[]
+}
+
+model SensorMaster {
+  sensor_id           String  @id
+  sensor_name         String
+  sensor_type         String
+  equipment_id        String
+  unit                String
+  enabled             Boolean @default(true)
+  sample_interval_sec Int     @default(5)
+  equipment           EquipmentMaster @relation(fields: [equipment_id], references: [equipment_id])
+  threshold           SensorThreshold?
+}
+
+model SensorThreshold {
+  sensor_id     String  @id
+  normal_value  Float
+  warning_low   Float
+  warning_high  Float
+  critical_low  Float
+  critical_high Float
+  sensor        SensorMaster @relation(fields: [sensor_id], references: [sensor_id])
+}
+
+model ScenarioMaster {
+  scenario_id            String @id
+  scenario_name          String
+  trigger_equipment_id   String
+  affected_equipment_ids String // JSON array stored as string (SQLite)
+  hazop_id               String?
+  default_duration_sec   Int
+  phases                 String // JSON stored as string
+  sensor_data_file       String
+  playback_speed_options String // JSON array stored as string
+}
+
+model HazopMaster {
+  hazop_id           String @id
+  scenario_id        String
+  equipment_id       String
+  node               String
+  process_parameter  String
+  deviation          String
+  cause              String
+  event_scenario     String
+  hazard_scenario    String
+  preventive_action  String
+  emergency_response String
+  linked_sop_id      String?
+  risk_level         String
+  kgs_impact_score   Int?
+  equipment          EquipmentMaster @relation(fields: [equipment_id], references: [equipment_id])
+}
+
+model EventLog {
+  event_id             String   @id @default(uuid())
+  scenario_id          String
+  trigger_equipment_id String
+  status               String   @default("OPEN")
+  severity             String
+  summary              String?
+  opened_at            DateTime @default(now())
+  closed_at            DateTime?
+  sop_executions       SopExecutionLog[]
+  reports              ReportDocument[]
+}
+
+model SopCatalog {
+  sop_id                String  @id
+  sop_name              String
+  sop_category          String
+  trigger_type          String
+  target_space_id       String?
+  target_equipment_id   String?
+  linked_hazop_id       String?
+  priority              Int
+  camera_preset         String?
+  popup_template        String?
+  estimated_duration_min Int?
+  auto_open_popup       Boolean @default(false)
+  broadcast_action      String?
+  steps                 String  // JSON
+  keywords              String? // JSON
+  status                String  @default("ACTIVE")
+  equipment_maps        SopEquipmentMap[]
+  executions            SopExecutionLog[]
+}
+
+model SopEquipmentMap {
+  map_id             String  @id
+  sop_id             String
+  space_id           String
+  equipment_id       String  @default("")
+  match_rule         String
+  event_severity_min String
+  camera_preset      String?
+  popup_template     String?
+  is_primary         Boolean @default(false)
+  sort_order         Int
+  sop                SopCatalog @relation(fields: [sop_id], references: [sop_id])
+}
+
+model SopExecutionLog {
+  execution_id     String   @id @default(uuid())
+  event_id         String
+  scenario_id      String?
+  sop_id           String
+  execution_status String   @default("IN_PROGRESS")
+  started_at       DateTime @default(now())
+  ended_at         DateTime?
+  executor_role    String?
+  checked_steps    String?  // JSON
+  memo             String?
+  event            EventLog   @relation(fields: [event_id], references: [event_id])
+  sop              SopCatalog @relation(fields: [sop_id], references: [sop_id])
+}
+
+model ReportDocument {
+  report_id         String   @id @default(uuid())
+  template_id       String
+  report_type       String
+  scenario_id       String?
+  event_id          String?
+  title             String
+  status            String   @default("DRAFT")
+  author_role       String?
+  generated_summary String?  // JSON
+  manager_comment   String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  event             EventLog? @relation(fields: [event_id], references: [event_id])
+}
+
+model SettingsMetadata {
+  setting_id    String @id @default(uuid())
+  setting_group String
+  setting_key   String @unique
+  setting_value String
+  value_type    String
+  description   String?
+}
+
+model MockKogasResult {
+  request_id           String @id
+  scenario_id          String
+  target_equipment_id  String
+  fault_code           String?
+  fault_name           String
+  diagnosis_confidence Float
+  suspected_part       String?
+  sensor_evidence      String? // JSON
+}
+
+model MockKgsResult {
+  analysis_id           String @id
+  scenario_id           String
+  trigger_equipment_id  String
+  affected_equipment_id String
+  impact_type           String
+  impact_score          Int
+  risk_level            String
+  predicted_after_sec   Int?
+  color_2d              String?
+  color_3d              String?
+  hazop_id              String?
+  recommended_action    String?
+}
+
+model MockKetiResult {
+  simulation_id              String @id
+  scenario_id                String
+  trigger_equipment_id       String
+  simulation_summary         String?
+  recommended_option_a       String?
+  recommended_option_b       String?
+  expected_stabilization_min Int?
+}
+
+model MockSafetiaHistory {
+  history_id            String @id
+  scenario_id           String
+  equipment_id          String
+  last_maintenance_date String?
+  past_incident_summary String?
+  linked_sop_id         String?
+  operator_note         String?
+}

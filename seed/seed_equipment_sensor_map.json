@@ -1,0 +1,216 @@
+[
+  {
+    "equipment_id": "TK-101",
+    "sensor_id": "TK-101-PRE-01",
+    "sensor_type": "PRESSURE",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "TK-101",
+    "sensor_id": "TK-101-TEM-02",
+    "sensor_type": "TEMPERATURE",
+    "enabled": true,
+    "sample_interval_sec": 10
+  },
+  {
+    "equipment_id": "TK-101",
+    "sensor_id": "TK-101-LEV-03",
+    "sensor_type": "LEVEL",
+    "enabled": true,
+    "sample_interval_sec": 10
+  },
+  {
+    "equipment_id": "BOG-201",
+    "sensor_id": "BOG-201-PRE-01",
+    "sensor_type": "PRESSURE",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "BOG-201",
+    "sensor_id": "BOG-201-TEM-02",
+    "sensor_type": "TEMPERATURE",
+    "enabled": true,
+    "sample_interval_sec": 10
+  },
+  {
+    "equipment_id": "BOG-201",
+    "sensor_id": "BOG-201-FLO-03",
+    "sensor_type": "FLOW",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "BOG-201",
+    "sensor_id": "BOG-201-VIB-04",
+    "sensor_type": "VIBRATION",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "BOG-201",
+    "sensor_id": "BOG-201-CUR-05",
+    "sensor_type": "CURRENT",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "PMP-301",
+    "sensor_id": "PMP-301-PRE-01",
+    "sensor_type": "PRESSURE",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "PMP-301",
+    "sensor_id": "PMP-301-TEM-02",
+    "sensor_type": "TEMPERATURE",
+    "enabled": true,
+    "sample_interval_sec": 10
+  },
+  {
+    "equipment_id": "PMP-301",
+    "sensor_id": "PMP-301-FLO-03",
+    "sensor_type": "FLOW",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "PMP-301",
+    "sensor_id": "PMP-301-VIB-04",
+    "sensor_type": "VIBRATION",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "PMP-301",
+    "sensor_id": "PMP-301-CUR-05",
+    "sensor_type": "CURRENT",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "VAP-401",
+    "sensor_id": "VAP-401-PRE-01",
+    "sensor_type": "PRESSURE",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "VAP-401",
+    "sensor_id": "VAP-401-TEM-02",
+    "sensor_type": "TEMPERATURE",
+    "enabled": true,
+    "sample_interval_sec": 10
+  },
+  {
+    "equipment_id": "VAP-401",
+    "sensor_id": "VAP-401-FLO-03",
+    "sensor_type": "FLOW",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "PIP-501",
+    "sensor_id": "PIP-501-PRE-01",
+    "sensor_type": "PRESSURE",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "PIP-501",
+    "sensor_id": "PIP-501-TEM-02",
+    "sensor_type": "TEMPERATURE",
+    "enabled": true,
+    "sample_interval_sec": 10
+  },
+  {
+    "equipment_id": "PIP-501",
+    "sensor_id": "PIP-501-FLO-03",
+    "sensor_type": "FLOW",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "VAL-601",
+    "sensor_id": "VAL-601-PRE-01",
+    "sensor_type": "PRESSURE",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "VAL-601",
+    "sensor_id": "VAL-601-TEM-02",
+    "sensor_type": "TEMPERATURE",
+    "enabled": true,
+    "sample_interval_sec": 10
+  },
+  {
+    "equipment_id": "VAL-601",
+    "sensor_id": "VAL-601-FLO-03",
+    "sensor_type": "FLOW",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "REL-701",
+    "sensor_id": "REL-701-PRE-01",
+    "sensor_type": "PRESSURE",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "REL-701",
+    "sensor_id": "REL-701-TEM-02",
+    "sensor_type": "TEMPERATURE",
+    "enabled": true,
+    "sample_interval_sec": 10
+  },
+  {
+    "equipment_id": "REL-701",
+    "sensor_id": "REL-701-FLO-03",
+    "sensor_type": "FLOW",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "REL-701",
+    "sensor_id": "REL-701-CUR-04",
+    "sensor_type": "CURRENT",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "SHP-001",
+    "sensor_id": "SHP-001-PRE-01"
+  },
+  {
+    "equipment_id": "SHP-001",
+    "sensor_id": "SHP-001-TMP-01"
+  },
+  {
+    "equipment_id": "SHP-001",
+    "sensor_id": "SHP-001-LVL-01"
+  },
+  {
+    "equipment_id": "SHP-001",
+    "sensor_id": "SHP-001-FLO-01"
+  },
+  {
+    "equipment_id": "ARM-101",
+    "sensor_id": "ARM-101-PRE-01"
+  },
+  {
+    "equipment_id": "ARM-101",
+    "sensor_id": "ARM-101-TMP-01"
+  },
+  {
+    "equipment_id": "ARM-101",
+    "sensor_id": "ARM-101-FLO-01"
+  },
+  {
+    "equipment_id": "ARM-101",
+    "sensor_id": "ARM-101-VIB-01"
+  }
+]

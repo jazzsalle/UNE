@@ -1,0 +1,42 @@
+[
+  {
+    "zone_id": "Z-STO",
+    "zone_name": "저장구역",
+    "risk_map_color": "#90CAF9"
+  },
+  {
+    "zone_id": "Z-BOG",
+    "zone_name": "BOG 처리구역",
+    "risk_map_color": "#A5D6A7"
+  },
+  {
+    "zone_id": "Z-PUMP",
+    "zone_name": "이송펌프구역",
+    "risk_map_color": "#FFE082"
+  },
+  {
+    "zone_id": "Z-VAP",
+    "zone_name": "기화구역",
+    "risk_map_color": "#CE93D8"
+  },
+  {
+    "zone_id": "Z-PIPE",
+    "zone_name": "주배관구역",
+    "risk_map_color": "#B0BEC5"
+  },
+  {
+    "zone_id": "Z-VAL",
+    "zone_name": "밸브스테이션",
+    "risk_map_color": "#FFCC80"
+  },
+  {
+    "zone_id": "Z-BERTH",
+    "zone_name": "선석/하역부",
+    "description": "LH2 운반선 접안 및 하역 구역"
+  },
+  {
+    "zone_id": "Z-ARM",
+    "zone_name": "로딩암 구역",
+    "description": "로딩암 및 하역배관 연결 구역"
+  }
+]

@@ -1,0 +1,274 @@
+[
+  {
+    "sensor_id": "TK-101-PRE-01",
+    "normal_value": 4.2,
+    "warning_low": 3.36,
+    "warning_high": 4.83,
+    "critical_low": 2.73,
+    "critical_high": 5.46
+  },
+  {
+    "sensor_id": "TK-101-TEM-02",
+    "normal_value": -253.0,
+    "warning_low": -261.0,
+    "warning_high": -243.0,
+    "critical_low": -268.0,
+    "critical_high": -233.0
+  },
+  {
+    "sensor_id": "TK-101-LEV-03",
+    "normal_value": 78,
+    "warning_low": 20,
+    "warning_high": 92,
+    "critical_low": 10,
+    "critical_high": 97
+  },
+  {
+    "sensor_id": "BOG-201-PRE-01",
+    "normal_value": 6.5,
+    "warning_low": 5.2,
+    "warning_high": 7.47,
+    "critical_low": 4.23,
+    "critical_high": 8.45
+  },
+  {
+    "sensor_id": "BOG-201-TEM-02",
+    "normal_value": -145.0,
+    "warning_low": -153.0,
+    "warning_high": -135.0,
+    "critical_low": -160.0,
+    "critical_high": -125.0
+  },
+  {
+    "sensor_id": "BOG-201-FLO-03",
+    "normal_value": 1800,
+    "warning_low": 1350.0,
+    "warning_high": 2160.0,
+    "critical_low": 990.0,
+    "critical_high": 2430.0
+  },
+  {
+    "sensor_id": "BOG-201-VIB-04",
+    "normal_value": 2.2,
+    "warning_low": 0,
+    "warning_high": 5.5,
+    "critical_low": 0,
+    "critical_high": 9.0
+  },
+  {
+    "sensor_id": "BOG-201-CUR-05",
+    "normal_value": 86,
+    "warning_low": 0,
+    "warning_high": 98.9,
+    "critical_low": 0,
+    "critical_high": 116.1
+  },
+  {
+    "sensor_id": "PMP-301-PRE-01",
+    "normal_value": 7.1,
+    "warning_low": 5.68,
+    "warning_high": 8.16,
+    "critical_low": 4.62,
+    "critical_high": 9.23
+  },
+  {
+    "sensor_id": "PMP-301-TEM-02",
+    "normal_value": -248.0,
+    "warning_low": -256.0,
+    "warning_high": -238.0,
+    "critical_low": -263.0,
+    "critical_high": -228.0
+  },
+  {
+    "sensor_id": "PMP-301-FLO-03",
+    "normal_value": 3200,
+    "warning_low": 2400.0,
+    "warning_high": 3840.0,
+    "critical_low": 1760.0,
+    "critical_high": 4320.0
+  },
+  {
+    "sensor_id": "PMP-301-VIB-04",
+    "normal_value": 2.8,
+    "warning_low": 0,
+    "warning_high": 5.5,
+    "critical_low": 0,
+    "critical_high": 9.0
+  },
+  {
+    "sensor_id": "PMP-301-CUR-05",
+    "normal_value": 112,
+    "warning_low": 0,
+    "warning_high": 128.8,
+    "critical_low": 0,
+    "critical_high": 151.2
+  },
+  {
+    "sensor_id": "VAP-401-PRE-01",
+    "normal_value": 6.8,
+    "warning_low": 5.44,
+    "warning_high": 7.82,
+    "critical_low": 4.42,
+    "critical_high": 8.84
+  },
+  {
+    "sensor_id": "VAP-401-TEM-02",
+    "normal_value": -190.0,
+    "warning_low": -198.0,
+    "warning_high": -180.0,
+    "critical_low": -205.0,
+    "critical_high": -170.0
+  },
+  {
+    "sensor_id": "VAP-401-FLO-03",
+    "normal_value": 3100,
+    "warning_low": 2325.0,
+    "warning_high": 3720.0,
+    "critical_low": 1705.0,
+    "critical_high": 4185.0
+  },
+  {
+    "sensor_id": "PIP-501-PRE-01",
+    "normal_value": 6.9,
+    "warning_low": 5.52,
+    "warning_high": 7.93,
+    "critical_low": 4.49,
+    "critical_high": 8.97
+  },
+  {
+    "sensor_id": "PIP-501-TEM-02",
+    "normal_value": -240.0,
+    "warning_low": -248.0,
+    "warning_high": -230.0,
+    "critical_low": -255.0,
+    "critical_high": -220.0
+  },
+  {
+    "sensor_id": "PIP-501-FLO-03",
+    "normal_value": 3150,
+    "warning_low": 2362.5,
+    "warning_high": 3780.0,
+    "critical_low": 1732.5,
+    "critical_high": 4252.5
+  },
+  {
+    "sensor_id": "VAL-601-PRE-01",
+    "normal_value": 6.8,
+    "warning_low": 5.44,
+    "warning_high": 7.82,
+    "critical_low": 4.42,
+    "critical_high": 8.84
+  },
+  {
+    "sensor_id": "VAL-601-TEM-02",
+    "normal_value": -238.0,
+    "warning_low": -246.0,
+    "warning_high": -228.0,
+    "critical_low": -253.0,
+    "critical_high": -218.0
+  },
+  {
+    "sensor_id": "VAL-601-FLO-03",
+    "normal_value": 3120,
+    "warning_low": 2340.0,
+    "warning_high": 3744.0,
+    "critical_low": 1716.0,
+    "critical_high": 4212.0
+  },
+  {
+    "sensor_id": "REL-701-PRE-01",
+    "normal_value": 5.8,
+    "warning_low": 4.64,
+    "warning_high": 6.67,
+    "critical_low": 3.77,
+    "critical_high": 7.54
+  },
+  {
+    "sensor_id": "REL-701-TEM-02",
+    "normal_value": -165.0,
+    "warning_low": -173.0,
+    "warning_high": -155.0,
+    "critical_low": -180.0,
+    "critical_high": -145.0
+  },
+  {
+    "sensor_id": "REL-701-FLO-03",
+    "normal_value": 900,
+    "warning_low": 675.0,
+    "warning_high": 1080.0,
+    "critical_low": 495.0,
+    "critical_high": 1215.0
+  },
+  {
+    "sensor_id": "REL-701-CUR-04",
+    "normal_value": 64,
+    "warning_low": 0,
+    "warning_high": 73.6,
+    "critical_low": 0,
+    "critical_high": 86.4
+  },
+  {
+    "sensor_id": "SHP-001-PRE-01",
+    "normal_value": 1.5,
+    "warning_low": 1.0,
+    "warning_high": 2.0,
+    "critical_low": 0.5,
+    "critical_high": 2.5
+  },
+  {
+    "sensor_id": "SHP-001-TMP-01",
+    "normal_value": -253.0,
+    "warning_low": -254.0,
+    "warning_high": -251.0,
+    "critical_low": -255.0,
+    "critical_high": -249.0
+  },
+  {
+    "sensor_id": "SHP-001-LVL-01",
+    "normal_value": 85.0,
+    "warning_low": 20.0,
+    "warning_high": 95.0,
+    "critical_low": 10.0,
+    "critical_high": 98.0
+  },
+  {
+    "sensor_id": "SHP-001-FLO-01",
+    "normal_value": 120.0,
+    "warning_low": 80.0,
+    "warning_high": 150.0,
+    "critical_low": 50.0,
+    "critical_high": 170.0
+  },
+  {
+    "sensor_id": "ARM-101-PRE-01",
+    "normal_value": 3.5,
+    "warning_low": 2.5,
+    "warning_high": 4.5,
+    "critical_low": 1.5,
+    "critical_high": 5.5
+  },
+  {
+    "sensor_id": "ARM-101-TMP-01",
+    "normal_value": -252.0,
+    "warning_low": -254.0,
+    "warning_high": -248.0,
+    "critical_low": -255.0,
+    "critical_high": -245.0
+  },
+  {
+    "sensor_id": "ARM-101-FLO-01",
+    "normal_value": 120.0,
+    "warning_low": 80.0,
+    "warning_high": 150.0,
+    "critical_low": 50.0,
+    "critical_high": 170.0
+  },
+  {
+    "sensor_id": "ARM-101-VIB-01",
+    "normal_value": 1.5,
+    "warning_low": 0.0,
+    "warning_high": 3.0,
+    "critical_low": 0.0,
+    "critical_high": 5.0
+  }
+]

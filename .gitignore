@@ -1,0 +1,33 @@
+# 환경변수
+.env
+.env.local
+.env.production
+
+# 의존성
+node_modules/
+.next/
+dist/
+
+# GLB 대용량 (R2 관리)
+*.glb
+!public/models/secondary_pump.glb
+
+# Prisma
+prisma/migrations/**/migration_lock.toml
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/settings.json
+.idea/
+
+# 빌드 결과물
+output/
+
+# Claude Code 로컬 설정
+.claude/settings.local.json
+
+# ZIP 원본
+*.zip
+*.db

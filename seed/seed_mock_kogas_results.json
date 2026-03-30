@@ -1,0 +1,123 @@
+[
+  {
+    "scenario_id": "SC-01",
+    "request_id": "KOGAS-SC-01",
+    "target_equipment_id": "BOG-201",
+    "fault_code": "FLT-01",
+    "fault_name": "BOG 압축기 트립 또는 전동기 과전류 보호동작",
+    "diagnosis_confidence": 0.75,
+    "suspected_part": "전동기",
+    "sensor_evidence": [
+      "BOG-201-PRE-01",
+      "BOG-201-TEM-02",
+      "BOG-201-FLO-03"
+    ]
+  },
+  {
+    "scenario_id": "SC-02",
+    "request_id": "KOGAS-SC-02",
+    "target_equipment_id": "PMP-301",
+    "fault_code": "FLT-02",
+    "fault_name": "캐비테이션, 베어링 열화, 흡입압 저하",
+    "diagnosis_confidence": 0.78,
+    "suspected_part": "베어링",
+    "sensor_evidence": [
+      "PMP-301-PRE-01",
+      "PMP-301-TEM-02",
+      "PMP-301-FLO-03"
+    ]
+  },
+  {
+    "scenario_id": "SC-03",
+    "request_id": "KOGAS-SC-03",
+    "target_equipment_id": "TK-101",
+    "fault_code": "FLT-03",
+    "fault_name": "열유입 증가, BOG 처리지연, 밸브/계측 이상",
+    "diagnosis_confidence": 0.81,
+    "suspected_part": "밸브구동부",
+    "sensor_evidence": [
+      "TK-101-PRE-01",
+      "TK-101-TEM-02",
+      "TK-101-LEV-03"
+    ]
+  },
+  {
+    "scenario_id": "SC-04",
+    "request_id": "KOGAS-SC-04",
+    "target_equipment_id": "VAL-601",
+    "fault_code": "FLT-04",
+    "fault_name": "밸브 Stuck Close, 구동기 결빙, 인터록 오동작",
+    "diagnosis_confidence": 0.84,
+    "suspected_part": "밸브구동부",
+    "sensor_evidence": [
+      "VAL-601-PRE-01",
+      "VAL-601-TEM-02",
+      "VAL-601-FLO-03"
+    ]
+  },
+  {
+    "scenario_id": "SC-05",
+    "request_id": "KOGAS-SC-05",
+    "target_equipment_id": "PIP-501",
+    "fault_code": "FLT-05",
+    "fault_name": "전단 밸브 개도 부족, 결빙, 배관 부분 막힘",
+    "diagnosis_confidence": 0.72,
+    "suspected_part": "밸브구동부",
+    "sensor_evidence": [
+      "PIP-501-PRE-01",
+      "PIP-501-TEM-02",
+      "PIP-501-FLO-03"
+    ]
+  },
+  {
+    "scenario_id": "SC-06",
+    "request_id": "KOGAS-SC-06",
+    "target_equipment_id": "VAP-401",
+    "fault_code": "FLT-06",
+    "fault_name": "제어밸브 이상, 열교환 불균형, 유량 저하",
+    "diagnosis_confidence": 0.75,
+    "suspected_part": "밸브구동부",
+    "sensor_evidence": [
+      "VAP-401-PRE-01",
+      "VAP-401-TEM-02",
+      "VAP-401-FLO-03"
+    ]
+  },
+  {
+    "scenario_id": "SC-07",
+    "request_id": "KOGAS-SC-07",
+    "target_equipment_id": "TK-101",
+    "fault_code": "FLT-07",
+    "fault_name": "정상 운전상태",
+    "diagnosis_confidence": 0.78,
+    "suspected_part": "밸브구동부",
+    "sensor_evidence": [
+      "TK-101-PRE-01",
+      "TK-101-TEM-02",
+      "TK-101-LEV-03"
+    ]
+  },
+  {
+    "request_id": "KOGAS-SC-08",
+    "scenario_id": "SC-08",
+    "target_equipment_id": "ARM-101",
+    "fault_code": "FLT-ARM-ESD",
+    "fault_name": "로딩암 긴급차단(ESD) 작동, 플랜지 기밀 이상 또는 계류 이탈 감지",
+    "diagnosis_confidence": 0.82,
+    "suspected_part": "ESD 밸브, 플랜지 실링, 계류 센서",
+    "sensor_evidence": [
+      {
+        "sensor_id": "ARM-101-FLO-01",
+        "desc": "유량 급감 (120→0 m³/h)"
+      },
+      {
+        "sensor_id": "ARM-101-VIB-01",
+        "desc": "진동 급증 후 정지"
+      },
+      {
+        "sensor_id": "ARM-101-PRE-01",
+        "desc": "압력 급변동"
+      }
+    ]
+  }
+]

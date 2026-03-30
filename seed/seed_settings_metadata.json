@@ -1,0 +1,37 @@
+[
+  {
+    "setting_group": "SENSOR_METADATA",
+    "setting_key": "default_sample_interval_sec",
+    "setting_value": "5",
+    "value_type": "NUMBER",
+    "description": "기본 샘플링 주기"
+  },
+  {
+    "setting_group": "SENSOR_METADATA",
+    "setting_key": "quality_missing_timeout_sec",
+    "setting_value": "30",
+    "value_type": "NUMBER",
+    "description": "데이터 미수신 판정시간"
+  },
+  {
+    "setting_group": "THRESHOLD_POLICY",
+    "setting_key": "use_equipment_custom_threshold",
+    "setting_value": "true",
+    "value_type": "BOOLEAN",
+    "description": "설비별 임계치 우선 사용"
+  },
+  {
+    "setting_group": "EVENT_POLICY",
+    "setting_key": "auto_open_sop_popup",
+    "setting_value": "true",
+    "value_type": "BOOLEAN",
+    "description": "이벤트 발생 시 관련 SOP 팝업 자동오픈"
+  },
+  {
+    "setting_group": "REPORT_POLICY",
+    "setting_key": "auto_generate_event_report_draft",
+    "setting_value": "true",
+    "value_type": "BOOLEAN",
+    "description": "이벤트 종료 시 조치보고서 초안 생성"
+  }
+]

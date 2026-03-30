@@ -1,0 +1,50 @@
+[
+  {
+    "sensor_type": "PRESSURE",
+    "unit": "bar(g)",
+    "value_range": {
+      "min": 0,
+      "max": 25
+    }
+  },
+  {
+    "sensor_type": "TEMPERATURE",
+    "unit": "°C",
+    "value_range": {
+      "min": -260,
+      "max": 80
+    }
+  },
+  {
+    "sensor_type": "FLOW",
+    "unit": "kg/h",
+    "value_range": {
+      "min": 0,
+      "max": 12000
+    }
+  },
+  {
+    "sensor_type": "VIBRATION",
+    "unit": "mm/s",
+    "value_range": {
+      "min": 0,
+      "max": 25
+    }
+  },
+  {
+    "sensor_type": "CURRENT",
+    "unit": "A",
+    "value_range": {
+      "min": 0,
+      "max": 300
+    }
+  },
+  {
+    "sensor_type": "LEVEL",
+    "unit": "%",
+    "value_range": {
+      "min": 0,
+      "max": 100
+    }
+  }
+]

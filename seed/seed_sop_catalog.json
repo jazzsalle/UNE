@@ -1,0 +1,466 @@
+[
+  {
+    "sop_id": "SOP-BOG-TRIP-01",
+    "sop_name": "BOG 압축기 트립 대응",
+    "sop_category": "EVENT_RESPONSE",
+    "trigger_type": "EQUIPMENT_EVENT",
+    "target_space_id": "Z-BOG",
+    "target_equipment_id": "BOG-201",
+    "linked_hazop_id": "HZ-LH2-001",
+    "priority": "CRITICAL",
+    "camera_preset": "cam_bog_compressor_closeup",
+    "popup_template": "tmpl_bog_trip_popup",
+    "estimated_duration_min": 15,
+    "auto_open_popup": true,
+    "broadcast_action": "상황전파 버튼 액션만 수행, 실제 발송은 미수행",
+    "steps": [
+      {
+        "order": 1,
+        "type": "TEXT",
+        "title": "이벤트 확인",
+        "content": "BOG 압축기 트립 알람과 전류/진동 추이를 확인함"
+      },
+      {
+        "order": 2,
+        "type": "CHECK",
+        "title": "현장 안전확보",
+        "content": "현장 접근통제 및 회전기 정지상태 확인"
+      },
+      {
+        "order": 3,
+        "type": "CHECK",
+        "title": "저장탱크 압력확인",
+        "content": "TK-101 압력상승률과 REL-701 가용상태 점검"
+      },
+      {
+        "order": 4,
+        "type": "TEXT",
+        "title": "부하조정",
+        "content": "필요 시 이송부하를 낮추고 BOG 우회처리 검토"
+      },
+      {
+        "order": 5,
+        "type": "CHECK",
+        "title": "상황전파",
+        "content": "운영자/안전관리자에게 상황전파 버튼 수행"
+      }
+    ],
+    "keywords": [
+      "BOG",
+      "압축기",
+      "트립",
+      "저장탱크압력"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "sop_id": "SOP-PUMP-CAV-01",
+    "sop_name": "이송펌프 캐비테이션 대응",
+    "sop_category": "EVENT_RESPONSE",
+    "trigger_type": "EQUIPMENT_EVENT",
+    "target_space_id": "Z-PUMP",
+    "target_equipment_id": "PMP-301",
+    "linked_hazop_id": "HZ-LH2-002",
+    "priority": "CRITICAL",
+    "camera_preset": "cam_transfer_pump_closeup",
+    "popup_template": "tmpl_pump_cav_popup",
+    "estimated_duration_min": 20,
+    "auto_open_popup": true,
+    "broadcast_action": "상황전파 버튼 액션만 수행, 실제 발송은 미수행",
+    "steps": [
+      {
+        "order": 1,
+        "type": "TEXT",
+        "title": "이상상태 인지",
+        "content": "진동/유량/전류 편차를 통해 캐비테이션 징후를 확인함"
+      },
+      {
+        "order": 2,
+        "type": "CHECK",
+        "title": "흡입조건 확인",
+        "content": "탱크 레벨, 흡입압, 밸브 개도를 확인"
+      },
+      {
+        "order": 3,
+        "type": "CHECK",
+        "title": "예비펌프 전환 검토",
+        "content": "예비펌프가 있을 경우 전환 준비"
+      },
+      {
+        "order": 4,
+        "type": "TEXT",
+        "title": "하류영향 점검",
+        "content": "VAP-401 공급불안정 및 PIP-501 압력변동 여부 확인"
+      },
+      {
+        "order": 5,
+        "type": "CHECK",
+        "title": "정비요청 등록",
+        "content": "이력관리와 연계하여 정비요청 작성"
+      }
+    ],
+    "keywords": [
+      "펌프",
+      "캐비테이션",
+      "유량저하",
+      "진동상승"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "sop_id": "SOP-TANK-PRES-01",
+    "sop_name": "저장탱크 압력상승 대응",
+    "sop_category": "EVENT_RESPONSE",
+    "trigger_type": "PROCESS_EVENT",
+    "target_space_id": "Z-STO",
+    "target_equipment_id": "TK-101",
+    "linked_hazop_id": "HZ-LH2-003",
+    "priority": "EMERGENCY",
+    "camera_preset": "cam_tank_topview",
+    "popup_template": "tmpl_tank_pressure_popup",
+    "estimated_duration_min": 25,
+    "auto_open_popup": true,
+    "broadcast_action": "상황전파 버튼 액션만 수행, 실제 발송은 미수행",
+    "steps": [
+      {
+        "order": 1,
+        "type": "TEXT",
+        "title": "압력상승률 확인",
+        "content": "탱크 압력과 BOG 발생량 추세를 확인함"
+      },
+      {
+        "order": 2,
+        "type": "CHECK",
+        "title": "BOG 처리계 상태점검",
+        "content": "BOG-201 및 REL-701 가동상태를 점검"
+      },
+      {
+        "order": 3,
+        "type": "CHECK",
+        "title": "부하저감",
+        "content": "이송 및 충전 부하를 단계적으로 저감"
+      },
+      {
+        "order": 4,
+        "type": "TEXT",
+        "title": "비상압력완화 검토",
+        "content": "필요 시 비상압력완화 절차에 따라 대응"
+      },
+      {
+        "order": 5,
+        "type": "CHECK",
+        "title": "상황보고",
+        "content": "운영관리 보고서 초안 자동생성 후 관리자 확인"
+      }
+    ],
+    "keywords": [
+      "저장탱크",
+      "압력상승",
+      "BOG",
+      "비상압력완화"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "sop_id": "SOP-VAL-STUCK-01",
+    "sop_name": "밸브 Stuck Close 대응",
+    "sop_category": "EVENT_RESPONSE",
+    "trigger_type": "EQUIPMENT_EVENT",
+    "target_space_id": "Z-VALVE",
+    "target_equipment_id": "VAL-601",
+    "linked_hazop_id": "HZ-LH2-004",
+    "priority": "CRITICAL",
+    "camera_preset": "cam_valve_station_side",
+    "popup_template": "tmpl_valve_stuck_popup",
+    "estimated_duration_min": 15,
+    "auto_open_popup": true,
+    "broadcast_action": "상황전파 버튼 액션만 수행, 실제 발송은 미수행",
+    "steps": [
+      {
+        "order": 1,
+        "type": "TEXT",
+        "title": "개도 신호 확인",
+        "content": "밸브 명령값과 피드백값 불일치를 확인함"
+      },
+      {
+        "order": 2,
+        "type": "CHECK",
+        "title": "상류압력 안정화",
+        "content": "상류 펌프 감속 또는 정지로 과압 방지"
+      },
+      {
+        "order": 3,
+        "type": "CHECK",
+        "title": "우회경로 검토",
+        "content": "가능 시 우회 라인을 사용"
+      },
+      {
+        "order": 4,
+        "type": "TEXT",
+        "title": "현장점검",
+        "content": "결빙·구동기 이상 여부를 확인"
+      }
+    ],
+    "keywords": [
+      "밸브",
+      "stuck close",
+      "과압",
+      "무유량"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "sop_id": "SOP-VAP-COLD-01",
+    "sop_name": "기화기 후단 저온 대응",
+    "sop_category": "EVENT_RESPONSE",
+    "trigger_type": "PROCESS_EVENT",
+    "target_space_id": "Z-VAP",
+    "target_equipment_id": "VAP-401",
+    "linked_hazop_id": "HZ-LH2-006",
+    "priority": "CRITICAL",
+    "camera_preset": "cam_vaporizer_outlet",
+    "popup_template": "tmpl_vap_cold_popup",
+    "estimated_duration_min": 20,
+    "auto_open_popup": true,
+    "broadcast_action": "상황전파 버튼 액션만 수행, 실제 발송은 미수행",
+    "steps": [
+      {
+        "order": 1,
+        "type": "TEXT",
+        "title": "후단 온도 확인",
+        "content": "후단 온도 하강과 압력 변화를 확인함"
+      },
+      {
+        "order": 2,
+        "type": "CHECK",
+        "title": "유량 조절",
+        "content": "유량 및 제어밸브 상태를 조정"
+      },
+      {
+        "order": 3,
+        "type": "CHECK",
+        "title": "저온구간 접근통제",
+        "content": "PIP-501 및 VAL-601 구간 접근을 통제"
+      },
+      {
+        "order": 4,
+        "type": "TEXT",
+        "title": "누출점검",
+        "content": "취성으로 인한 균열/누출 여부를 점검"
+      }
+    ],
+    "keywords": [
+      "기화기",
+      "저온",
+      "배관취성",
+      "누출위험"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "sop_id": "SOP-GENERIC-INSPECT-01",
+    "sop_name": "공통 현장점검 체크리스트",
+    "sop_category": "INSPECTION",
+    "trigger_type": "MANUAL",
+    "target_space_id": "Z-STO",
+    "target_equipment_id": null,
+    "linked_hazop_id": null,
+    "priority": "INFO",
+    "camera_preset": "cam_site_overview",
+    "popup_template": "tmpl_generic_inspect",
+    "estimated_duration_min": 10,
+    "auto_open_popup": false,
+    "broadcast_action": "없음",
+    "steps": [
+      {
+        "order": 1,
+        "type": "CHECK",
+        "title": "현장 접근안전",
+        "content": "PPE 착용 및 접근허가 확인"
+      },
+      {
+        "order": 2,
+        "type": "CHECK",
+        "title": "계측값 확인",
+        "content": "현장 계기와 플랫폼 표시값 일치 확인"
+      },
+      {
+        "order": 3,
+        "type": "TEXT",
+        "title": "비고 기록",
+        "content": "점검 결과 특이사항을 이력에 입력"
+      }
+    ],
+    "keywords": [
+      "점검",
+      "체크리스트",
+      "공통"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "sop_id": "SOP-BOG-SURGE-01",
+    "sop_name": "BOG 압축기 전단 저유량 대응",
+    "sop_category": "EMERGENCY",
+    "trigger_type": "AUTO",
+    "target_space_id": "Z-BOG",
+    "target_equipment_id": "BOG-201",
+    "linked_hazop_id": "HZ-LH2-005",
+    "priority": 2,
+    "camera_preset": "cam_bog_compressor_201",
+    "popup_template": "popup_bog_surge",
+    "estimated_duration_min": 20,
+    "auto_open_popup": true,
+    "broadcast_action": "NOTIFY_CONTROL_ROOM",
+    "steps": [
+      {
+        "step_no": 1,
+        "type": "TEXT",
+        "content": "BOG 압축기 전단 배관 유량 확인 및 유량계 이상 여부 점검"
+      },
+      {
+        "step_no": 2,
+        "type": "CHECK",
+        "content": "전단 밸브 개도율 확인 (정상: 80% 이상)"
+      },
+      {
+        "step_no": 3,
+        "type": "CHECK",
+        "content": "배관 결빙/막힘 여부 현장 확인"
+      },
+      {
+        "step_no": 4,
+        "type": "TEXT",
+        "content": "압축기 운전 파라미터(진동, 전류, 토출압) 모니터링 강화"
+      },
+      {
+        "step_no": 5,
+        "type": "CHECK",
+        "content": "유량 미회복 시 압축기 부하제한 또는 정지 판단"
+      }
+    ],
+    "keywords": [
+      "BOG",
+      "저유량",
+      "압축기",
+      "불안정",
+      "서지"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "sop_id": "SOP-NORMAL-OPS-01",
+    "sop_name": "정상운전 일일 점검 체크리스트",
+    "sop_category": "ROUTINE",
+    "trigger_type": "MANUAL",
+    "target_space_id": "Z-STO",
+    "target_equipment_id": "TK-101",
+    "linked_hazop_id": "HZ-LH2-007",
+    "priority": 5,
+    "camera_preset": "cam_overview",
+    "popup_template": "popup_daily_check",
+    "estimated_duration_min": 30,
+    "auto_open_popup": false,
+    "broadcast_action": "NONE",
+    "steps": [
+      {
+        "step_no": 1,
+        "type": "CHECK",
+        "content": "저장탱크 압력/온도/레벨 정상범위 확인"
+      },
+      {
+        "step_no": 2,
+        "type": "CHECK",
+        "content": "BOG 압축기 운전상태(진동/전류/토출압) 확인"
+      },
+      {
+        "step_no": 3,
+        "type": "CHECK",
+        "content": "이송펌프 운전상태(유량/압력/진동) 확인"
+      },
+      {
+        "step_no": 4,
+        "type": "CHECK",
+        "content": "기화기 입출구 온도/압력/유량 확인"
+      },
+      {
+        "step_no": 5,
+        "type": "CHECK",
+        "content": "주요 밸브 개폐상태 및 배관 누출 여부 확인"
+      },
+      {
+        "step_no": 6,
+        "type": "TEXT",
+        "content": "이상 발견 시 이벤트 등록 및 관리자 보고"
+      }
+    ],
+    "keywords": [
+      "정상운전",
+      "일일점검",
+      "루틴",
+      "체크리스트"
+    ],
+    "status": "ACTIVE"
+  },
+  {
+    "sop_id": "SOP-ARM-ESD-01",
+    "sop_name": "로딩암 긴급차단(ESD) 대응",
+    "sop_category": "EMERGENCY",
+    "trigger_type": "AUTO",
+    "target_space_id": "Z-ARM",
+    "target_equipment_id": "ARM-101",
+    "linked_hazop_id": "HZ-LH2-008",
+    "priority": 1,
+    "camera_preset": "cam_loading_arm_101",
+    "popup_template": "popup_arm_esd",
+    "estimated_duration_min": 25,
+    "auto_open_popup": true,
+    "broadcast_action": "NOTIFY_ALL_STATIONS",
+    "steps": [
+      {
+        "step_no": 1,
+        "type": "TEXT",
+        "content": "로딩암 ESD 작동 확인. 하역 펌프 즉시 정지 확인. 선박/기지 양측 차단밸브 폐쇄 상태 확인."
+      },
+      {
+        "step_no": 2,
+        "type": "CHECK",
+        "content": "선박측 하역 밸브 완전 폐쇄 확인"
+      },
+      {
+        "step_no": 3,
+        "type": "CHECK",
+        "content": "기지측 수액 밸브 완전 폐쇄 확인"
+      },
+      {
+        "step_no": 4,
+        "type": "CHECK",
+        "content": "로딩암 플랜지 연결부 누출 여부 현장 점검 (가스검지기 휴대)"
+      },
+      {
+        "step_no": 5,
+        "type": "CHECK",
+        "content": "선박 계류 상태 확인 (계류삭 장력, 이격거리)"
+      },
+      {
+        "step_no": 6,
+        "type": "TEXT",
+        "content": "ESD 원인 제거 후 하역 재개 절차: ① 양측 밸브 상태 재확인 → ② 로딩암 플랜지 기밀 시험 → ③ 소량 하역 테스트 → ④ 정상 하역 재개"
+      },
+      {
+        "step_no": 7,
+        "type": "CHECK",
+        "content": "하역 재개 또는 로딩암 분리/선박 이안 결정"
+      }
+    ],
+    "keywords": [
+      "로딩암",
+      "ESD",
+      "하역",
+      "선박",
+      "긴급차단",
+      "플랜지"
+    ],
+    "status": "ACTIVE"
+  }
+]

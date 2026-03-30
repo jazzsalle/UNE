@@ -1,0 +1,96 @@
+[
+  {
+    "scenario_id": "SC-02",
+    "phase": "NORMAL",
+    "meshes": []
+  },
+  {
+    "scenario_id": "SC-02",
+    "phase": "SYMPTOM",
+    "meshes": [
+      {
+        "mesh_name": "impeller_stage_03",
+        "visual_state": "warning",
+        "reason": "3단 임펠러 진동 상승 시작"
+      }
+    ]
+  },
+  {
+    "scenario_id": "SC-02",
+    "phase": "FAULT",
+    "meshes": [
+      {
+        "mesh_name": "impeller_stage_03",
+        "visual_state": "critical",
+        "reason": "3단 임펠러 캐비테이션 확인"
+      },
+      {
+        "mesh_name": "impeller_stage_04",
+        "visual_state": "critical",
+        "reason": "4단 임펠러 연쇄 영향"
+      },
+      {
+        "mesh_name": "shaft",
+        "visual_state": "warning",
+        "reason": "축 진동 증가"
+      },
+      {
+        "mesh_name": "diffuser_bowl_03",
+        "visual_state": "warning",
+        "reason": "3단 디퓨저 유로 불안정"
+      }
+    ]
+  },
+  {
+    "scenario_id": "SC-02",
+    "phase": "SECONDARY_IMPACT",
+    "meshes": [
+      {
+        "mesh_name": "impeller_stage_03",
+        "visual_state": "critical",
+        "reason": "캐비테이션 지속"
+      },
+      {
+        "mesh_name": "impeller_stage_04",
+        "visual_state": "critical",
+        "reason": "4단 임펠러 마모 진행"
+      },
+      {
+        "mesh_name": "shaft",
+        "visual_state": "critical",
+        "reason": "축 진동 위험 수준"
+      },
+      {
+        "mesh_name": "diffuser_bowl_03",
+        "visual_state": "affected",
+        "reason": "3단 디퓨저 유로 영향"
+      },
+      {
+        "mesh_name": "diffuser_bowl_04",
+        "visual_state": "affected",
+        "reason": "4단 디퓨저 유로 영향"
+      },
+      {
+        "mesh_name": "inlet_cone",
+        "visual_state": "warning",
+        "reason": "흡입부 유량 불안정"
+      }
+    ]
+  },
+  {
+    "scenario_id": "SC-02",
+    "phase": "RESPONSE",
+    "meshes": [
+      {
+        "mesh_name": "impeller_stage_03",
+        "visual_state": "warning",
+        "reason": "회전수 감소 중"
+      },
+      {
+        "mesh_name": "shaft",
+        "visual_state": "warning",
+        "reason": "진동 감소 추세"
+      }
+    ]
+  }
+]

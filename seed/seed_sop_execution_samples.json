@@ -1,0 +1,202 @@
+[
+  {
+    "execution_id": "EXEC-SC-01-001",
+    "event_id": "EVT-SC-01-001",
+    "scenario_id": "SC-01",
+    "sop_id": "SOP-BOG-TRIP-01",
+    "execution_status": "COMPLETED",
+    "started_at": "2026-01-15T10:00:00+09:00",
+    "ended_at": "2026-01-15T10:24:00+09:00",
+    "executor_role": "운영자",
+    "checked_steps": [
+      1,
+      2,
+      3
+    ],
+    "memo": "POC 시연용 실행이력"
+  },
+  {
+    "execution_id": "EXEC-SC-02-001",
+    "event_id": "EVT-SC-02-001",
+    "scenario_id": "SC-02",
+    "sop_id": "SOP-PUMP-CAV-01",
+    "execution_status": "COMPLETED",
+    "started_at": "2026-01-15T10:00:00+09:00",
+    "ended_at": "2026-01-15T10:24:00+09:00",
+    "executor_role": "운영자",
+    "checked_steps": [
+      1,
+      2,
+      3
+    ],
+    "memo": "POC 시연용 실행이력"
+  },
+  {
+    "execution_id": "EXEC-SC-03-001",
+    "event_id": "EVT-SC-03-001",
+    "scenario_id": "SC-03",
+    "sop_id": "SOP-TANK-PRES-01",
+    "execution_status": "COMPLETED",
+    "started_at": "2026-01-15T10:00:00+09:00",
+    "ended_at": "2026-01-15T10:24:00+09:00",
+    "executor_role": "운영자",
+    "checked_steps": [
+      1,
+      2,
+      3
+    ],
+    "memo": "POC 시연용 실행이력"
+  },
+  {
+    "execution_id": "EXEC-SC-04-001",
+    "event_id": "EVT-SC-04-001",
+    "scenario_id": "SC-04",
+    "sop_id": "SOP-VAL-STUCK-01",
+    "execution_status": "COMPLETED",
+    "started_at": "2026-01-15T11:35:00+09:00",
+    "ended_at": "2026-01-15T11:53:00+09:00",
+    "executor_role": "FIELD_OPERATOR",
+    "checked_steps": [
+      {
+        "step_no": 1,
+        "checked": true,
+        "checked_at": "2026-01-15T11:37:00+09:00"
+      },
+      {
+        "step_no": 2,
+        "checked": true,
+        "checked_at": "2026-01-15T11:41:00+09:00"
+      },
+      {
+        "step_no": 3,
+        "checked": true,
+        "checked_at": "2026-01-15T11:47:00+09:00"
+      },
+      {
+        "step_no": 4,
+        "checked": true,
+        "checked_at": "2026-01-15T11:53:00+09:00"
+      }
+    ],
+    "memo": "밸브 구동기 결빙 확인, 가열 후 수동 조작으로 정상 개방. 우회 배관 활용하여 유량 유지."
+  },
+  {
+    "execution_id": "EXEC-SC-05-001",
+    "event_id": "EVT-SC-05-001",
+    "scenario_id": "SC-05",
+    "sop_id": "SOP-BOG-SURGE-01",
+    "execution_status": "COMPLETED",
+    "started_at": "2026-01-15T12:40:00+09:00",
+    "ended_at": "2026-01-15T13:00:00+09:00",
+    "executor_role": "CONTROL_ROOM",
+    "checked_steps": [
+      {
+        "step_no": 1,
+        "checked": true,
+        "checked_at": "2026-01-15T12:42:00+09:00"
+      },
+      {
+        "step_no": 2,
+        "checked": true,
+        "checked_at": "2026-01-15T12:46:00+09:00"
+      },
+      {
+        "step_no": 3,
+        "checked": true,
+        "checked_at": "2026-01-15T12:50:00+09:00"
+      },
+      {
+        "step_no": 4,
+        "checked": true,
+        "checked_at": "2026-01-15T12:55:00+09:00"
+      },
+      {
+        "step_no": 5,
+        "checked": true,
+        "checked_at": "2026-01-15T13:00:00+09:00"
+      }
+    ],
+    "memo": "전단 밸브 개도 부족 확인(62%), 완전 개방(100%)으로 조치. 유량 회복 후 압축기 운전 안정화."
+  },
+  {
+    "execution_id": "EXEC-SC-06-001",
+    "event_id": "EVT-SC-06-001",
+    "scenario_id": "SC-06",
+    "sop_id": "SOP-VAP-COLD-01",
+    "execution_status": "COMPLETED",
+    "started_at": "2026-01-15T13:35:00+09:00",
+    "ended_at": "2026-01-15T13:53:00+09:00",
+    "executor_role": "FIELD_OPERATOR",
+    "checked_steps": [
+      {
+        "step_no": 1,
+        "checked": true,
+        "checked_at": "2026-01-15T13:37:00+09:00"
+      },
+      {
+        "step_no": 2,
+        "checked": true,
+        "checked_at": "2026-01-15T13:42:00+09:00"
+      },
+      {
+        "step_no": 3,
+        "checked": true,
+        "checked_at": "2026-01-15T13:47:00+09:00"
+      },
+      {
+        "step_no": 4,
+        "checked": true,
+        "checked_at": "2026-01-15T13:53:00+09:00"
+      }
+    ],
+    "memo": "LH2 공급 유량 30% 감량 조치. 후단 배관 온도 -45℃ → -20℃로 회복. 기화기 열교환 성능 재점검 필요."
+  },
+  {
+    "execution_id": "EXEC-SC-08-001",
+    "event_id": "EVT-SC-08-001",
+    "scenario_id": "SC-08",
+    "sop_id": "SOP-ARM-ESD-01",
+    "execution_status": "COMPLETED",
+    "started_at": "2026-01-15T15:02:00+09:00",
+    "ended_at": "2026-01-15T15:18:00+09:00",
+    "executor_role": "FIELD_OPERATOR",
+    "checked_steps": [
+      {
+        "step_no": 1,
+        "checked": true,
+        "checked_at": "2026-01-15T15:03:00+09:00"
+      },
+      {
+        "step_no": 2,
+        "checked": true,
+        "checked_at": "2026-01-15T15:05:00+09:00"
+      },
+      {
+        "step_no": 3,
+        "checked": true,
+        "checked_at": "2026-01-15T15:07:00+09:00"
+      },
+      {
+        "step_no": 4,
+        "checked": true,
+        "checked_at": "2026-01-15T15:10:00+09:00"
+      },
+      {
+        "step_no": 5,
+        "checked": true,
+        "checked_at": "2026-01-15T15:12:00+09:00"
+      },
+      {
+        "step_no": 6,
+        "checked": true,
+        "checked_at": "2026-01-15T15:16:00+09:00"
+      },
+      {
+        "step_no": 7,
+        "checked": true,
+        "checked_at": "2026-01-15T15:18:00+09:00"
+      }
+    ],
+    "memo": "플랜지 기밀 이상(가스켓 열화) 확인. 가스켓 교체 후 기밀시험 통과. 소량 하역 테스트 정상. 15:20 하역 재개 완료."
+  }
+]

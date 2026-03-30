@@ -1,0 +1,25 @@
+[
+  {
+    "template_id": "RPT-TPL-001",
+    "template_name": "이벤트 조치 보고서",
+    "report_type": "EVENT_ACTION",
+    "sections": [
+      "기본정보",
+      "이벤트 개요",
+      "주요 센서/알람 현황",
+      "영향설비 및 위험예측 결과",
+      "SOP 수행내역",
+      "조치결과 및 후속계획",
+      "관리자 의견"
+    ],
+    "auto_bind_sources": [
+      "event_log",
+      "mock_kgs_result",
+      "mock_kogas_result",
+      "mock_keti_result",
+      "mock_safetia_history",
+      "sop_execution_log"
+    ],
+    "status": "ACTIVE"
+  }
+]

@@ -1,0 +1,341 @@
+[
+  {
+    "scenario_id": "SC-01",
+    "scenario_name": "BOG 압축기 트립 → 저장탱크 압력 상승",
+    "trigger_equipment_id": "BOG-201",
+    "affected_equipment_ids": [
+      "TK-101",
+      "REL-701"
+    ],
+    "hazop_id": "HZ-LH2-001",
+    "default_duration_sec": 900,
+    "phases": [
+      {
+        "phase": "NORMAL",
+        "start_sec": 0,
+        "end_sec": 179
+      },
+      {
+        "phase": "SYMPTOM",
+        "start_sec": 180,
+        "end_sec": 359
+      },
+      {
+        "phase": "FAULT",
+        "start_sec": 360,
+        "end_sec": 599
+      },
+      {
+        "phase": "SECONDARY_IMPACT",
+        "start_sec": 600,
+        "end_sec": 779
+      },
+      {
+        "phase": "RESPONSE",
+        "start_sec": 780,
+        "end_sec": 900
+      }
+    ],
+    "sensorDataFile": "seed_sensor_timeseries_SC-01.json",
+    "playback_speed_options": [
+      1,
+      10,
+      30,
+      60
+    ]
+  },
+  {
+    "scenario_id": "SC-02",
+    "scenario_name": "2차 펌프 성능저하/캐비테이션 → 기화기 영향",
+    "trigger_equipment_id": "PMP-301",
+    "affected_equipment_ids": [
+      "VAP-401",
+      "PIP-501"
+    ],
+    "hazop_id": "HZ-LH2-002",
+    "default_duration_sec": 900,
+    "phases": [
+      {
+        "phase": "NORMAL",
+        "start_sec": 0,
+        "end_sec": 179
+      },
+      {
+        "phase": "SYMPTOM",
+        "start_sec": 180,
+        "end_sec": 359
+      },
+      {
+        "phase": "FAULT",
+        "start_sec": 360,
+        "end_sec": 539
+      },
+      {
+        "phase": "SECONDARY_IMPACT",
+        "start_sec": 540,
+        "end_sec": 719
+      },
+      {
+        "phase": "RESPONSE",
+        "start_sec": 720,
+        "end_sec": 900
+      }
+    ],
+    "sensorDataFile": "seed_sensor_timeseries_SC-02.json",
+    "playback_speed_options": [
+      1,
+      10,
+      30,
+      60
+    ]
+  },
+  {
+    "scenario_id": "SC-03",
+    "scenario_name": "저장탱크 압력 상승/BOG 증가 → BOG 처리계 영향",
+    "trigger_equipment_id": "TK-101",
+    "affected_equipment_ids": [
+      "BOG-201",
+      "REL-701",
+      "PIP-501"
+    ],
+    "hazop_id": "HZ-LH2-003",
+    "default_duration_sec": 1200,
+    "phases": [
+      {
+        "phase": "NORMAL",
+        "start_sec": 0,
+        "end_sec": 239
+      },
+      {
+        "phase": "SYMPTOM",
+        "start_sec": 240,
+        "end_sec": 479
+      },
+      {
+        "phase": "FAULT",
+        "start_sec": 480,
+        "end_sec": 719
+      },
+      {
+        "phase": "SECONDARY_IMPACT",
+        "start_sec": 720,
+        "end_sec": 1019
+      },
+      {
+        "phase": "RESPONSE",
+        "start_sec": 1020,
+        "end_sec": 1200
+      }
+    ],
+    "sensorDataFile": "seed_sensor_timeseries_SC-03.json",
+    "playback_speed_options": [
+      1,
+      10,
+      30,
+      60
+    ]
+  },
+  {
+    "scenario_id": "SC-04",
+    "scenario_name": "출구 배관 밸브 Stuck Close → 무유량/과압",
+    "trigger_equipment_id": "VAL-601",
+    "affected_equipment_ids": [
+      "PIP-501",
+      "PMP-301"
+    ],
+    "hazop_id": "HZ-LH2-004",
+    "default_duration_sec": 720,
+    "phases": [
+      {
+        "phase": "NORMAL",
+        "start_sec": 0,
+        "end_sec": 119
+      },
+      {
+        "phase": "SYMPTOM",
+        "start_sec": 120,
+        "end_sec": 299
+      },
+      {
+        "phase": "FAULT",
+        "start_sec": 300,
+        "end_sec": 479
+      },
+      {
+        "phase": "SECONDARY_IMPACT",
+        "start_sec": 480,
+        "end_sec": 599
+      },
+      {
+        "phase": "RESPONSE",
+        "start_sec": 600,
+        "end_sec": 720
+      }
+    ],
+    "sensorDataFile": "seed_sensor_timeseries_SC-04.json",
+    "playback_speed_options": [
+      1,
+      10,
+      30,
+      60
+    ]
+  },
+  {
+    "scenario_id": "SC-05",
+    "scenario_name": "BOG 압축기 전단 저유량 → 압축기 불안정 운전",
+    "trigger_equipment_id": "PIP-501",
+    "affected_equipment_ids": [
+      "BOG-201",
+      "TK-101"
+    ],
+    "hazop_id": "HZ-LH2-005",
+    "default_duration_sec": 720,
+    "phases": [
+      {
+        "phase": "NORMAL",
+        "start_sec": 0,
+        "end_sec": 119
+      },
+      {
+        "phase": "SYMPTOM",
+        "start_sec": 120,
+        "end_sec": 299
+      },
+      {
+        "phase": "FAULT",
+        "start_sec": 300,
+        "end_sec": 479
+      },
+      {
+        "phase": "SECONDARY_IMPACT",
+        "start_sec": 480,
+        "end_sec": 599
+      },
+      {
+        "phase": "RESPONSE",
+        "start_sec": 600,
+        "end_sec": 720
+      }
+    ],
+    "sensorDataFile": "seed_sensor_timeseries_SC-05.json",
+    "playback_speed_options": [
+      1,
+      10,
+      30,
+      60
+    ]
+  },
+  {
+    "scenario_id": "SC-06",
+    "scenario_name": "기화기 후단 저온 → 배관 저온 취성 위험",
+    "trigger_equipment_id": "VAP-401",
+    "affected_equipment_ids": [
+      "PIP-501",
+      "VAL-601"
+    ],
+    "hazop_id": "HZ-LH2-006",
+    "default_duration_sec": 900,
+    "phases": [
+      {
+        "phase": "NORMAL",
+        "start_sec": 0,
+        "end_sec": 179
+      },
+      {
+        "phase": "SYMPTOM",
+        "start_sec": 180,
+        "end_sec": 359
+      },
+      {
+        "phase": "FAULT",
+        "start_sec": 360,
+        "end_sec": 599
+      },
+      {
+        "phase": "SECONDARY_IMPACT",
+        "start_sec": 600,
+        "end_sec": 779
+      },
+      {
+        "phase": "RESPONSE",
+        "start_sec": 780,
+        "end_sec": 900
+      }
+    ],
+    "sensorDataFile": "seed_sensor_timeseries_SC-06.json",
+    "playback_speed_options": [
+      1,
+      10,
+      30,
+      60
+    ]
+  },
+  {
+    "scenario_id": "SC-07",
+    "scenario_name": "정상 운전 24시간",
+    "trigger_equipment_id": "TK-101",
+    "affected_equipment_ids": [],
+    "hazop_id": "HZ-LH2-007",
+    "default_duration_sec": 1440,
+    "phases": [
+      {
+        "phase": "NORMAL",
+        "start_sec": 0,
+        "end_sec": 1440
+      }
+    ],
+    "sensorDataFile": "seed_sensor_timeseries_SC-07.json",
+    "playback_speed_options": [
+      1,
+      10,
+      30,
+      60
+    ]
+  },
+  {
+    "scenario_id": "SC-08",
+    "scenario_name": "하역 중 로딩암 긴급차단 → 저장탱크 공급 중단",
+    "trigger_equipment_id": "ARM-101",
+    "affected_equipment_ids": [
+      "SHP-001",
+      "TK-101",
+      "PIP-501"
+    ],
+    "hazop_id": "HZ-LH2-008",
+    "default_duration_sec": 1200,
+    "phases": [
+      {
+        "phase": "NORMAL",
+        "start_sec": 0,
+        "end_sec": 239
+      },
+      {
+        "phase": "SYMPTOM",
+        "start_sec": 240,
+        "end_sec": 479
+      },
+      {
+        "phase": "FAULT",
+        "start_sec": 480,
+        "end_sec": 719
+      },
+      {
+        "phase": "SECONDARY_IMPACT",
+        "start_sec": 720,
+        "end_sec": 959
+      },
+      {
+        "phase": "RESPONSE",
+        "start_sec": 960,
+        "end_sec": 1200
+      }
+    ],
+    "sensorDataFile": "seed_sensor_timeseries_SC-08.json",
+    "playback_speed_options": [
+      1,
+      10,
+      30,
+      60
+    ]
+  }
+]

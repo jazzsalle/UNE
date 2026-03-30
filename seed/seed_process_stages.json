@@ -1,0 +1,118 @@
+[
+  {
+    "stage_no": 1,
+    "stage_name": "하역",
+    "stage_label": "1단계: 하역",
+    "monitoring_zone": "하역 모니터링",
+    "equipment_ids": [
+      "SHP-001",
+      "ARM-101"
+    ],
+    "flow_connections": [
+      {
+        "from": "SHP-001",
+        "to": "ARM-101",
+        "type": "LH2_LIQUID",
+        "label": "하역 이송"
+      },
+      {
+        "from": "ARM-101",
+        "to": "TK-101",
+        "type": "LH2_LIQUID",
+        "label": "육상 배관 이송"
+      }
+    ],
+    "risk_summary": "하역 중 누출, 밸브 작동 불량, 선박 위치 이탈, 로딩암 충격"
+  },
+  {
+    "stage_no": 2,
+    "stage_name": "저장·BOG",
+    "stage_label": "2단계: 저장·BOG",
+    "monitoring_zone": "BOG/재액화 모니터링",
+    "equipment_ids": [
+      "TK-101",
+      "BOG-201",
+      "REL-701",
+      "TK-102"
+    ],
+    "flow_connections": [
+      {
+        "from": "TK-101",
+        "to": "BOG-201",
+        "type": "BOG_GAS",
+        "label": "BOG 발생"
+      },
+      {
+        "from": "BOG-201",
+        "to": "REL-701",
+        "type": "BOG_GAS",
+        "label": "BOG 압축"
+      },
+      {
+        "from": "REL-701",
+        "to": "TK-101",
+        "type": "LH2_LIQUID",
+        "label": "재액화 복귀"
+      }
+    ],
+    "risk_summary": "BOG 과다, 저장탱크 과압/온도상승, 진공 단열파괴, 안전밸브 작동실패"
+  },
+  {
+    "stage_no": 3,
+    "stage_name": "이송",
+    "stage_label": "3단계: 이송",
+    "monitoring_zone": "액체 이송 모니터링",
+    "equipment_ids": [
+      "PMP-301",
+      "PIP-501",
+      "VAL-601",
+      "VAL-602"
+    ],
+    "flow_connections": [
+      {
+        "from": "TK-101",
+        "to": "PMP-301",
+        "type": "LH2_LIQUID",
+        "label": "탱크 인출"
+      },
+      {
+        "from": "PMP-301",
+        "to": "PIP-501",
+        "type": "LH2_LIQUID",
+        "label": "고압 이송"
+      },
+      {
+        "from": "PIP-501",
+        "to": "VAL-601",
+        "type": "LH2_LIQUID",
+        "label": "밸브 통과"
+      }
+    ],
+    "risk_summary": "펌프/압축기 고장, 유량부족/과잉, 진동/과열, 캐비테이션"
+  },
+  {
+    "stage_no": 4,
+    "stage_name": "기화·송출",
+    "stage_label": "4단계: 기화·송출",
+    "monitoring_zone": "기화/압축/분배 모니터링",
+    "equipment_ids": [
+      "VAP-401",
+      "SWP-001"
+    ],
+    "flow_connections": [
+      {
+        "from": "VAL-601",
+        "to": "VAP-401",
+        "type": "LH2_LIQUID",
+        "label": "기화기 유입"
+      },
+      {
+        "from": "VAP-401",
+        "to": "PIPELINE",
+        "type": "H2_GAS",
+        "label": "가스 송출"
+      }
+    ],
+    "risk_summary": "기화기 결빙, 온도조절 실패, 열교환기 누출, 후단 저온 취성"
+  }
+]

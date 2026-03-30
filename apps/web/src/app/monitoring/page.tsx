@@ -1,10 +1,16 @@
 // ref: CLAUDE.md §9.2 — 기본 모니터링 (M-MON)
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { useAppStore } from '@/stores/appStore';
 import { api } from '@/lib/api';
-import { EQUIPMENT_ICONS, SEVERITY_COLORS } from '@/lib/constants';
+import { EQUIPMENT_ICONS, SEVERITY_COLORS, type VisualState } from '@/lib/constants';
 import { EventPopup } from '@/components/common/EventPopup';
+import { getPresetForEquipment } from '@/components/viewer3d/CameraController';
+
+const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
+const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
+const CameraController = dynamic(() => import('@/components/viewer3d/CameraController').then(m => ({ default: m.CameraController })), { ssr: false });
 
 export default function MonitoringPage() {
   const [equipment, setEquipment] = useState<any[]>([]);
@@ -15,6 +21,23 @@ export default function MonitoringPage() {
   }, []);
 
   const selectedEq = equipment.find((e) => e.equipment_id === selectedEquipmentId);
+
+  // 3D 컬러링 상태 계산
+  const equipmentStates = useMemo(() => {
+    const states: Record<string, VisualState> = {};
+    for (const eq of equipment) {
+      const sensors = eq.sensors || [];
+      let worst: VisualState = 'normal';
+      for (const s of sensors) {
+        const data = sensorData[s.sensor_id];
+        if (data?.label === 'ANOMALY') { worst = 'critical'; break; }
+        if (data?.label === 'WARNING' && worst === 'normal') worst = 'warning';
+      }
+      states[eq.equipment_id] = worst;
+    }
+    return states;
+  }, [equipment, sensorData]);
+
   const getStatus = (eqId: string) => {
     const sensors = equipment.find((e) => e.equipment_id === eqId)?.sensors || [];
     for (const s of sensors) {
@@ -70,13 +93,15 @@ export default function MonitoringPage() {
         })}
       </aside>
 
-      {/* 중앙: 3D 뷰어 영역 (placeholder) */}
-      <main className="flex-1 relative bg-bg-primary flex items-center justify-center">
-        <div className="text-gray-500 text-sm">
-          <div className="text-center mb-2">🏗 3D 뷰어</div>
-          <div className="text-xs text-gray-600">GLB 모델 로딩 영역</div>
-          <div className="text-xs text-gray-600 mt-1">(Phase 2에서 Three.js 구현)</div>
-        </div>
+      {/* 중앙: 3D 뷰어 */}
+      <main className="flex-1 relative bg-bg-primary">
+        <ThreeCanvas>
+          <TestbedModel
+            equipmentStates={equipmentStates}
+            onEquipmentClick={(id) => setSelectedEquipment(id)}
+          />
+          <CameraController targetPreset={selectedEquipmentId ? getPresetForEquipment(selectedEquipmentId) : null} />
+        </ThreeCanvas>
 
         {/* KPI 대시보드 하단 */}
         <div className="absolute bottom-0 left-0 right-0 bg-bg-secondary/90 border-t border-gray-700 p-2">

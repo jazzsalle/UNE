@@ -8,9 +8,9 @@ node_modules/
 .next/
 dist/
 
-# GLB 대용량 (R2 관리)
+# GLB — public/models/ 하위는 Git 추적
 *.glb
-!public/models/secondary_pump.glb
+!apps/web/public/models/*.glb
 
 # Prisma
 prisma/migrations/**/migration_lock.toml

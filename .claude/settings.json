@@ -1,0 +1,84 @@
+{
+  "$schema": "https://code.claude.com/settings.schema.json",
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Grep(**)",
+      "Glob(**)",
+      "Write(apps/**)",
+      "Write(seed/**)",
+      "Write(public/**)",
+      "Write(prisma/**)",
+      "Write(package.json)",
+      "Write(tsconfig*.json)",
+      "Write(.env*)",
+      "Edit(apps/**)",
+      "Edit(prisma/**)",
+      "Edit(package.json)",
+      "Bash(npm run *)",
+      "Bash(npx prisma *)",
+      "Bash(npx tsc *)",
+      "Bash(curl *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(cd *)",
+      "Bash(kill *)",
+      "Bash(jq *)",
+      "Bash(timeout *)",
+      "Skill(phase-run *)",
+      "Skill(build-check *)",
+      "Skill(api-test *)",
+      "Skill(seed-validate *)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Write(.claude/settings.json)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write(apps/api/prisma/schema.prisma)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️  Prisma schema 수정 감지 — CLAUDE.md §8.1 명세 준수 확인 필요'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write(apps/**/*.ts)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📝 TypeScript 파일 수정됨 — 빌드 체크 권장: /build-check'"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(apps/**/*.tsx)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📝 React 컴포넌트 수정됨 — 빌드 체크 권장: /build-check'"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"🔔 Claude Code 알림: $TITLE — $MESSAGE\""
+          }
+        ]
+      }
+    ]
+  }
+}

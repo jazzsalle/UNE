@@ -1,13 +1,13 @@
-// ref: CLAUDE.md §9.1 — API 연결상태 바
+// ref: CLAUDE.md §9.1 — API 연결상태 바 (세련된 디자인)
 'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 
 const PROVIDERS = [
-  { key: 'kogas', label: 'KOGAS' },
-  { key: 'kgs', label: 'KGS' },
-  { key: 'keti', label: 'KETI' },
-  { key: 'safetia', label: '세이프티아' },
+  { key: 'kogas', label: 'KOGAS', color: '#3b82f6' },
+  { key: 'kgs', label: 'KGS', color: '#8b5cf6' },
+  { key: 'keti', label: 'KETI', color: '#06b6d4' },
+  { key: 'safetia', label: '세이프티아', color: '#10b981' },
 ];
 
 export function ApiStatusBar() {
@@ -29,19 +29,24 @@ export function ApiStatusBar() {
     return () => clearInterval(interval);
   }, []);
 
-  const icon = (status: string) => {
-    if (status === 'ok') return '🟢';
-    if (status === 'error') return '🔴';
-    return '⚪';
-  };
-
   return (
-    <div className="h-7 bg-bg-tertiary border-b border-gray-700 flex items-center px-4 gap-4 text-[11px] text-gray-400">
-      {PROVIDERS.map((p) => (
-        <span key={p.key}>
-          {icon(statuses[p.key] || 'loading')} {p.label}
-        </span>
-      ))}
+    <div className="h-7 bg-[#060a13]/80 border-b border-white/[0.04] flex items-center px-4 gap-5 text-[10px]">
+      <span className="text-gray-600 font-medium">외부기관</span>
+      {PROVIDERS.map((p) => {
+        const status = statuses[p.key] || 'loading';
+        return (
+          <div key={p.key} className="flex items-center gap-1.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${
+              status === 'ok' ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50' :
+              status === 'error' ? 'bg-red-500 animate-pulse' :
+              'bg-gray-600'
+            }`} />
+            <span className={status === 'ok' ? 'text-gray-400' : status === 'error' ? 'text-red-400' : 'text-gray-600'}>
+              {p.label}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -158,8 +158,19 @@ export default function SopPage() {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <button className="bg-accent-blue text-white px-4 py-1.5 rounded text-xs">저장</button>
-                <button className="text-gray-400 hover:text-white px-4 py-1.5 text-xs">취소</button>
+                <button onClick={async () => {
+                  if (!selectedSop) return;
+                  try {
+                    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sop/${selectedSop.sop_id}`, {
+                      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ ...editForm, steps: editForm.steps }),
+                    });
+                    const updated = await api.getSops();
+                    setSops(updated);
+                    alert('SOP 저장 완료');
+                  } catch (err) { console.error(err); }
+                }} className="bg-accent-blue text-white px-4 py-1.5 rounded text-xs">저장</button>
+                <button onClick={() => setTab('execute')} className="text-gray-400 hover:text-white px-4 py-1.5 text-xs">취소</button>
               </div>
             </div>
           ) : (

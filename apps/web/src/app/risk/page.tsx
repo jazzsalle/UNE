@@ -79,7 +79,17 @@ export default function RiskPage() {
         <div className="flex-1 flex flex-col">
           <div className="flex-1 bg-bg-primary">
             <ThreeCanvas>
-              <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleNodeClick} />
+              <TestbedModel
+                equipmentStates={equipmentStates}
+                onEquipmentClick={handleNodeClick}
+                heatmapTarget={kgsResults.length > 0 ? {
+                  equipmentId: kgsResults[0]?.trigger_equipment_id,
+                  radius: Math.max(...kgsResults.map(r => r.impact_score)) * 1.5,
+                } : null}
+                propagationPaths={kgsResults
+                  .filter(r => r.trigger_equipment_id !== r.affected_equipment_id)
+                  .map(r => ({ from: r.trigger_equipment_id, to: r.affected_equipment_id }))}
+              />
               <CameraController targetPreset={cameraPreset} />
             </ThreeCanvas>
           </div>

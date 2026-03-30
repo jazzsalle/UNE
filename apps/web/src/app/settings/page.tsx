@@ -130,7 +130,16 @@ export default function SettingsPage() {
               </div>
               <div className="flex items-center gap-2">
                 {s.value_type === 'BOOLEAN' ? (
-                  <button className={`px-3 py-1 rounded text-[10px] ${s.setting_value === 'true' ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
+                  <button onClick={async () => {
+                    const newVal = s.setting_value === 'true' ? 'false' : 'true';
+                    try {
+                      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/settings/${s.setting_id}`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ setting_value: newVal }),
+                      });
+                      setSettings(prev => prev.map(x => x.setting_id === s.setting_id ? { ...x, setting_value: newVal } : x));
+                    } catch (err) { console.error(err); }
+                  }} className={`px-3 py-1 rounded text-[10px] transition-colors cursor-pointer ${s.setting_value === 'true' ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
                     {s.setting_value === 'true' ? 'ON' : 'OFF'}
                   </button>
                 ) : (

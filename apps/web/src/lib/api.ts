@@ -66,4 +66,5 @@ export const api = {
   getThresholds: (equipmentId?: string) => apiFetch(`/api/settings/thresholds${equipmentId ? `?equipment_id=${equipmentId}` : ''}`),
   updateThreshold: (sensorId: string, data: any) => apiFetch(`/api/settings/thresholds/${sensorId}`, { method: 'PUT', body: JSON.stringify(data) }),
   getSensorMeta: () => apiFetch('/api/settings/sensor-meta'),
+  updateSensorMeta: (sensorId: string, data: any) => apiFetch(`/api/settings/sensor-meta/${sensorId}`, { method: 'PUT', body: JSON.stringify(data) }),
 };

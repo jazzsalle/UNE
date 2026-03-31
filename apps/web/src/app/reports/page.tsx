@@ -1,4 +1,4 @@
-// ref: CLAUDE.md §9.9 — 보고서 (P-RPT) 완성
+// ref: CLAUDE.md §9.9 — 보고서 (P-RPT) 완성 + 이벤트 연계 자동생성
 'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
@@ -8,6 +8,9 @@ export default function ReportsPage() {
   const [selected, setSelected] = useState<any>(null);
   const [managerComment, setManagerComment] = useState('');
   const [saving, setSaving] = useState(false);
+  const [events, setEvents] = useState<any[]>([]);
+  const [showGenerate, setShowGenerate] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     api.getReports().then(setReports).catch(console.error);
@@ -16,6 +19,25 @@ export default function ReportsPage() {
   useEffect(() => {
     if (selected) setManagerComment(selected.manager_comment || '');
   }, [selected]);
+
+  const loadEvents = async () => {
+    const evts = await api.getEvents({ status: 'CLOSED' });
+    // Filter events that don't already have a report
+    const reportedEventIds = new Set(reports.map(r => r.event_id).filter(Boolean));
+    setEvents(evts.filter((e: any) => !reportedEventIds.has(e.event_id)));
+    setShowGenerate(true);
+  };
+
+  const handleGenerate = async (eventId: string) => {
+    setGenerating(true);
+    try {
+      const report = await api.generateReport(eventId);
+      setReports(prev => [report, ...prev]);
+      setSelected(report);
+      setShowGenerate(false);
+    } catch (err) { console.error(err); }
+    setGenerating(false);
+  };
 
   const handleSave = async () => {
     if (!selected) return;
@@ -37,12 +59,49 @@ export default function ReportsPage() {
     } catch (err) { console.error(err); }
   };
 
+  const refreshReports = () => {
+    api.getReports().then(setReports).catch(console.error);
+  };
+
   const summary = selected?.generated_summary;
 
   return (
     <div className="h-full flex">
       <aside className="w-[260px] border-r border-gray-700 overflow-y-auto p-3">
-        <h4 className="text-xs text-gray-400 mb-3">보고서 목록 ({reports.length}건)</h4>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-xs text-gray-400">보고서 목록 ({reports.length}건)</h4>
+          <div className="flex gap-1">
+            <button onClick={refreshReports}
+              className="text-[10px] px-2 py-1 rounded bg-bg-tertiary text-gray-400 hover:text-white" title="새로고침">
+              ↻
+            </button>
+            <button onClick={loadEvents}
+              className="text-[10px] px-2 py-1 rounded bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30">
+              + 생성
+            </button>
+          </div>
+        </div>
+
+        {/* Generate from event modal */}
+        {showGenerate && (
+          <div className="mb-3 bg-bg-tertiary rounded-lg p-3 border border-gray-600">
+            <div className="text-[10px] text-gray-400 mb-2 font-medium">이벤트 기반 보고서 생성</div>
+            {events.length === 0 ? (
+              <div className="text-[10px] text-gray-500">생성 가능한 종료 이벤트가 없습니다.</div>
+            ) : (
+              <div className="space-y-1">
+                {events.map((e: any) => (
+                  <button key={e.event_id} onClick={() => handleGenerate(e.event_id)} disabled={generating}
+                    className="w-full text-left text-[10px] px-2 py-1.5 rounded hover:bg-bg-secondary text-gray-300 disabled:opacity-50">
+                    <span className="text-cyan-400">{e.scenario_id}</span> · {e.summary || e.trigger_equipment_id}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button onClick={() => setShowGenerate(false)} className="text-[9px] text-gray-500 mt-2 hover:text-gray-300">닫기</button>
+          </div>
+        )}
+
         {reports.map(r => (
           <button key={r.report_id} onClick={() => setSelected(r)}
             className={`w-full text-left text-[11px] px-3 py-2.5 rounded mb-1 transition-colors ${
@@ -80,33 +139,39 @@ export default function ReportsPage() {
                   {summary.event && (
                     <div className="space-y-1">
                       <div className="text-[10px] text-gray-500 font-medium">이벤트 개요</div>
-                      <div className="text-white">{summary.event.summary}</div>
+                      <div className="text-white">{summary.event.summary || summary.event_overview}</div>
                       <div className="text-gray-400">심각도: {summary.event.severity}</div>
                     </div>
                   )}
-                  {summary.kogas_diagnosis && (
-                    <div className="space-y-1">
-                      <div className="text-[10px] text-gray-500 font-medium">KOGAS 진단</div>
-                      <div className="text-white">{summary.kogas_diagnosis.fault_name}</div>
-                      <div className="text-gray-400">확신도: {(summary.kogas_diagnosis.confidence * 100).toFixed(0)}%</div>
-                      <div className="text-gray-400">의심부위: {summary.kogas_diagnosis.suspected_part}</div>
-                    </div>
-                  )}
-                  {summary.kgs_impact?.length > 0 && (
+                  {(summary.kogas_diagnosis || summary.kogas) && (() => {
+                    const k = summary.kogas_diagnosis || summary.kogas;
+                    return (
+                      <div className="space-y-1">
+                        <div className="text-[10px] text-gray-500 font-medium">KOGAS 진단</div>
+                        <div className="text-white">{k.fault_name || k.diagnosis}</div>
+                        <div className="text-gray-400">확신도: {typeof k.confidence === 'number' ? (k.confidence * 100).toFixed(0) : k.confidence}%</div>
+                        {k.suspected_part && <div className="text-gray-400">의심부위: {k.suspected_part}</div>}
+                      </div>
+                    );
+                  })()}
+                  {(summary.kgs_impact?.length > 0 || summary.kgs) && (
                     <div className="space-y-1">
                       <div className="text-[10px] text-gray-500 font-medium">KGS 영향분석</div>
-                      {summary.kgs_impact.map((k: any, i: number) => (
+                      {(summary.kgs_impact || []).map((k: any, i: number) => (
                         <div key={i} className="text-gray-300">{k.affected}: {k.score}점 ({k.risk})</div>
                       ))}
                     </div>
                   )}
-                  {summary.keti_recommendation && (
-                    <div className="space-y-1">
-                      <div className="text-[10px] text-gray-500 font-medium">KETI 권고안</div>
-                      <div className="text-gray-300">A: {summary.keti_recommendation.option_a}</div>
-                      <div className="text-gray-300">B: {summary.keti_recommendation.option_b}</div>
-                    </div>
-                  )}
+                  {(summary.keti_recommendation || summary.keti) && (() => {
+                    const k = summary.keti_recommendation || summary.keti;
+                    return (
+                      <div className="space-y-1">
+                        <div className="text-[10px] text-gray-500 font-medium">KETI 권고안</div>
+                        <div className="text-gray-300">A: {k.option_a}</div>
+                        <div className="text-gray-300">B: {k.option_b}</div>
+                      </div>
+                    );
+                  })()}
                   {summary.safetia_history?.length > 0 && (
                     <div className="space-y-1">
                       <div className="text-[10px] text-gray-500 font-medium">이력 요약</div>

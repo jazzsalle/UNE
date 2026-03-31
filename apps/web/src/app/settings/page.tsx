@@ -62,7 +62,7 @@ export default function SettingsPage() {
           <table className="w-full text-[11px]">
             <thead><tr className="text-gray-500 border-b border-gray-700">
               <th className="text-left py-2">ID</th><th className="text-left">이름</th><th className="text-left">유형</th>
-              <th className="text-left">설비</th><th className="text-left">단위</th><th className="text-left">주기(s)</th><th className="text-left">활성</th>
+              <th className="text-left">설비</th><th className="text-left">단위</th><th className="text-left">주기(s)</th><th className="text-left">활성</th><th></th>
             </tr></thead>
             <tbody>
               {sensors.map(s => (
@@ -72,8 +72,33 @@ export default function SettingsPage() {
                   <td className="text-gray-400">{s.sensor_type}</td>
                   <td className="text-gray-400">{s.equipment_id}</td>
                   <td className="text-gray-400">{s.unit}</td>
-                  <td className="text-gray-400">{s.sample_interval_sec}</td>
-                  <td>{s.enabled ? <span className="text-green-400">ON</span> : <span className="text-red-400">OFF</span>}</td>
+                  <td>
+                    <input type="number" min="1" max="60"
+                      value={s.sample_interval_sec}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 5;
+                        setSensors(prev => prev.map(x => x.sensor_id === s.sensor_id ? { ...x, sample_interval_sec: val } : x));
+                      }}
+                      className="w-14 bg-bg-tertiary border border-gray-600 rounded px-1 py-0.5 text-xs text-white" />
+                  </td>
+                  <td>
+                    <button onClick={() => {
+                      const newEnabled = !s.enabled;
+                      setSensors(prev => prev.map(x => x.sensor_id === s.sensor_id ? { ...x, enabled: newEnabled } : x));
+                      api.updateSensorMeta(s.sensor_id, { enabled: newEnabled }).catch(console.error);
+                    }}
+                      className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${s.enabled ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                      {s.enabled ? 'ON' : 'OFF'}
+                    </button>
+                  </td>
+                  <td>
+                    <button onClick={async () => {
+                      try {
+                        await api.updateSensorMeta(s.sensor_id, { sample_interval_sec: s.sample_interval_sec });
+                        alert('저장 완료');
+                      } catch (err) { console.error(err); }
+                    }} className="text-accent-blue hover:underline text-[10px]">저장</button>
+                  </td>
                 </tr>
               ))}
             </tbody>

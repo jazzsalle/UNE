@@ -2,6 +2,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { prisma } from '../lib/prisma';
+import { generateReport } from './reportGenerator';
 
 interface PhaseInfo {
   phase: string;
@@ -32,6 +33,8 @@ export class EmulatorEngine {
   private totalDuration = 900;
   private lastSentSec = -1;
   private eventCreated = false;
+  private eventClosed = false;
+  private createdEventId: string | null = null;
 
   private readonly SEED_DIR = process.env.SEED_DIR || path.join(__dirname, '../../../../seed');
 
@@ -47,6 +50,8 @@ export class EmulatorEngine {
     this.currentPhase = 'NORMAL';
     this.running = true;
     this.eventCreated = false;
+    this.eventClosed = false;
+    this.createdEventId = null;
     this.lastSentSec = -1;
 
     // Load timeseries
@@ -85,6 +90,11 @@ export class EmulatorEngine {
         // Create event on FAULT phase
         if (newPhase === 'FAULT' && !this.eventCreated) {
           this.createEvent();
+        }
+
+        // Auto-close event + generate report on RESPONSE phase
+        if (newPhase === 'RESPONSE' && !this.eventClosed && this.createdEventId) {
+          this.closeEventAndGenerateReport();
         }
       }
 
@@ -194,15 +204,31 @@ export class EmulatorEngine {
       const scenario = await prisma.scenarioMaster.findUnique({ where: { scenario_id: this.scenarioId } });
       if (!scenario) return;
 
-      const event = await prisma.eventLog.create({
-        data: {
-          scenario_id: this.scenarioId,
-          trigger_equipment_id: scenario.trigger_equipment_id,
-          severity: 'CRITICAL',
-          status: 'OPEN',
-          summary: scenario.scenario_name,
-        },
+      // Reuse existing seed event if available, otherwise create new
+      let event = await prisma.eventLog.findFirst({
+        where: { scenario_id: this.scenarioId },
+        orderBy: { opened_at: 'desc' },
       });
+
+      if (event) {
+        // Reset existing event to OPEN
+        event = await prisma.eventLog.update({
+          where: { event_id: event.event_id },
+          data: { status: 'OPEN', closed_at: null, severity: 'CRITICAL' },
+        });
+      } else {
+        event = await prisma.eventLog.create({
+          data: {
+            scenario_id: this.scenarioId,
+            trigger_equipment_id: scenario.trigger_equipment_id,
+            severity: 'CRITICAL',
+            status: 'OPEN',
+            summary: scenario.scenario_name,
+          },
+        });
+      }
+
+      this.createdEventId = event.event_id;
 
       this.emit({
         type: 'EVENT_CREATE',
@@ -213,6 +239,40 @@ export class EmulatorEngine {
       });
     } catch (err) {
       console.error('Failed to create event:', err);
+    }
+  }
+
+  private async closeEventAndGenerateReport() {
+    if (!this.createdEventId) return;
+    this.eventClosed = true;
+
+    try {
+      // Mark event as CLOSED
+      const closedEvent = await prisma.eventLog.update({
+        where: { event_id: this.createdEventId },
+        data: { status: 'CLOSED', closed_at: new Date() },
+      });
+
+      this.emit({
+        type: 'EVENT_CLOSED',
+        timestamp: new Date().toISOString(),
+        phase: this.currentPhase,
+        elapsed_sec: Math.floor(this.elapsedSec),
+        data: closedEvent,
+      });
+
+      // Auto-generate report
+      const report = await generateReport(this.createdEventId, prisma);
+
+      this.emit({
+        type: 'REPORT_GENERATED',
+        timestamp: new Date().toISOString(),
+        phase: this.currentPhase,
+        elapsed_sec: Math.floor(this.elapsedSec),
+        data: { report_id: report.report_id, title: report.title },
+      });
+    } catch (err) {
+      console.error('Failed to close event / generate report:', err);
     }
   }
 }

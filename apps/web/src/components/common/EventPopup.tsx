@@ -1,4 +1,4 @@
-// ref: CLAUDE.md §9.2 — 이벤트 팝업 (세련된 디자인)
+// ref: CLAUDE.md §9.2 — 이벤트 팝업 (enrichment + SOP 추천 포함)
 'use client';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/stores/appStore';
@@ -21,6 +21,7 @@ export function EventPopup() {
 
   const severityColor = SEVERITY_COLORS[eventContext.severity] || '#fff';
   const isEmergency = eventContext.severity === 'EMERGENCY' || eventContext.severity === 'CRITICAL';
+  const hasEnrichment = !!(eventContext.kogas_result || eventContext.kgs_results?.length || eventContext.recommended_sops?.length);
 
   const navigateMode = (path: string) => {
     setShowEventPopup(false);
@@ -56,8 +57,8 @@ export function EventPopup() {
             </button>
           </div>
 
-          {/* Info */}
-          <div className="flex gap-4 mb-5 text-[11px]">
+          {/* Info cards */}
+          <div className="flex gap-4 mb-4 text-[11px]">
             <div className="data-card flex-1">
               <div className="text-gray-500 text-[10px]">트리거 설비</div>
               <div className="text-white font-medium mt-0.5">{eventContext.trigger_equipment_id}</div>
@@ -71,6 +72,58 @@ export function EventPopup() {
               <div className="text-white font-mono text-[10px] mt-0.5">{eventContext.event_id?.slice(0, 12)}</div>
             </div>
           </div>
+
+          {/* Enrichment summary (shown when data is loaded) */}
+          {hasEnrichment && (
+            <div className="mb-4 space-y-2">
+              {/* KOGAS diagnosis */}
+              {eventContext.kogas_result && (
+                <div className="data-card flex items-center gap-3">
+                  <span className="text-[10px] text-cyan-400 font-semibold w-14 shrink-0">KOGAS</span>
+                  <div className="flex-1 text-[11px]">
+                    <span className="text-white">{eventContext.kogas_result.fault_name}</span>
+                    <span className="text-gray-500 ml-2">
+                      확신도 {Math.round((eventContext.kogas_result.diagnosis_confidence || 0) * 100)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+              {/* KGS impact */}
+              {eventContext.kgs_results && eventContext.kgs_results.length > 0 && (
+                <div className="data-card flex items-center gap-3">
+                  <span className="text-[10px] text-amber-400 font-semibold w-14 shrink-0">KGS</span>
+                  <div className="flex-1 text-[11px]">
+                    <span className="text-white">영향 설비 {eventContext.kgs_results.length}개</span>
+                    <span className="text-gray-500 ml-2">
+                      최고 위험도 {Math.max(...eventContext.kgs_results.map((k: any) => k.impact_score))}점
+                    </span>
+                  </div>
+                </div>
+              )}
+              {/* Recommended SOP */}
+              {eventContext.recommended_sops && eventContext.recommended_sops.length > 0 && (
+                <div className="data-card flex items-center gap-3">
+                  <span className="text-[10px] text-green-400 font-semibold w-14 shrink-0">SOP</span>
+                  <div className="flex-1 text-[11px] flex items-center justify-between">
+                    <span className="text-white">{eventContext.recommended_sops[0].sop_name}</span>
+                    <button
+                      onClick={() => { setShowEventPopup(false); setShowSopPanel(true); }}
+                      className="text-[10px] px-2 py-0.5 rounded bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                    >
+                      바로실행
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Loading indicator when enrichment not yet loaded */}
+          {!hasEnrichment && (
+            <div className="mb-4 data-card text-center">
+              <div className="text-[10px] text-gray-500 animate-pulse">진단 데이터 로딩 중...</div>
+            </div>
+          )}
 
           {/* Mode buttons */}
           <div className="grid grid-cols-3 gap-2">

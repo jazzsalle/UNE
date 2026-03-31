@@ -54,8 +54,21 @@ export class EmulatorEngine {
     this.createdEventId = null;
     this.lastSentSec = -1;
 
-    // Load timeseries
-    this.timeseriesData = JSON.parse(fs.readFileSync(scenarioFile, 'utf-8'));
+    // Load timeseries and compute elapsed_sec from timestamp
+    const rawData = JSON.parse(fs.readFileSync(scenarioFile, 'utf-8'));
+    if (rawData.length > 0 && rawData[0].timestamp && rawData[0].elapsed_sec === undefined) {
+      // Convert timestamp-based records to elapsed_sec-based
+      const baseTime = new Date(rawData[0].timestamp).getTime();
+      this.timeseriesData = rawData.map((r: any) => ({
+        sensor_id: r.sensor_id,
+        value: r.value,
+        quality: r.quality || 'GOOD',
+        label: r.label || 'NORMAL',
+        elapsed_sec: Math.round((new Date(r.timestamp).getTime() - baseTime) / 1000),
+      }));
+    } else {
+      this.timeseriesData = rawData;
+    }
 
     // Load phases from scenario
     this.loadScenarioMeta(scenarioId);
@@ -171,8 +184,19 @@ export class EmulatorEngine {
   }
 
   private sendSensorUpdate(currentSec: number) {
-    // Find nearest timeseries records
-    const records = this.timeseriesData.filter(r => r.elapsed_sec === currentSec);
+    // Find records at this second, or snap to nearest available time step
+    let records = this.timeseriesData.filter(r => r.elapsed_sec === currentSec);
+    if (records.length === 0) {
+      // Seed data may be in 30s intervals — find nearest time step
+      const allTimes = [...new Set(this.timeseriesData.map(r => r.elapsed_sec))].sort((a, b) => a - b);
+      const nearest = allTimes.reduce((prev, curr) =>
+        Math.abs(curr - currentSec) < Math.abs(prev - currentSec) ? curr : prev,
+        allTimes[0] ?? 0,
+      );
+      // Only emit at the snap point (avoid re-sending same data every second)
+      if (Math.abs(nearest - currentSec) > 0) return;
+      records = this.timeseriesData.filter(r => r.elapsed_sec === nearest);
+    }
     if (records.length === 0) return;
 
     this.emit({

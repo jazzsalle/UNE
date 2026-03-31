@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useAppStore } from '@/stores/appStore';
 import { api } from '@/lib/api';
-import { getPresetForEquipment } from '@/components/viewer3d/CameraController';
+// CameraController now uses equipment IDs directly
 import type { VisualState } from '@/lib/constants';
 
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
@@ -17,7 +17,7 @@ export default function RiskPage() {
   const [kgsResults, setKgsResults] = useState<any[]>([]);
   const [hazop, setHazop] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [cameraPreset, setCameraPreset] = useState<string | null>(null);
+  const [cameraTarget, setCameraTarget] = useState<string | null>(null);
   const [timeSlider, setTimeSlider] = useState(0);
 
   const scenarioId = eventContext?.scenario_id || 'SC-01';
@@ -37,7 +37,7 @@ export default function RiskPage() {
 
   const handleNodeClick = useCallback((equipmentId: string) => {
     setSelectedEquipment(equipmentId);
-    setCameraPreset(getPresetForEquipment(equipmentId));
+    setCameraTarget(equipmentId);
   }, [setSelectedEquipment]);
 
   // 시간축 기반 컬러링
@@ -90,7 +90,7 @@ export default function RiskPage() {
                   .filter(r => r.trigger_equipment_id !== r.affected_equipment_id)
                   .map(r => ({ from: r.trigger_equipment_id, to: r.affected_equipment_id }))}
               />
-              <CameraController targetPreset={cameraPreset} />
+              <CameraController targetEquipmentId={cameraTarget} />
             </ThreeCanvas>
           </div>
 

@@ -1,6 +1,6 @@
 // ref: CLAUDE.md §5.1, §5.2, §18 — 실제 GLB 모델 로딩 + Draco
 'use client';
-import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useEffect, useRef, useMemo, useCallback, useState } from 'react';
 import { useGLTF, useProgress } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -27,15 +27,77 @@ const EQUIPMENT_MESH_MAP: Record<string, string> = {
   'PIP-501': 'pipe_main_a',
 };
 
-// ref: CLAUDE.md §5.5 — 카메라 프리셋에서 추출한 설비 위치 (이펙트용)
-const EQUIPMENT_POSITIONS: Record<string, [number, number, number]> = {
-  'SHP-001': [303, 12.8, -96], 'ARM-101': [272, 8.6, -121],
-  'TK-101': [145, 22.4, -208], 'TK-102': [47, 22.4, -204],
-  'BOG-201': [33, 21.1, -44], 'PMP-301': [141, 25.4, 54],
-  'VAP-401': [133, 30.6, 189], 'REL-701': [144, 30.9, -59],
-  'VAL-601': [-52, 39.8, -48], 'VAL-602': [-3, 39.8, 177],
-  'PIP-501': [60, 24.3, -8],
-};
+// 설비 위치 — 씬 로드 후 바운딩박스에서 동적 계산
+const cachedPositions: Record<string, [number, number, number]> = {};
+
+function computeEquipmentCenter(scene: THREE.Group, equipmentId: string): [number, number, number] | null {
+  if (cachedPositions[equipmentId]) return cachedPositions[equipmentId];
+  const obj = scene.getObjectByName(equipmentId);
+  if (!obj) return null;
+  const box = new THREE.Box3();
+  obj.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const mesh = child as THREE.Mesh;
+      mesh.updateWorldMatrix(true, false);
+      if (mesh.geometry) {
+        mesh.geometry.computeBoundingBox();
+        if (mesh.geometry.boundingBox) {
+          const mb = mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld);
+          box.union(mb);
+        }
+      }
+    }
+  });
+  if (box.isEmpty()) return null;
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  cachedPositions[equipmentId] = [center.x, center.y, center.z];
+  return cachedPositions[equipmentId];
+}
+
+function computeEquipmentHeight(scene: THREE.Group, equipmentId: string): number {
+  const obj = scene.getObjectByName(equipmentId);
+  if (!obj) return 40;
+  const box = new THREE.Box3();
+  obj.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const mesh = child as THREE.Mesh;
+      mesh.updateWorldMatrix(true, false);
+      if (mesh.geometry) {
+        mesh.geometry.computeBoundingBox();
+        if (mesh.geometry.boundingBox) {
+          const mb = mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld);
+          box.union(mb);
+        }
+      }
+    }
+  });
+  if (box.isEmpty()) return 40;
+  return box.max.y - box.min.y;
+}
+
+function computeEquipmentRadius(scene: THREE.Group, equipmentId: string): number {
+  const obj = scene.getObjectByName(equipmentId);
+  if (!obj) return 14;
+  const box = new THREE.Box3();
+  obj.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const mesh = child as THREE.Mesh;
+      mesh.updateWorldMatrix(true, false);
+      if (mesh.geometry) {
+        mesh.geometry.computeBoundingBox();
+        if (mesh.geometry.boundingBox) {
+          const mb = mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld);
+          box.union(mb);
+        }
+      }
+    }
+  });
+  if (box.isEmpty()) return 14;
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  return Math.max(size.x, size.z) / 2;
+}
 
 // Material cache — clone only once per mesh (ref: CLAUDE.md §15.1)
 const clonedMaterials = new Map<string, THREE.Material | THREE.Material[]>();
@@ -99,10 +161,20 @@ export function TestbedModel({
   const { scene } = useGLTF('/models/h2.glb', true);
   const sceneRef = useRef<THREE.Group>(null);
   const prevStates = useRef<Record<string, VisualState>>({});
+  const [positionsReady, setPositionsReady] = useState(false);
 
-  // Darken terrain on initial load
+  // Darken terrain + compute positions on initial load
   useEffect(() => {
-    if (scene) darkenTerrain(scene);
+    if (!scene) return;
+    darkenTerrain(scene);
+    // Compute equipment positions after load
+    const timer = setTimeout(() => {
+      for (const eqId of Object.keys(EQUIPMENT_MESH_MAP)) {
+        computeEquipmentCenter(scene, eqId);
+      }
+      setPositionsReady(true);
+    }, 1500);
+    return () => clearTimeout(timer);
   }, [scene]);
 
   // Apply coloring when states change
@@ -152,15 +224,17 @@ export function TestbedModel({
     <>
       <primitive ref={sceneRef} object={scene} onClick={handleClick} />
 
-      {showEffects && (
+      {showEffects && positionsReady && (
         <>
           {/* Glow for warning/critical equipment */}
           {Object.entries(equipmentStates).map(([eqId, state]) => {
-            if (state === 'normal' || !EQUIPMENT_POSITIONS[eqId]) return null;
+            if (state === 'normal') return null;
+            const pos = computeEquipmentCenter(scene, eqId);
+            if (!pos) return null;
             return (
               <GlowEffect
                 key={`glow-${eqId}`}
-                position={EQUIPMENT_POSITIONS[eqId]}
+                position={pos}
                 size={[15, 15, 15]}
                 color={COLOR_MAP[state]}
                 pulse={state === 'critical' || state === 'emergency'}
@@ -170,29 +244,33 @@ export function TestbedModel({
           })}
 
           {/* Tank levels */}
-          {Object.entries(defaultTankLevels).map(([tankId, data]) => (
-            <TankLevel
-              key={`tank-${tankId}`}
-              position={EQUIPMENT_POSITIONS[tankId] || [0, 0, 0]}
-              tankHeight={40}
-              tankRadius={14}
-              level={data.level}
-              pressure={data.pressure}
-            />
-          ))}
+          {Object.entries(defaultTankLevels).map(([tankId, data]) => {
+            const pos = computeEquipmentCenter(scene, tankId);
+            if (!pos) return null;
+            const h = computeEquipmentHeight(scene, tankId);
+            const r = computeEquipmentRadius(scene, tankId);
+            return (
+              <TankLevel
+                key={`tank-${tankId}`}
+                position={pos}
+                tankHeight={h}
+                tankRadius={r}
+                level={data.level}
+                pressure={data.pressure}
+              />
+            );
+          })}
 
           {/* Heatmap */}
-          {heatmapTarget && EQUIPMENT_POSITIONS[heatmapTarget.equipmentId] && (
-            <HeatmapOverlay
-              position={EQUIPMENT_POSITIONS[heatmapTarget.equipmentId]}
-              radius={heatmapTarget.radius}
-            />
-          )}
+          {heatmapTarget && (() => {
+            const pos = computeEquipmentCenter(scene, heatmapTarget.equipmentId);
+            return pos ? <HeatmapOverlay position={pos} radius={heatmapTarget.radius} /> : null;
+          })()}
 
           {/* Propagation paths */}
           {propagationPaths.map((path, i) => {
-            const fromPos = EQUIPMENT_POSITIONS[path.from];
-            const toPos = EQUIPMENT_POSITIONS[path.to];
+            const fromPos = computeEquipmentCenter(scene, path.from);
+            const toPos = computeEquipmentCenter(scene, path.to);
             if (!fromPos || !toPos) return null;
             return <PropagationPath key={`path-${i}`} from={fromPos} to={toPos} />;
           })}

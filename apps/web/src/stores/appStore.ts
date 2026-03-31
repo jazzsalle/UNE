@@ -26,12 +26,22 @@ interface SensorData {
   elapsed_sec: number;
 }
 
+interface AlarmEntry {
+  sensor_id: string;
+  value: number;
+  label: string;
+  phase: string;
+  timestamp: string;
+  acknowledged: boolean;
+  id: string;
+}
+
 interface AppState {
   currentMode: ModeCode;
   eventContext: EventContext | null;
   selectedEquipmentId: string | null;
   sensorData: Record<string, SensorData>;
-  alarms: any[];
+  alarms: AlarmEntry[];
   showEventPopup: boolean;
   showSopPanel: boolean;
 
@@ -41,6 +51,8 @@ interface AppState {
   setSelectedEquipment: (id: string | null) => void;
   updateSensorData: (data: SensorData[]) => void;
   addAlarm: (alarm: any) => void;
+  acknowledgeAlarm: (id: string) => void;
+  removeAlarm: (id: string) => void;
   clearAlarms: () => void;
   setShowEventPopup: (show: boolean) => void;
   setShowSopPanel: (show: boolean) => void;
@@ -64,7 +76,15 @@ export const useAppStore = create<AppState>((set) => ({
     for (const d of data) updated[d.sensor_id] = d;
     return { sensorData: updated };
   }),
-  addAlarm: (alarm) => set((state) => ({ alarms: [alarm, ...state.alarms].slice(0, 50) })),
+  addAlarm: (alarm) => set((state) => ({
+    alarms: [{ ...alarm, acknowledged: false, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}` }, ...state.alarms].slice(0, 100),
+  })),
+  acknowledgeAlarm: (id) => set((state) => ({
+    alarms: state.alarms.map(a => a.id === id ? { ...a, acknowledged: true } : a),
+  })),
+  removeAlarm: (id) => set((state) => ({
+    alarms: state.alarms.filter(a => a.id !== id),
+  })),
   clearAlarms: () => set({ alarms: [] }),
   setShowEventPopup: (show) => set({ showEventPopup: show }),
   setShowSopPanel: (show) => set({ showSopPanel: show }),

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useAppStore } from '@/stores/appStore';
 import { api } from '@/lib/api';
-import { getPresetForEquipment } from '@/components/viewer3d/CameraController';
+// CameraController now uses equipment IDs directly
 import type { VisualState } from '@/lib/constants';
 
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
@@ -19,7 +19,7 @@ export default function SimulationPage() {
   const [tab, setTab] = useState<'event' | 'manual'>('event');
   const [simTime, setSimTime] = useState(0);
   const [simRunning, setSimRunning] = useState(false);
-  const [cameraPreset, setCameraPreset] = useState<string | null>(null);
+  const [cameraTarget, setCameraTarget] = useState<string | null>(null);
   const [appliedOption, setAppliedOption] = useState<'A' | 'B' | null>(null);
 
   // 수동 실행 파라미터
@@ -70,7 +70,7 @@ export default function SimulationPage() {
 
   const handleEquipmentClick = (id: string) => {
     setSelectedEquipment(id);
-    setCameraPreset(getPresetForEquipment(id));
+    setCameraTarget(id);
   };
 
   const progress = ketiResult?.expected_stabilization_min ? (simTime / ketiResult.expected_stabilization_min) * 100 : 0;
@@ -140,7 +140,7 @@ export default function SimulationPage() {
           <div className="flex-1 bg-bg-primary">
             <ThreeCanvas>
               <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleEquipmentClick} />
-              <CameraController targetPreset={cameraPreset} />
+              <CameraController targetEquipmentId={cameraTarget} />
             </ThreeCanvas>
           </div>
 

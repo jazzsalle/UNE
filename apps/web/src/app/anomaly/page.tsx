@@ -1,14 +1,25 @@
-// ref: CLAUDE.md §9.4 — 이상탐지 (M-ANO) 세련된 디자인 + 하단 완성
+// ref: CLAUDE.md §9.4 — 이상탐지 (M-ANO) — 개별 설비 상세 뷰 + 하단 완성
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useAppStore } from '@/stores/appStore';
 import { api } from '@/lib/api';
-import { EQUIPMENT_ICONS } from '@/lib/constants';
+import { EQUIPMENT_ICONS, type VisualState } from '@/lib/constants';
 import { SensorChart } from '@/components/common/SensorChart';
 
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
 const PumpDetailModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.PumpDetailModel })), { ssr: false });
+const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
+const CameraController = dynamic(() => import('@/components/viewer3d/CameraController').then(m => ({ default: m.CameraController })), { ssr: false });
+
+// 한국어 설비명 매핑
+const EQUIPMENT_NAMES_KR: Record<string, string> = {
+  'SHP-001': 'LH2 운반선', 'ARM-101': '로딩암', 'TK-101': '저장탱크 #1', 'TK-102': '저장탱크 #2',
+  'BOG-201': 'BOG 압축기', 'PMP-301': '이송펌프', 'VAP-401': '기화기',
+  'REL-701': '재액화기', 'VAL-601': '밸브 #1', 'VAL-602': '밸브 #2', 'PIP-501': '메인배관',
+};
+
+// 이상탐지 모드에서는 CameraController에 설비 ID를 직접 전달
 
 export default function AnomalyPage() {
   const [equipment, setEquipment] = useState<any[]>([]);
@@ -44,6 +55,22 @@ export default function AnomalyPage() {
   }, [sensorData, selectedTab, equipment]);
 
   const selectedEq = equipment.find(e => e.equipment_id === selectedTab);
+  const isPumpDetail = selectedTab === 'PMP-301';
+
+  // Equipment states for testbed model coloring
+  const equipmentStates = useMemo(() => {
+    const states: Record<string, VisualState> = {};
+    if (!isPumpDetail) {
+      // Highlight the selected equipment based on phase
+      const phase = eventContext?.current_phase;
+      if (phase === 'FAULT' || phase === 'SECONDARY_IMPACT') {
+        states[selectedTab] = 'critical';
+      } else if (phase === 'SYMPTOM') {
+        states[selectedTab] = 'warning';
+      }
+    }
+    return states;
+  }, [selectedTab, eventContext, isPumpDetail]);
 
   const pumpMeshStates = useMemo(() => {
     const states: Record<string, string> = {};
@@ -74,7 +101,7 @@ export default function AnomalyPage() {
     }));
   }, [selectedEq, sensorHistory]);
 
-  const renderSensorPanel = (sensors: any[], side: 'left' | 'right') => (
+  const renderSensorPanel = (sensors: any[]) => (
     <div className="w-[22%] border-r border-white/[0.04] p-2 overflow-y-auto scrollbar-thin">
       {sensors.map((s: any) => {
         const data = sensorData[s.sensor_id];
@@ -109,31 +136,48 @@ export default function AnomalyPage() {
     <div className="h-full flex flex-col">
       {/* 상단: 3분할 */}
       <div className="flex-[3] flex min-h-0">
-        {renderSensorPanel(leftSensors, 'left')}
+        {renderSensorPanel(leftSensors)}
 
-        {/* 3D 뷰어 */}
+        {/* 3D 뷰어 — 선택 설비에 따라 다른 모델/카메라 */}
         <div className="flex-1 relative">
-          <ThreeCanvas>
-            <PumpDetailModel meshStates={pumpMeshStates} />
-          </ThreeCanvas>
+          {isPumpDetail ? (
+            <ThreeCanvas>
+              <PumpDetailModel meshStates={pumpMeshStates} />
+            </ThreeCanvas>
+          ) : (
+            <ThreeCanvas>
+              <TestbedModel equipmentStates={equipmentStates} />
+              <CameraController targetEquipmentId={selectedTab} />
+            </ThreeCanvas>
+          )}
+
+          {/* 설비 정보 오버레이 */}
+          <div className="absolute top-3 left-3 glass-sm px-3 py-2">
+            <div className="text-xs font-bold text-white">
+              {EQUIPMENT_NAMES_KR[selectedTab] || selectedTab}
+            </div>
+            <div className="text-[9px] text-gray-500">{selectedTab} · {isPumpDetail ? '상세 모델' : '테스트베드 뷰'}</div>
+          </div>
 
           {/* 센서 고장 인디케이터 오버레이 */}
-          <div className="absolute bottom-3 left-3 right-3 flex gap-2">
-            {['펌프부하', '모터부하', '펌프반부하', '모터반부하'].map((label, i) => {
-              const hasIssue = i < 2 && (eventContext?.current_phase === 'FAULT');
-              return (
-                <div key={label} className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] ${
-                  hasIssue ? 'bg-red-500/15 border border-red-500/30 text-red-400' : 'bg-white/[0.05] border border-white/[0.08] text-gray-500'
-                }`}>
-                  <div className={`w-1.5 h-1.5 rounded-full ${hasIssue ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
-                  {label}
-                </div>
-              );
-            })}
-          </div>
+          {isPumpDetail && (
+            <div className="absolute bottom-3 left-3 right-3 flex gap-2">
+              {['펌프부하', '모터부하', '펌프반부하', '모터반부하'].map((label, i) => {
+                const hasIssue = i < 2 && (eventContext?.current_phase === 'FAULT');
+                return (
+                  <div key={label} className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] ${
+                    hasIssue ? 'bg-red-500/15 border border-red-500/30 text-red-400' : 'bg-white/[0.05] border border-white/[0.08] text-gray-500'
+                  }`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${hasIssue ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
+                    {label}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {renderSensorPanel(rightSensors, 'right')}
+        {renderSensorPanel(rightSensors)}
       </div>
 
       {/* 설비 탭 */}
@@ -149,7 +193,7 @@ export default function AnomalyPage() {
               }`}
             >
               <span className="mr-1">{EQUIPMENT_ICONS[eq.equipment_type]}</span>
-              {eq.equipment_id}
+              {EQUIPMENT_NAMES_KR[eq.equipment_id] || eq.equipment_id}
               {status === 'ANOMALY' && <span className="ml-1 w-1.5 h-1.5 rounded-full bg-red-500 inline-block animate-pulse" />}
             </button>
           );

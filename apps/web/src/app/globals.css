@@ -85,6 +85,10 @@
   0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
   50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
 }
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
 .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
 .animate-slideInRight { animation: slideInRight 0.3s ease-out; }
 .animate-pulseGlow { animation: pulseGlow 2s ease-in-out infinite; }

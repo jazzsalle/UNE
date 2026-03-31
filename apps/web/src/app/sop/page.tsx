@@ -65,10 +65,10 @@ export default function SopPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="h-10 bg-bg-secondary border-b border-gray-700 flex items-center px-4 gap-2">
+      <div className="h-10 bg-[#0a0e17] border-b border-white/[0.06] flex items-center px-4 gap-1">
         {(['execute', 'edit', 'history'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`text-xs px-3 py-1 rounded ${tab === t ? 'bg-accent-blue text-white' : 'text-gray-400 hover:bg-bg-tertiary'}`}>
+            className={`mode-tab ${tab === t ? 'mode-tab-active' : 'text-gray-500 hover:text-gray-300'}`}>
             {t === 'execute' ? '실행' : t === 'edit' ? '저작/편집' : '실행이력'}
           </button>
         ))}
@@ -76,12 +76,12 @@ export default function SopPage() {
 
       <div className="flex-1 flex min-h-0">
         {/* SOP 목록 */}
-        <aside className="w-[220px] border-r border-gray-700 overflow-y-auto p-3">
+        <aside className="w-[220px] border-r border-white/[0.06] bg-[#0a0e17] overflow-y-auto p-3">
           <div className="text-[10px] text-gray-500 mb-2">{sops.length}개 SOP</div>
           {sops.map(sop => (
             <button key={sop.sop_id} onClick={() => handleSelectSop(sop)}
-              className={`w-full text-left text-[11px] px-3 py-2 rounded mb-1 ${
-                selectedSop?.sop_id === sop.sop_id ? 'bg-accent-blue/20 text-white' : 'text-gray-300 hover:bg-bg-tertiary'
+              className={`sidebar-item mb-1 ${
+                selectedSop?.sop_id === sop.sop_id ? 'sidebar-item-active' : 'text-gray-300'
               }`}>
               <div className="font-medium">{sop.sop_name}</div>
               <div className="text-[10px] text-gray-500">{sop.sop_category} · {sop.target_equipment_id || '공통'}</div>
@@ -103,12 +103,12 @@ export default function SopPage() {
                 <div>
                   <label className="text-[10px] text-gray-400">이름</label>
                   <input value={editForm.sop_name} onChange={e => setEditForm(prev => ({ ...prev, sop_name: e.target.value }))}
-                    className="w-full bg-bg-tertiary border border-gray-600 rounded px-2 py-1 text-xs text-white mt-0.5" />
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-xs text-white mt-0.5" />
                 </div>
                 <div>
                   <label className="text-[10px] text-gray-400">카테고리</label>
                   <select value={editForm.sop_category} onChange={e => setEditForm(prev => ({ ...prev, sop_category: e.target.value }))}
-                    className="w-full bg-bg-tertiary border border-gray-600 rounded px-2 py-1 text-xs text-white mt-0.5">
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-xs text-white mt-0.5">
                     <option value="EMERGENCY">EMERGENCY</option>
                     <option value="SAFETY">SAFETY</option>
                     <option value="ROUTINE">ROUTINE</option>
@@ -117,22 +117,22 @@ export default function SopPage() {
                 <div>
                   <label className="text-[10px] text-gray-400">대상 설비</label>
                   <input value={editForm.target_equipment_id} onChange={e => setEditForm(prev => ({ ...prev, target_equipment_id: e.target.value }))}
-                    className="w-full bg-bg-tertiary border border-gray-600 rounded px-2 py-1 text-xs text-white mt-0.5" placeholder="BOG-201" />
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-xs text-white mt-0.5" placeholder="BOG-201" />
                 </div>
                 <div>
                   <label className="text-[10px] text-gray-400">대상 공간</label>
                   <input value={editForm.target_space_id} onChange={e => setEditForm(prev => ({ ...prev, target_space_id: e.target.value }))}
-                    className="w-full bg-bg-tertiary border border-gray-600 rounded px-2 py-1 text-xs text-white mt-0.5" placeholder="Z-BOG" />
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-xs text-white mt-0.5" placeholder="Z-BOG" />
                 </div>
                 <div>
                   <label className="text-[10px] text-gray-400">우선순위 (1=최고)</label>
                   <input type="number" min={1} max={5} value={editForm.priority} onChange={e => setEditForm(prev => ({ ...prev, priority: Number(e.target.value) }))}
-                    className="w-full bg-bg-tertiary border border-gray-600 rounded px-2 py-1 text-xs text-white mt-0.5" />
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-xs text-white mt-0.5" />
                 </div>
                 <div>
                   <label className="text-[10px] text-gray-400">카메라 프리셋</label>
                   <input value={editForm.camera_preset} onChange={e => setEditForm(prev => ({ ...prev, camera_preset: e.target.value }))}
-                    className="w-full bg-bg-tertiary border border-gray-600 rounded px-2 py-1 text-xs text-white mt-0.5" placeholder="cam_bog_compressor_201" />
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-xs text-white mt-0.5" placeholder="cam_bog_compressor_201" />
                 </div>
               </div>
 
@@ -140,18 +140,18 @@ export default function SopPage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs text-gray-400">단계 목록</span>
-                  <button onClick={addStep} className="text-[10px] bg-accent-blue text-white px-2 py-0.5 rounded">+ 단계 추가</button>
+                  <button onClick={addStep} className="text-[10px] bg-cyan-500 text-white px-2 py-0.5 rounded">+ 단계 추가</button>
                 </div>
                 {editForm.steps.map((step, idx) => (
                   <div key={idx} className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] text-gray-500 w-6">{step.step_no}</span>
                     <select value={step.type} onChange={e => updateStep(idx, 'type', e.target.value)}
-                      className="bg-bg-tertiary border border-gray-600 rounded px-1 py-0.5 text-[10px] text-white w-20">
+                      className="bg-white/[0.03] border border-white/[0.08] rounded px-1 py-0.5 text-[10px] text-white w-20">
                       <option value="CHECK">CHECK</option>
                       <option value="TEXT">TEXT</option>
                     </select>
                     <input value={step.content} onChange={e => updateStep(idx, 'content', e.target.value)}
-                      className="flex-1 bg-bg-tertiary border border-gray-600 rounded px-2 py-0.5 text-[11px] text-white" placeholder="단계 내용" />
+                      className="flex-1 bg-white/[0.03] border border-white/[0.08] rounded px-2 py-0.5 text-[11px] text-white" placeholder="단계 내용" />
                     <button onClick={() => removeStep(idx)} className="text-red-400 hover:text-red-300 text-xs">✕</button>
                   </div>
                 ))}
@@ -169,7 +169,7 @@ export default function SopPage() {
                     setSops(updated);
                     alert('SOP 저장 완료');
                   } catch (err) { console.error(err); }
-                }} className="bg-accent-blue text-white px-4 py-1.5 rounded text-xs">저장</button>
+                }} className="bg-cyan-500 text-white px-4 py-1.5 rounded text-xs">저장</button>
                 <button onClick={() => setTab('execute')} className="text-gray-400 hover:text-white px-4 py-1.5 text-xs">취소</button>
               </div>
             </div>
@@ -178,13 +178,13 @@ export default function SopPage() {
             <div className="p-4">
               <h3 className="text-sm font-bold mb-3">SOP 실행이력</h3>
               <table className="w-full text-[11px]">
-                <thead><tr className="text-gray-500 border-b border-gray-700">
+                <thead><tr className="text-gray-500 border-b border-white/[0.06]">
                   <th className="text-left py-2">실행ID</th><th className="text-left">SOP</th><th className="text-left">이벤트</th>
                   <th className="text-left">상태</th><th className="text-left">시작</th><th className="text-left">종료</th>
                 </tr></thead>
                 <tbody>
                   {executions.map((ex: any) => (
-                    <tr key={ex.execution_id} className="border-b border-gray-800">
+                    <tr key={ex.execution_id} className="border-b border-white/[0.04]">
                       <td className="py-1.5 text-white font-mono text-[10px]">{ex.execution_id.slice(0, 8)}</td>
                       <td className="text-gray-300">{ex.sop_id}</td>
                       <td className="text-gray-400">{ex.event_id?.slice(0, 12)}</td>

@@ -1,21 +1,54 @@
-// ref: CLAUDE.md §9.2 — 이벤트 팝업 (enrichment + SOP 추천 포함)
+// ref: CLAUDE.md §9.2 — 이벤트 팝업 (드래그 가능, 소형, enrichment + SOP 추천)
 'use client';
 import { useRouter } from 'next/navigation';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { useAppStore } from '@/stores/appStore';
 import { SEVERITY_COLORS } from '@/lib/constants';
 
 const MODE_BUTTONS = [
-  { label: '이상탐지', path: '/anomaly', icon: '📊', desc: 'KOGAS AI 진단' },
-  { label: '위험예측', path: '/risk', icon: '🎯', desc: 'KGS 영향분석' },
-  { label: '시뮬레이션', path: '/simulation', icon: '🎬', desc: 'KETI 대응안' },
-  { label: 'SOP 팝업', icon: '📋', desc: '현재모드 유지', action: 'sopPopup' },
-  { label: 'SOP 전체', path: '/sop', icon: '📑', desc: '전체화면 전환' },
-  { label: '이력조회', path: '/history', icon: '📁', desc: '세이프티아 이력' },
+  { label: '이상탐지', path: '/anomaly', icon: '📊' },
+  { label: '위험예측', path: '/risk', icon: '🎯' },
+  { label: '시뮬레이션', path: '/simulation', icon: '🎬' },
+  { label: 'SOP 팝업', icon: '📋', action: 'sopPopup' },
+  { label: 'SOP 전체', path: '/sop', icon: '📑' },
+  { label: '이력조회', path: '/history', icon: '📁' },
 ];
 
 export function EventPopup() {
   const { eventContext, setShowEventPopup, setShowSopPanel } = useAppStore();
   const router = useRouter();
+  const popupRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+
+  // Center on mount
+  useEffect(() => {
+    if (popupRef.current) {
+      const rect = popupRef.current.getBoundingClientRect();
+      setPos({
+        x: (window.innerWidth - rect.width) / 2,
+        y: Math.min(80, (window.innerHeight - rect.height) / 3),
+      });
+    }
+  }, []);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button, a, input')) return;
+    setDragging(true);
+    dragStart.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
+  }, [pos]);
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: MouseEvent) => {
+      setPos({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y });
+    };
+    const onUp = () => setDragging(false);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+  }, [dragging]);
 
   if (!eventContext) return null;
 
@@ -29,104 +62,95 @@ export function EventPopup() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-      <div className={`glass max-w-lg w-full mx-4 overflow-hidden ${isEmergency ? 'animate-pulseGlow' : ''}`}>
+    <div className="fixed inset-0 z-50 pointer-events-none">
+      <div
+        ref={popupRef}
+        className={`pointer-events-auto absolute w-[360px] glass overflow-hidden shadow-2xl shadow-black/50 ${isEmergency ? 'animate-pulseGlow' : ''}`}
+        style={{
+          left: pos.x,
+          top: pos.y,
+          cursor: dragging ? 'grabbing' : 'grab',
+        }}
+        onMouseDown={onMouseDown}
+      >
         {/* Header gradient bar */}
         <div className="h-1" style={{ background: `linear-gradient(90deg, ${severityColor}, transparent)` }} />
 
-        <div className="p-5">
+        <div className="p-3">
           {/* Title */}
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+          <div className="flex items-start gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
               style={{ backgroundColor: severityColor + '20' }}>
               ⚠
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="badge" style={{ backgroundColor: severityColor + '20', color: severityColor }}>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="badge text-[9px]" style={{ backgroundColor: severityColor + '20', color: severityColor }}>
                   {eventContext.severity}
                 </span>
-                <span className="text-gray-500 text-[10px]">{eventContext.scenario_id}</span>
+                <span className="text-gray-500 text-[9px]">{eventContext.scenario_id}</span>
               </div>
-              <div className="text-sm font-semibold mt-1">{eventContext.trigger_equipment_id} 이상 감지</div>
+              <div className="text-xs font-semibold mt-0.5 truncate">{eventContext.trigger_equipment_id} 이상 감지</div>
             </div>
-            <button onClick={() => setShowEventPopup(false)} className="text-gray-600 hover:text-white p-1 rounded-lg hover:bg-white/[0.05]">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button onClick={() => setShowEventPopup(false)} className="text-gray-600 hover:text-white p-0.5 rounded hover:bg-white/[0.05]">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* Info cards */}
-          <div className="flex gap-4 mb-4 text-[11px]">
-            <div className="data-card flex-1">
-              <div className="text-gray-500 text-[10px]">트리거 설비</div>
-              <div className="text-white font-medium mt-0.5">{eventContext.trigger_equipment_id}</div>
+          {/* Info cards - compact */}
+          <div className="flex gap-2 mb-3 text-[10px]">
+            <div className="data-card flex-1 !p-2">
+              <div className="text-gray-500 text-[9px]">트리거</div>
+              <div className="text-white font-medium">{eventContext.trigger_equipment_id}</div>
             </div>
-            <div className="data-card flex-1">
-              <div className="text-gray-500 text-[10px]">현재 Phase</div>
-              <div className="text-amber-400 font-medium mt-0.5">{eventContext.current_phase}</div>
-            </div>
-            <div className="data-card flex-1">
-              <div className="text-gray-500 text-[10px]">이벤트 ID</div>
-              <div className="text-white font-mono text-[10px] mt-0.5">{eventContext.event_id?.slice(0, 12)}</div>
+            <div className="data-card flex-1 !p-2">
+              <div className="text-gray-500 text-[9px]">Phase</div>
+              <div className="text-amber-400 font-medium">{eventContext.current_phase}</div>
             </div>
           </div>
 
-          {/* Enrichment summary (shown when data is loaded) */}
+          {/* Enrichment summary */}
           {hasEnrichment && (
-            <div className="mb-4 space-y-2">
-              {/* KOGAS diagnosis */}
+            <div className="mb-3 space-y-1.5">
               {eventContext.kogas_result && (
-                <div className="data-card flex items-center gap-3">
-                  <span className="text-[10px] text-cyan-400 font-semibold w-14 shrink-0">KOGAS</span>
-                  <div className="flex-1 text-[11px]">
-                    <span className="text-white">{eventContext.kogas_result.fault_name}</span>
-                    <span className="text-gray-500 ml-2">
-                      확신도 {Math.round((eventContext.kogas_result.diagnosis_confidence || 0) * 100)}%
-                    </span>
-                  </div>
+                <div className="data-card flex items-center gap-2 !p-2">
+                  <span className="text-[9px] text-cyan-400 font-semibold w-10 shrink-0">KOGAS</span>
+                  <span className="text-[10px] text-white flex-1 truncate">{eventContext.kogas_result.fault_name}</span>
+                  <span className="text-[9px] text-gray-500">{Math.round((eventContext.kogas_result.diagnosis_confidence || 0) * 100)}%</span>
                 </div>
               )}
-              {/* KGS impact */}
               {eventContext.kgs_results && eventContext.kgs_results.length > 0 && (
-                <div className="data-card flex items-center gap-3">
-                  <span className="text-[10px] text-amber-400 font-semibold w-14 shrink-0">KGS</span>
-                  <div className="flex-1 text-[11px]">
-                    <span className="text-white">영향 설비 {eventContext.kgs_results.length}개</span>
-                    <span className="text-gray-500 ml-2">
-                      최고 위험도 {Math.max(...eventContext.kgs_results.map((k: any) => k.impact_score))}점
-                    </span>
-                  </div>
+                <div className="data-card flex items-center gap-2 !p-2">
+                  <span className="text-[9px] text-amber-400 font-semibold w-10 shrink-0">KGS</span>
+                  <span className="text-[10px] text-white">영향 {eventContext.kgs_results.length}개</span>
+                  <span className="text-[9px] text-gray-500 ml-auto">max {Math.max(...eventContext.kgs_results.map((k: any) => k.impact_score))}점</span>
                 </div>
               )}
-              {/* Recommended SOP */}
               {eventContext.recommended_sops && eventContext.recommended_sops.length > 0 && (
-                <div className="data-card flex items-center gap-3">
-                  <span className="text-[10px] text-green-400 font-semibold w-14 shrink-0">SOP</span>
-                  <div className="flex-1 text-[11px] flex items-center justify-between">
-                    <span className="text-white">{eventContext.recommended_sops[0].sop_name}</span>
-                    <button
-                      onClick={() => { setShowEventPopup(false); setShowSopPanel(true); }}
-                      className="text-[10px] px-2 py-0.5 rounded bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                    >
-                      바로실행
-                    </button>
-                  </div>
+                <div className="data-card flex items-center gap-2 !p-2">
+                  <span className="text-[9px] text-green-400 font-semibold w-10 shrink-0">SOP</span>
+                  <span className="text-[10px] text-white flex-1 truncate">{eventContext.recommended_sops[0].sop_name}</span>
+                  <button
+                    onClick={() => { setShowEventPopup(false); setShowSopPanel(true); }}
+                    className="text-[9px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                  >
+                    실행
+                  </button>
                 </div>
               )}
             </div>
           )}
 
-          {/* Loading indicator when enrichment not yet loaded */}
           {!hasEnrichment && (
-            <div className="mb-4 data-card text-center">
-              <div className="text-[10px] text-gray-500 animate-pulse">진단 데이터 로딩 중...</div>
+            <div className="mb-3 data-card text-center !p-2">
+              <div className="text-[9px] text-gray-500 animate-pulse">진단 데이터 로딩 중...</div>
             </div>
           )}
 
-          {/* Mode buttons */}
-          <div className="grid grid-cols-3 gap-2">
+          {/* Mode buttons - compact 2x3 grid */}
+          <div className="grid grid-cols-3 gap-1.5">
             {MODE_BUTTONS.map((btn) => (
               <button
                 key={btn.label}
@@ -138,11 +162,10 @@ export function EventPopup() {
                     navigateMode(btn.path);
                   }
                 }}
-                className="data-card text-left group hover:border-cyan-500/30 hover:bg-cyan-500/5"
+                className="data-card text-center !p-2 group hover:border-cyan-500/30 hover:bg-cyan-500/5"
               >
-                <div className="text-base mb-1">{btn.icon}</div>
-                <div className="text-[11px] font-medium text-white group-hover:text-cyan-400 transition-colors">{btn.label}</div>
-                <div className="text-[9px] text-gray-500 mt-0.5">{btn.desc}</div>
+                <div className="text-sm mb-0.5">{btn.icon}</div>
+                <div className="text-[9px] font-medium text-gray-300 group-hover:text-cyan-400">{btn.label}</div>
               </button>
             ))}
           </div>

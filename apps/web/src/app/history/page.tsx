@@ -16,10 +16,12 @@ const TYPE_KEYWORDS: Record<TypeFilter, string[]> = {
 };
 
 function getHistoryType(summary: string): TypeFilter {
-  for (const [type, keywords] of Object.entries(TYPE_KEYWORDS)) {
-    if (keywords.some(k => summary?.includes(k))) return type as TypeFilter;
+  // 우선순위: 사고 > 교체 > 정비 > 점검(기본)
+  const priority: TypeFilter[] = ['사고', '교체', '정비', '점검'];
+  for (const type of priority) {
+    if (TYPE_KEYWORDS[type].some(k => summary?.includes(k))) return type;
   }
-  return '점검'; // default
+  return '점검';
 }
 
 function filterByPeriod(date: string | null, period: PeriodFilter): boolean {

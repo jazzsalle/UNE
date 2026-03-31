@@ -24,7 +24,22 @@ export default function MonitoringPage() {
   const [cameraPreset, setCameraPreset] = useState<string | null>(null);
   const { selectedEquipmentId, setSelectedEquipment, sensorData, showEventPopup, eventContext } = useAppStore();
 
-  useEffect(() => { api.getEquipment().then(setEquipment).catch(console.error); }, []);
+  useEffect(() => {
+    let mounted = true;
+    const fetchWithRetry = async (retries = 4, delay = 800) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const data = await api.getEquipment();
+          if (mounted) setEquipment(data);
+          return;
+        } catch {
+          if (i < retries - 1) await new Promise(r => setTimeout(r, delay * (i + 1)));
+        }
+      }
+    };
+    fetchWithRetry();
+    return () => { mounted = false; };
+  }, []);
 
   const equipmentStates = useMemo(() => {
     const states: Record<string, VisualState> = {};

@@ -28,6 +28,16 @@ export function ThreeCanvas({ children, className }: ThreeCanvasProps) {
         dpr={[1, 2]}
         camera={{ fov: 50, near: 0.1, far: 5000, position: [350, 350, 300] }}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
+        onCreated={({ gl }) => {
+          // Handle WebGL context loss gracefully
+          gl.domElement.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            console.warn('[WebGL] Context lost — waiting for restore');
+          });
+          gl.domElement.addEventListener('webglcontextrestored', () => {
+            console.info('[WebGL] Context restored');
+          });
+        }}
       >
         <ambientLight intensity={0.6} />
         <directionalLight position={[100, 200, 100]} intensity={0.8} />

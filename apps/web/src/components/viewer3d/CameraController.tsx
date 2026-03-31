@@ -1,17 +1,17 @@
-// ref: CLAUDE.md §5.5 — 카메라 프리셋 + gsap 전환
+// ref: CLAUDE.md §5.5 — 카메라 프리셋 + gsap 전환 (bird-eye/ISO 뷰)
 'use client';
 import { useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import gsap from 'gsap';
 import { CAMERA_PRESETS } from '@/lib/constants';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 interface CameraControllerProps {
   targetPreset: string | null;
 }
 
 export function CameraController({ targetPreset }: CameraControllerProps) {
-  const { camera } = useThree();
-  const controlsRef = useRef<any>(null);
+  const { camera, controls } = useThree();
   const prevPreset = useRef<string | null>(null);
 
   useEffect(() => {
@@ -21,6 +21,7 @@ export function CameraController({ targetPreset }: CameraControllerProps) {
 
     prevPreset.current = targetPreset;
 
+    // Animate camera position
     gsap.to(camera.position, {
       x: preset.position[0],
       y: preset.position[1],
@@ -28,7 +29,20 @@ export function CameraController({ targetPreset }: CameraControllerProps) {
       duration: 0.8,
       ease: 'power2.inOut',
     });
-  }, [targetPreset, camera]);
+
+    // Also animate OrbitControls target so the camera LOOKS at the equipment
+    if (controls) {
+      const orbitControls = controls as unknown as OrbitControlsImpl;
+      gsap.to(orbitControls.target, {
+        x: preset.target[0],
+        y: preset.target[1],
+        z: preset.target[2],
+        duration: 0.8,
+        ease: 'power2.inOut',
+        onUpdate: () => orbitControls.update(),
+      });
+    }
+  }, [targetPreset, camera, controls]);
 
   return null;
 }

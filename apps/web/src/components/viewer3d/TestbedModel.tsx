@@ -10,6 +10,7 @@ import { TankLevel } from './effects/TankLevel';
 import { HeatmapOverlay } from './effects/HeatmapOverlay';
 import { PropagationPath } from './effects/PropagationPath';
 import { COLOR_MAP, type VisualState } from '@/lib/constants';
+import { darkenTerrain } from './EnvironmentScene';
 
 // ref: CLAUDE.md §5.2 — mesh-equipment 매핑
 const EQUIPMENT_MESH_MAP: Record<string, string> = {
@@ -98,6 +99,11 @@ export function TestbedModel({
   const { scene } = useGLTF('/models/h2.glb', true);
   const sceneRef = useRef<THREE.Group>(null);
   const prevStates = useRef<Record<string, VisualState>>({});
+
+  // Darken terrain on initial load
+  useEffect(() => {
+    if (scene) darkenTerrain(scene);
+  }, [scene]);
 
   // Apply coloring when states change
   useEffect(() => {

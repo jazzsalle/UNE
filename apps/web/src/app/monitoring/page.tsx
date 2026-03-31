@@ -11,6 +11,8 @@ import { getPresetForEquipment } from '@/components/viewer3d/CameraController';
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
 const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
 const CameraController = dynamic(() => import('@/components/viewer3d/CameraController').then(m => ({ default: m.CameraController })), { ssr: false });
+const EquipmentPOIs = dynamic(() => import('@/components/viewer3d/EquipmentPOI').then(m => ({ default: m.EquipmentPOIs })), { ssr: false });
+const EnvironmentScene = dynamic(() => import('@/components/viewer3d/EnvironmentScene').then(m => ({ default: m.EnvironmentScene })), { ssr: false });
 
 const PROCESS_STAGES = [
   { no: 1, name: '하역', ids: ['SHP-001', 'ARM-101'], icon: '⚓' },
@@ -127,7 +129,14 @@ export default function MonitoringPage() {
       {/* 중앙: 3D 뷰어 */}
       <main className="flex-1 relative">
         <ThreeCanvas>
+          <EnvironmentScene />
           <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleSelectEquipment} />
+          <EquipmentPOIs
+            equipment={equipment}
+            equipmentStates={equipmentStates}
+            selectedId={selectedEquipmentId}
+            onSelect={handleSelectEquipment}
+          />
           <CameraController targetPreset={cameraPreset} />
         </ThreeCanvas>
 

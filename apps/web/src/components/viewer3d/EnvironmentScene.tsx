@@ -1,19 +1,23 @@
-// 바닥판 어둡게 + 도로 + 바다 처리
+// 바닥판 어둡게 + 도로(배관 옆) + 바다(파란색 물결)
 'use client';
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// ── 바다 (검은 영역을 바다로) ──
+// ── 바다 (파란색, 바닥판 영역은 제외) ──
+// 바닥판(terrain_ground) 대략 범위: X[-100..310], Z[-260..260]
+// 바다는 이 범위 밖에서만 보여야 함
 function Ocean() {
-  const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
 
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
-    uDeepColor: { value: new THREE.Color('#0a1628') },
-    uShallowColor: { value: new THREE.Color('#1a3a5c') },
-    uFoamColor: { value: new THREE.Color('#3a6a8a') },
+    uDeepColor:    { value: new THREE.Color('#0a2463') },  // 진한 파란
+    uShallowColor: { value: new THREE.Color('#1e56a0') },  // 중간 파란
+    uFoamColor:    { value: new THREE.Color('#3d8bfd') },  // 밝은 파란 거품
+    // 바닥판 바운딩 박스 (Three.js XZ 평면)
+    uTerrainMin: { value: new THREE.Vector2(-110, -270) },
+    uTerrainMax: { value: new THREE.Vector2(320, 270) },
   }), []);
 
   useFrame((_, delta) => {
@@ -23,26 +27,31 @@ function Ocean() {
   });
 
   return (
-    <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]} position={[90, -2, 0]}>
-      <planeGeometry args={[2000, 2000, 64, 64]} />
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[90, -3, 0]}>
+      <planeGeometry args={[2500, 2500, 80, 80]} />
       <shaderMaterial
         ref={materialRef}
         uniforms={uniforms}
         transparent
         side={THREE.DoubleSide}
+        depthWrite={false}
         vertexShader={`
           uniform float uTime;
           varying vec2 vUv;
           varying float vWave;
+          varying vec3 vWorldPos;
           void main() {
             vUv = uv;
             vec3 pos = position;
-            // 잔잔한 파도
-            float wave1 = sin(pos.x * 0.015 + uTime * 0.5) * 1.5;
-            float wave2 = sin(pos.y * 0.02 + uTime * 0.3) * 1.0;
-            float wave3 = cos((pos.x + pos.y) * 0.01 + uTime * 0.7) * 0.8;
+            // 물결 애니메이션
+            float wave1 = sin(pos.x * 0.012 + uTime * 0.6) * 2.0;
+            float wave2 = sin(pos.y * 0.018 + uTime * 0.4) * 1.5;
+            float wave3 = cos((pos.x + pos.y) * 0.008 + uTime * 0.8) * 1.0;
             pos.z += wave1 + wave2 + wave3;
-            vWave = (wave1 + wave2 + wave3) / 3.3;
+            vWave = (wave1 + wave2 + wave3) / 4.5;
+            // 월드 위치 전달 (바닥판 마스킹용)
+            vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+            vWorldPos = worldPos.xyz;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
           }
         `}
@@ -51,18 +60,38 @@ function Ocean() {
           uniform vec3 uShallowColor;
           uniform vec3 uFoamColor;
           uniform float uTime;
+          uniform vec2 uTerrainMin;
+          uniform vec2 uTerrainMax;
           varying vec2 vUv;
           varying float vWave;
+          varying vec3 vWorldPos;
           void main() {
-            // 파도 높낮이에 따라 색상 혼합
-            float mixFactor = smoothstep(-0.3, 0.5, vWave);
+            // 바닥판 영역 내부이면 투명 처리 (바다 안 보임)
+            float inTerrainX = step(uTerrainMin.x, vWorldPos.x) * step(vWorldPos.x, uTerrainMax.x);
+            float inTerrainZ = step(uTerrainMin.y, vWorldPos.z) * step(vWorldPos.z, uTerrainMax.y);
+            float inTerrain = inTerrainX * inTerrainZ;
+            // 바닥판 경계에서 부드럽게 전환 (20단위 페더링)
+            float fadeX = smoothstep(0.0, 20.0, vWorldPos.x - uTerrainMin.x) * smoothstep(0.0, 20.0, uTerrainMax.x - vWorldPos.x);
+            float fadeZ = smoothstep(0.0, 20.0, vWorldPos.z - uTerrainMin.y) * smoothstep(0.0, 20.0, uTerrainMax.y - vWorldPos.z);
+            float terrainMask = fadeX * fadeZ;
+
+            // 파도 색상 혼합
+            float mixFactor = smoothstep(-0.3, 0.6, vWave);
             vec3 color = mix(uDeepColor, uShallowColor, mixFactor);
-            // 파도 정점에 거품 효과
-            float foam = smoothstep(0.4, 0.7, vWave);
-            color = mix(color, uFoamColor, foam * 0.3);
-            // 가장자리 페이드아웃
-            float edge = 1.0 - smoothstep(0.35, 0.5, length(vUv - 0.5));
-            gl_FragColor = vec4(color, 0.95 * edge);
+            // 파도 정점 거품
+            float foam = smoothstep(0.35, 0.7, vWave);
+            color = mix(color, uFoamColor, foam * 0.4);
+            // 반짝임
+            float sparkle = pow(max(0.0, sin(vWorldPos.x * 0.5 + uTime * 2.0) * sin(vWorldPos.z * 0.5 + uTime * 1.5)), 8.0);
+            color += vec3(sparkle * 0.08);
+
+            // 바닥판 내부 → 투명, 바깥 → 불투명
+            float alpha = (1.0 - terrainMask) * 0.92;
+            // 전체 가장자리 페이드
+            float edgeFade = 1.0 - smoothstep(0.4, 0.5, length(vUv - 0.5));
+            alpha *= edgeFade;
+
+            gl_FragColor = vec4(color, alpha);
           }
         `}
       />
@@ -70,30 +99,33 @@ function Ocean() {
   );
 }
 
-// ── 도로 (설비 간 연결 경로) ──
+// ── 도로 (로딩암 접속부 → 배관 옆을 따라 배치) ──
 function Roads() {
-  // 주요 설비 간 도로 경로 (Three.js 좌표: X, Z가 평면, Y가 높이)
+  // 배관 경로 옆에 도로 배치 (배관에서 약 8~10 단위 오프셋)
+  // 로딩암(ARM-101)이 바닥판에 닿는 지점부터 시작
   const roadPaths: Array<{ points: [number, number][]; width: number }> = [
-    // 메인 도로: 선석 → 탱크 → BOG → 펌프 → 기화기 방향
-    { points: [[303,-96],[200,-150],[145,-208],[47,-204]], width: 6 },
-    // 탱크 → BOG 압축기
-    { points: [[100,-180],[60,-120],[33,-44]], width: 5 },
-    // BOG → 재액화기
-    { points: [[33,-44],[80,-50],[144,-59]], width: 4 },
-    // 메인 이송: 펌프 → 배관 → 밸브
-    { points: [[141,54],[100,20],[60,-8],[-10,-20],[-52,-48]], width: 5 },
-    // 기화기 방향
-    { points: [[141,54],[135,120],[133,189]], width: 5 },
-    // 밸브 스테이션 #2
-    { points: [[60,-8],[30,80],[-3,177]], width: 4 },
-    // 로딩암 연결
-    { points: [[303,-96],[272,-121]], width: 4 },
+    // 메인 도로: 로딩암 접속부 → 탱크 방향 (배관 옆, +X 오프셋)
+    { points: [[260,-115],[230,-130],[200,-155],[170,-180],[150,-200]], width: 5 },
+    // 탱크 간 연결 (TK-101 → TK-102)
+    { points: [[150,-200],[120,-205],[80,-205],[55,-200]], width: 5 },
+    // 탱크 → BOG/재액화 방향 (배관 옆, +X 오프셋)
+    { points: [[120,-200],[110,-170],[95,-140],[80,-110],[65,-80],[50,-55],[40,-40]], width: 5 },
+    // BOG → 재액화기 연결
+    { points: [[40,-40],[70,-45],[100,-50],[140,-55]], width: 4 },
+    // BOG/재액화 → 펌프 방향 (배관 옆)
+    { points: [[40,-40],[55,-20],[70,0],[90,15],[110,30],[130,45],[145,55]], width: 5 },
+    // 펌프 → 배관 → 밸브 #1 (배관 옆)
+    { points: [[145,55],[125,45],[100,30],[80,15],[65,0],[50,-15],[30,-25],[10,-35],[-20,-40],[-45,-45]], width: 5 },
+    // 펌프 → 기화기 (배관 옆)
+    { points: [[145,55],[142,80],[140,110],[138,140],[135,170],[133,195]], width: 5 },
+    // 밸브 #2 방향 분기
+    { points: [[65,0],[55,30],[40,70],[20,110],[5,145],[-2,180]], width: 4 },
   ];
 
   return (
     <group>
       {roadPaths.map((road, ri) => {
-        const shapes: JSX.Element[] = [];
+        const segments: JSX.Element[] = [];
         for (let i = 0; i < road.points.length - 1; i++) {
           const [x1, z1] = road.points[i];
           const [x2, z2] = road.points[i + 1];
@@ -104,41 +136,47 @@ function Roads() {
           const mx = (x1 + x2) / 2;
           const mz = (z1 + z2) / 2;
 
-          shapes.push(
+          // 도로 본체
+          segments.push(
             <mesh
               key={`road-${ri}-${i}`}
-              position={[mx, 0.15, mz]}
+              position={[mx, 0.12, mz]}
               rotation={[-Math.PI / 2, 0, -angle]}
             >
               <planeGeometry args={[road.width, len]} />
               <meshStandardMaterial
-                color="#2a2a2a"
-                roughness={0.95}
+                color="#303030"
+                roughness={0.92}
                 metalness={0}
                 transparent
-                opacity={0.7}
+                opacity={0.8}
               />
             </mesh>
           );
 
-          // 도로 중앙선 (점선)
-          shapes.push(
-            <mesh
-              key={`center-${ri}-${i}`}
-              position={[mx, 0.2, mz]}
-              rotation={[-Math.PI / 2, 0, -angle]}
-            >
-              <planeGeometry args={[0.5, len]} />
-              <meshStandardMaterial
-                color="#555555"
-                roughness={0.9}
-                transparent
-                opacity={0.5}
-              />
-            </mesh>
-          );
+          // 도로 가장자리 라인 (양쪽)
+          const edgeOffset = road.width / 2 - 0.2;
+          const perpX = Math.cos(angle) * edgeOffset;
+          const perpZ = -Math.sin(angle) * edgeOffset;
+          for (const side of [-1, 1]) {
+            segments.push(
+              <mesh
+                key={`edge-${ri}-${i}-${side}`}
+                position={[mx + perpX * side, 0.15, mz + perpZ * side]}
+                rotation={[-Math.PI / 2, 0, -angle]}
+              >
+                <planeGeometry args={[0.3, len]} />
+                <meshStandardMaterial
+                  color="#505050"
+                  roughness={0.9}
+                  transparent
+                  opacity={0.6}
+                />
+              </mesh>
+            );
+          }
         }
-        return <group key={`roadgroup-${ri}`}>{shapes}</group>;
+        return <group key={`roadgroup-${ri}`}>{segments}</group>;
       })}
     </group>
   );
@@ -149,7 +187,6 @@ export function darkenTerrain(scene: THREE.Group) {
   scene.traverse((child) => {
     if (!(child as THREE.Mesh).isMesh) return;
     const mesh = child as THREE.Mesh;
-    // TERRAIN, GROUND 또는 terrain_ground 이름의 mesh
     const name = mesh.name.toLowerCase();
     const parentName = mesh.parent?.name?.toUpperCase() || '';
     if (name.includes('terrain') || name.includes('ground') || parentName === 'TERRAIN' || parentName === 'GROUND') {
@@ -162,6 +199,8 @@ export function darkenTerrain(scene: THREE.Group) {
           stdMat.metalness = 0;
         }
       }
+      // 바닥판이 바다 위에 렌더되도록
+      mesh.renderOrder = 1;
     }
   });
 }

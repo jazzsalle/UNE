@@ -16,6 +16,22 @@ export function useSSE() {
   const setEmulatorStatus = useEmulatorStore((s) => s.setStatus);
 
   useEffect(() => {
+    // On mount: sync current emulator status so the bar reflects server state after page reload
+    fetch(`${API_URL}/api/emulator/status`)
+      .then((r) => r.json())
+      .then((status) => {
+        if (status.running) {
+          setEmulatorStatus({
+            running: true,
+            scenario_id: status.scenario_id,
+            elapsed_sec: status.elapsed_sec,
+            phase: status.phase,
+            speed: status.speed,
+          });
+        }
+      })
+      .catch(() => {});
+
     const es = new EventSource(`${API_URL}/api/emulator/stream`);
     esRef.current = es;
 
@@ -25,10 +41,11 @@ export function useSSE() {
         switch (event.type) {
           case 'SENSOR_UPDATE':
             updateSensorData(event.data);
-            setEmulatorStatus({ elapsed_sec: event.elapsed_sec, phase: event.phase });
+            // running: true ensures the bar shows the live state after page reload
+            setEmulatorStatus({ running: true, elapsed_sec: event.elapsed_sec, phase: event.phase });
             break;
           case 'PHASE_CHANGE':
-            setEmulatorStatus({ phase: event.phase, elapsed_sec: event.elapsed_sec });
+            setEmulatorStatus({ running: true, phase: event.phase, elapsed_sec: event.elapsed_sec });
             break;
           case 'ALARM':
             for (const a of event.data) addAlarm({ ...a, timestamp: event.timestamp, phase: event.phase });

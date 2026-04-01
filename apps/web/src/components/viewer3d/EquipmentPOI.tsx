@@ -5,6 +5,7 @@ import { Html } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { VisualState } from '@/lib/constants';
+import { computeTopCenter } from './equipmentUtils';
 
 // 한국어 설비명 매핑
 const EQUIPMENT_NAMES_KR: Record<string, string> = {
@@ -29,35 +30,6 @@ const STATUS_CONFIG: Record<VisualState, { label: string; color: string; bg: str
   affected:  { label: '영향',  color: '#FFEE58', bg: 'rgba(40,35,10,0.92)', glow: '0 0 12px rgba(255,238,88,0.4)' },
   simTarget: { label: '대상',  color: '#E040FB', bg: 'rgba(30,15,40,0.92)', glow: '0 0 12px rgba(224,64,251,0.4)' },
 };
-
-// 씬에서 설비 오브젝트의 월드 바운딩박스 상단 중심 좌표 계산
-function computeTopCenter(scene: THREE.Object3D, equipmentId: string): [number, number, number] | null {
-  const obj = scene.getObjectByName(equipmentId);
-  if (!obj) return null;
-
-  const box = new THREE.Box3();
-  obj.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const mesh = child as THREE.Mesh;
-      mesh.updateWorldMatrix(true, false);
-      if (mesh.geometry) {
-        mesh.geometry.computeBoundingBox();
-        if (mesh.geometry.boundingBox) {
-          const meshBox = mesh.geometry.boundingBox.clone();
-          meshBox.applyMatrix4(mesh.matrixWorld);
-          box.union(meshBox);
-        }
-      }
-    }
-  });
-
-  if (box.isEmpty()) return null;
-
-  const center = new THREE.Vector3();
-  box.getCenter(center);
-  // POI는 바운딩박스 상단 (Y max) 중심에 배치 + 약간 여유
-  return [center.x, box.max.y + 5, center.z];
-}
 
 interface SinglePOIProps {
   equipmentId: string;

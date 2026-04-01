@@ -1,38 +1,14 @@
 // 카메라 컨트롤러 — 설비 바운딩박스 기반 동적 프레이밍
 'use client';
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import gsap from 'gsap';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import { computeEquipmentBBox } from './equipmentUtils';
 
 interface CameraControllerProps {
   targetEquipmentId: string | null;
-}
-
-// 씬에서 설비 EMPTY 오브젝트를 찾아 월드 바운딩박스 계산
-function computeEquipmentBBox(scene: THREE.Object3D, equipmentId: string): THREE.Box3 | null {
-  const obj = scene.getObjectByName(equipmentId);
-  if (!obj) return null;
-
-  const box = new THREE.Box3();
-  obj.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const mesh = child as THREE.Mesh;
-      mesh.updateWorldMatrix(true, false);
-      if (mesh.geometry) {
-        mesh.geometry.computeBoundingBox();
-        if (mesh.geometry.boundingBox) {
-          const meshBox = mesh.geometry.boundingBox.clone();
-          meshBox.applyMatrix4(mesh.matrixWorld);
-          box.union(meshBox);
-        }
-      }
-    }
-  });
-
-  if (box.isEmpty()) return null;
-  return box;
 }
 
 // 바운딩박스에서 카메라가 객체 전체를 넉넉히 잡을 수 있는 위치 계산

@@ -4,107 +4,30 @@ import { useEffect, useRef, useMemo, useCallback, useState } from 'react';
 import { useGLTF, useProgress } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-// Draco: useGLTF 2nd arg=true enables auto Draco detection via drei
 import { GlowEffect } from './effects/GlowEffect';
 import { TankLevel } from './effects/TankLevel';
 import { HeatmapOverlay } from './effects/HeatmapOverlay';
 import { PropagationPath } from './effects/PropagationPath';
 import { COLOR_MAP, type VisualState } from '@/lib/constants';
 import { darkenTerrain } from './EnvironmentScene';
+import {
+  findEquipmentObject,
+  computeEquipmentCenter,
+  computeEquipmentHeight,
+  computeEquipmentRadius,
+} from './equipmentUtils';
 
-// ref: CLAUDE.md §5.2 — mesh-equipment 매핑
-const EQUIPMENT_MESH_MAP: Record<string, string> = {
-  'SHP-001': 'ship_carrier_001',
-  'ARM-101': 'loading_arm_101',
-  'TK-101':  'tank_101',
-  'TK-102':  'tank_102',
-  'BOG-201': 'bog_compressor_201',
-  'PMP-301': 'pump_301',
-  'VAP-401': 'vaporizer_401',
-  'REL-701': 'reliquefier_701',
-  'VAL-601': 'valve_station_601',
-  'VAL-602': 'valve_station_602',
-  'PIP-501': 'pipe_main_a',
-};
-
-// 설비 위치 — 씬 로드 후 바운딩박스에서 동적 계산
-const cachedPositions: Record<string, [number, number, number]> = {};
-
-function computeEquipmentCenter(scene: THREE.Group, equipmentId: string): [number, number, number] | null {
-  if (cachedPositions[equipmentId]) return cachedPositions[equipmentId];
-  const obj = scene.getObjectByName(equipmentId);
-  if (!obj) return null;
-  const box = new THREE.Box3();
-  obj.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const mesh = child as THREE.Mesh;
-      mesh.updateWorldMatrix(true, false);
-      if (mesh.geometry) {
-        mesh.geometry.computeBoundingBox();
-        if (mesh.geometry.boundingBox) {
-          const mb = mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld);
-          box.union(mb);
-        }
-      }
-    }
-  });
-  if (box.isEmpty()) return null;
-  const center = new THREE.Vector3();
-  box.getCenter(center);
-  cachedPositions[equipmentId] = [center.x, center.y, center.z];
-  return cachedPositions[equipmentId];
-}
-
-function computeEquipmentHeight(scene: THREE.Group, equipmentId: string): number {
-  const obj = scene.getObjectByName(equipmentId);
-  if (!obj) return 40;
-  const box = new THREE.Box3();
-  obj.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const mesh = child as THREE.Mesh;
-      mesh.updateWorldMatrix(true, false);
-      if (mesh.geometry) {
-        mesh.geometry.computeBoundingBox();
-        if (mesh.geometry.boundingBox) {
-          const mb = mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld);
-          box.union(mb);
-        }
-      }
-    }
-  });
-  if (box.isEmpty()) return 40;
-  return box.max.y - box.min.y;
-}
-
-function computeEquipmentRadius(scene: THREE.Group, equipmentId: string): number {
-  const obj = scene.getObjectByName(equipmentId);
-  if (!obj) return 14;
-  const box = new THREE.Box3();
-  obj.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const mesh = child as THREE.Mesh;
-      mesh.updateWorldMatrix(true, false);
-      if (mesh.geometry) {
-        mesh.geometry.computeBoundingBox();
-        if (mesh.geometry.boundingBox) {
-          const mb = mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld);
-          box.union(mb);
-        }
-      }
-    }
-  });
-  if (box.isEmpty()) return 14;
-  const size = new THREE.Vector3();
-  box.getSize(size);
-  return Math.max(size.x, size.z) / 2;
-}
+// ref: CLAUDE.md §5.2 — mesh-equipment 매핑 (클릭 핸들러용)
+const EQUIPMENT_IDS = [
+  'SHP-001', 'ARM-101', 'TK-101', 'TK-102', 'BOG-201',
+  'PMP-301', 'VAP-401', 'REL-701', 'VAL-601', 'VAL-602', 'PIP-501',
+];
 
 // Material cache — clone only once per mesh (ref: CLAUDE.md §15.1)
 const clonedMaterials = new Map<string, THREE.Material | THREE.Material[]>();
 
 function colorizeEquipment(scene: THREE.Group, equipmentId: string, state: VisualState) {
-  // EMPTY 부모(설비 ID) → 자식 MESH
-  const empty = scene.getObjectByName(equipmentId);
+  const empty = findEquipmentObject(scene, equipmentId);
   if (!empty) return;
 
   empty.traverse((child) => {
@@ -169,7 +92,7 @@ export function TestbedModel({
     darkenTerrain(scene);
     // Compute equipment positions after load
     const timer = setTimeout(() => {
-      for (const eqId of Object.keys(EQUIPMENT_MESH_MAP)) {
+      for (const eqId of EQUIPMENT_IDS) {
         computeEquipmentCenter(scene, eqId);
       }
       setPositionsReady(true);
@@ -195,22 +118,24 @@ export function TestbedModel({
     prevStates.current = { ...equipmentStates };
   }, [scene, equipmentStates]);
 
-  // Click handler
+  // Click handler — walk up the hierarchy to find equipment ID
   const handleClick = useCallback((e: any) => {
     e.stopPropagation();
     let obj = e.object as THREE.Object3D;
-    // Walk up to find EMPTY parent (equipment ID)
-    while (obj.parent) {
-      if (Object.keys(EQUIPMENT_MESH_MAP).includes(obj.name)) {
+    while (obj) {
+      // Direct match on equipment ID
+      if (EQUIPMENT_IDS.includes(obj.name)) {
         onEquipmentClick?.(obj.name);
         return;
       }
-      // Check if parent is an equipment ID
-      if (obj.parent && Object.keys(EQUIPMENT_MESH_MAP).includes(obj.parent.name)) {
-        onEquipmentClick?.(obj.parent.name);
-        return;
+      // ARM-101001 같은 suffix 변형도 매칭
+      for (const eqId of EQUIPMENT_IDS) {
+        if (obj.name.startsWith(eqId) && obj.name !== eqId) {
+          onEquipmentClick?.(eqId);
+          return;
+        }
       }
-      obj = obj.parent;
+      obj = obj.parent!;
     }
   }, [onEquipmentClick]);
 

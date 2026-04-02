@@ -9,10 +9,12 @@ import { TankLevel } from './effects/TankLevel';
 import { HeatmapOverlay } from './effects/HeatmapOverlay';
 import { PropagationPath } from './effects/PropagationPath';
 import { PipeFlowSystem } from './effects/PipeFlow';
+import { AmbientAnimations } from './effects/AmbientAnimations';
 import { COLOR_MAP, type VisualState } from '@/lib/constants';
 import { darkenTerrain } from './EnvironmentScene';
 import {
   findEquipmentObject,
+  computeEquipmentBBox,
   computeEquipmentCenter,
   computeEquipmentHeight,
   computeEquipmentRadius,
@@ -77,12 +79,15 @@ interface TestbedModelProps {
   propagationPaths?: { from: string; to: string }[];
   pipeFlowStatus?: 'normal' | 'warning' | 'critical';
   pipeFlowSpeed?: number;
+  /** 상시 모니터링 선박/로딩암 애니메이션 활성화 */
+  enableAmbientAnimations?: boolean;
 }
 
 export function TestbedModel({
   equipmentStates = {}, onEquipmentClick, showEffects = true,
   tankLevels = {}, heatmapTarget = null, propagationPaths = [],
   pipeFlowStatus = 'normal', pipeFlowSpeed = 1,
+  enableAmbientAnimations = false,
 }: TestbedModelProps) {
   // useGLTF 2nd arg=true → auto Draco decoding (drei uses /draco/ path)
   const { scene } = useGLTF('/models/h2.glb', true);
@@ -153,21 +158,30 @@ export function TestbedModel({
     <>
       <primitive ref={sceneRef} object={scene} onClick={handleClick} />
 
+      {/* 상시 모니터링 선박/로딩암 애니메이션 */}
+      {enableAmbientAnimations && (
+        <AmbientAnimations scene={scene} />
+      )}
+
       {showEffects && positionsReady && (
         <>
-          {/* Glow for warning/critical equipment */}
+          {/* Glow for warning/critical/affected equipment */}
           {Object.entries(equipmentStates).map(([eqId, state]) => {
             if (state === 'normal') return null;
             const pos = computeEquipmentCenter(scene, eqId);
             if (!pos) return null;
+            const box = computeEquipmentBBox(scene, eqId);
+            const glowSize: [number, number, number] = box
+              ? [box.max.x - box.min.x + 6, box.max.y - box.min.y + 6, box.max.z - box.min.z + 6]
+              : [20, 20, 20];
             return (
               <GlowEffect
                 key={`glow-${eqId}`}
                 position={pos}
-                size={[15, 15, 15]}
+                size={glowSize}
                 color={COLOR_MAP[state]}
                 pulse={state === 'critical' || state === 'emergency'}
-                intensity={state === 'emergency' ? 0.6 : 0.4}
+                intensity={state === 'emergency' ? 0.6 : state === 'affected' ? 0.3 : 0.4}
               />
             );
           })}
@@ -190,21 +204,12 @@ export function TestbedModel({
             );
           })}
 
-          {/* Pipe flow animation */}
-          {(() => {
-            const posMap: Record<string, [number, number, number]> = {};
-            for (const eqId of EQUIPMENT_IDS) {
-              const c = computeEquipmentCenter(scene, eqId);
-              if (c) posMap[eqId] = c;
-            }
-            return (
-              <PipeFlowSystem
-                equipmentPositions={posMap}
-                flowStatus={pipeFlowStatus}
-                flowSpeed={pipeFlowSpeed}
-              />
-            );
-          })()}
+          {/* Pipe flow animation — GLB 배관 메시 오버레이 */}
+          <PipeFlowSystem
+            scene={scene}
+            flowStatus={pipeFlowStatus}
+            flowSpeed={pipeFlowSpeed}
+          />
 
           {/* Heatmap */}
           {heatmapTarget && (() => {
@@ -228,34 +233,132 @@ export function TestbedModel({
 // Preload
 useGLTF.preload('/models/h2.glb');
 
-// ref: CLAUDE.md §5.6 — secondary_pump.glb (M-ANO용)
-export function PumpDetailModel({ meshStates = {} }: { meshStates?: Record<string, string> }) {
+// ref: CLAUDE.md §5.6 — secondary_pump.glb (M-ANO용) + X-ray 시각화
+// 외통(outer_can)을 반투명, 이상 발생 부위만 컬러링
+const OUTER_PARTS = ['outer_can', 'mounting_plate', 'discharge_pipe'];
+
+export function PumpDetailModel({ meshStates = {}, xrayMode = false }: { meshStates?: Record<string, string>; xrayMode?: boolean }) {
   const { scene } = useGLTF('/models/secondary_pump.glb');
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
-    // Scale up — secondary_pump.glb is very small (ref: CLAUDE.md §5.6)
     clone.scale.setScalar(50);
     return clone;
   }, [scene]);
 
-  // Apply mesh coloring
   useEffect(() => {
+    const hasAnomaly = Object.keys(meshStates).length > 0;
+
     clonedScene.traverse((child) => {
       if (!(child as THREE.Mesh).isMesh) return;
       const mesh = child as THREE.Mesh;
-      const color = meshStates[mesh.name];
-      if (color) {
-        if (!Array.isArray(mesh.material)) {
-          mesh.material = mesh.material.clone();
-          (mesh.material as THREE.MeshStandardMaterial).color.set(color);
-          (mesh.material as THREE.MeshStandardMaterial).emissive?.set(color);
-          (mesh.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.3;
-        }
+      if (Array.isArray(mesh.material)) return;
+
+      mesh.material = mesh.material.clone();
+      const mat = mesh.material as THREE.MeshStandardMaterial;
+
+      const anomalyColor = meshStates[mesh.name];
+      const isOuter = OUTER_PARTS.includes(mesh.name);
+
+      if (anomalyColor) {
+        // 이상 부위: 컬러링 + emissive glow
+        mat.color.set(anomalyColor);
+        mat.emissive.set(anomalyColor);
+        mat.emissiveIntensity = 0.4;
+        mat.transparent = false;
+        mat.opacity = 1;
+      } else if (isOuter && (xrayMode || hasAnomaly)) {
+        // X-ray 모드 또는 이상 시: 외통 반투명
+        mat.color.set('#a0c4ff');
+        mat.transparent = true;
+        mat.opacity = 0.15;
+        mat.depthWrite = false;
+        mat.emissive.set('#4080ff');
+        mat.emissiveIntensity = 0.05;
+      } else if (hasAnomaly) {
+        // 이상 시 정상 내부 파트: 약간 밝은 톤
+        mat.color.set('#b0d0ff');
+        mat.emissive.set('#2060c0');
+        mat.emissiveIntensity = 0.1;
+        mat.transparent = false;
+        mat.opacity = 1;
+      } else {
+        // 정상: 기본 재질 (밝은 회색)
+        mat.color.set('#d0d4dc');
+        mat.emissive.set('#000000');
+        mat.emissiveIntensity = 0;
+        mat.transparent = false;
+        mat.opacity = 1;
       }
     });
-  }, [clonedScene, meshStates]);
+  }, [clonedScene, meshStates, xrayMode]);
 
   return <primitive object={clonedScene} />;
 }
 
 useGLTF.preload('/models/secondary_pump.glb');
+
+/**
+ * 테스트베드 GLB에서 특정 설비만 표시하는 격리 뷰어
+ * 설비 상태감시 모드에서 개별 설비 상세 뷰용
+ */
+export function IsolatedEquipmentModel({
+  equipmentId,
+  equipmentStates = {},
+}: {
+  equipmentId: string;
+  equipmentStates?: Record<string, VisualState>;
+}) {
+  const { scene } = useGLTF('/models/h2.glb', true);
+  const prevVisibility = useRef<Map<string, boolean>>(new Map());
+
+  useEffect(() => {
+    if (!scene) return;
+
+    // 모든 설비 EMPTY 노드의 가시성 제어
+    const targetIds = [
+      'SHP-001', 'ARM-101', 'TK-101', 'TK-102', 'BOG-201',
+      'PMP-301', 'VAP-401', 'REL-701', 'VAL-601', 'VAL-602', 'PIP-501',
+      'SWP-001', 'TERRAIN', 'GROUND',
+    ];
+
+    for (const eqId of targetIds) {
+      const obj = findEquipmentObject(scene, eqId);
+      if (!obj) continue;
+
+      // 저장 (최초만)
+      if (!prevVisibility.current.has(eqId)) {
+        prevVisibility.current.set(eqId, obj.visible);
+      }
+
+      // 선택된 설비만 표시, 나머지 숨김
+      obj.visible = (eqId === equipmentId);
+    }
+
+    // TERRAIN/GROUND 숨김
+    const terrain = scene.getObjectByName('TERRAIN') || scene.getObjectByName('terrain_ground');
+    if (terrain) terrain.visible = false;
+    const ground = scene.getObjectByName('GROUND');
+    if (ground) ground.visible = false;
+
+    // 선택 설비 컬러링 적용
+    const state = equipmentStates[equipmentId];
+    if (state && state !== 'normal') {
+      colorizeEquipment(scene, equipmentId, state);
+    }
+
+    return () => {
+      // 언마운트 시 모든 설비 가시성 복원
+      for (const [eqId, wasVisible] of prevVisibility.current.entries()) {
+        const obj = findEquipmentObject(scene, eqId);
+        if (obj) obj.visible = wasVisible;
+      }
+      const t = scene.getObjectByName('TERRAIN') || scene.getObjectByName('terrain_ground');
+      if (t) t.visible = true;
+      const g = scene.getObjectByName('GROUND');
+      if (g) g.visible = true;
+      prevVisibility.current.clear();
+    };
+  }, [scene, equipmentId, equipmentStates]);
+
+  return <primitive object={scene} />;
+}

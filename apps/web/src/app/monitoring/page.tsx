@@ -1,12 +1,11 @@
 // ref: CLAUDE.md §9.2 — 기본 모니터링 (M-MON) 개선
 'use client';
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useAppStore } from '@/stores/appStore';
 import { api } from '@/lib/api';
-import { EQUIPMENT_ICONS, type VisualState } from '@/lib/constants';
+import { EQUIPMENT_ICONS, SENSOR_TYPE_KR, PHASE_KR, type VisualState } from '@/lib/constants';
 import { EventPopup } from '@/components/common/EventPopup';
-// getPresetForEquipment now just returns the equipment ID itself
 
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
 const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
@@ -14,7 +13,7 @@ const CameraController = dynamic(() => import('@/components/viewer3d/CameraContr
 const EquipmentPOIs = dynamic(() => import('@/components/viewer3d/EquipmentPOI').then(m => ({ default: m.EquipmentPOIs })), { ssr: false });
 const EnvironmentScene = dynamic(() => import('@/components/viewer3d/EnvironmentScene').then(m => ({ default: m.EnvironmentScene })), { ssr: false });
 const CameraBookmarkInner = dynamic(() => import('@/components/viewer3d/CameraBookmark').then(m => ({ default: m.CameraBookmark })), { ssr: false });
-import { CameraControlsOverlay, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
+import { CameraControlsOverlay, getSavedCamera, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
 
 // 한국어 설비명 매핑
 const EQUIPMENT_NAMES_KR: Record<string, string> = {
@@ -26,9 +25,24 @@ const EQUIPMENT_NAMES_KR: Record<string, string> = {
   'PMP-301': '이송펌프',
   'VAP-401': '기화기',
   'REL-701': '재액화기',
-  'VAL-601': '밸브 #1',
-  'VAL-602': '밸브 #2',
+  'VAL-601': '배출설비 #1',
+  'VAL-602': '배출설비 #2',
   'PIP-501': '메인배관',
+};
+
+// 설비 자산 정보 (설계 제원)
+const EQUIPMENT_SPECS: Record<string, { items: { label: string; value: string }[] }> = {
+  'SHP-001': { items: [{ label: '선박 용량', value: '20,000 m³' }, { label: '흘수', value: '11.5 m' }, { label: '전장', value: '230 m' }] },
+  'ARM-101': { items: [{ label: '설계 압력', value: '10 barg' }, { label: '호스 직경', value: '16 inch' }, { label: 'ESD 작동시간', value: '< 30s' }] },
+  'TK-101':  { items: [{ label: '설계 압력', value: '0.7 barg' }, { label: '용량', value: '10,000 m³' }, { label: '누출관 크기', value: '4 inch' }, { label: '설계 온도', value: '-253℃' }] },
+  'TK-102':  { items: [{ label: '설계 압력', value: '0.7 barg' }, { label: '용량', value: '10,000 m³' }, { label: '누출관 크기', value: '4 inch' }, { label: '설계 온도', value: '-253℃' }] },
+  'BOG-201': { items: [{ label: '설계 압력', value: '12.5 barg' }, { label: '유량', value: '5,000 Nm³/h' }, { label: '모터 출력', value: '500 kW' }, { label: '회전수', value: '3,600 RPM' }] },
+  'PMP-301': { items: [{ label: '설계 압력', value: '15 barg' }, { label: '양정', value: '120 m' }, { label: '정격 유량', value: '150 m³/h' }, { label: '모터 출력', value: '250 kW' }] },
+  'VAP-401': { items: [{ label: '설계 압력', value: '10 barg' }, { label: '처리 용량', value: '100 m³/h' }, { label: '열교환 면적', value: '850 m²' }, { label: '출구 온도', value: '5℃ 이상' }] },
+  'REL-701': { items: [{ label: '설계 압력', value: '15 barg' }, { label: '처리 용량', value: '2,000 Nm³/h' }, { label: '냉매', value: 'LN2' }] },
+  'VAL-601': { items: [{ label: '설계 압력', value: '16 barg' }, { label: '밸브 구경', value: '12 inch' }, { label: '작동 방식', value: '공압식 자동' }] },
+  'VAL-602': { items: [{ label: '설계 압력', value: '16 barg' }, { label: '밸브 구경', value: '12 inch' }, { label: '작동 방식', value: '공압식 자동' }] },
+  'PIP-501': { items: [{ label: '설계 압력', value: '15 barg' }, { label: '배관 직경', value: '12 inch' }, { label: '재질', value: 'SUS 316L' }, { label: '단열', value: '진공 이중관' }] },
 };
 
 const PROCESS_STAGES = [
@@ -42,6 +56,9 @@ export default function MonitoringPage() {
   const [equipment, setEquipment] = useState<any[]>([]);
   const [cameraTarget, setCameraTarget] = useState<string | null>(null);
   const cameraRef = useRef<CameraBookmarkRef | null>(null);
+  const savedCamera = useMemo(() => getSavedCamera('monitoring'), []);
+  const [monitorPanelOpen, setMonitorPanelOpen] = useState(true);
+  const [monitorSelectedEq, setMonitorSelectedEq] = useState<string | null>(null);
   const { selectedEquipmentId, setSelectedEquipment, sensorData, showEventPopup, eventContext, alarms, acknowledgeAlarm, removeAlarm } = useAppStore();
 
   useEffect(() => {
@@ -72,7 +89,6 @@ export default function MonitoringPage() {
       }
       states[eq.equipment_id] = worst;
     }
-    // Add affected equipment from event context
     if (eventContext?.affected_equipment_ids) {
       for (const id of eventContext.affected_equipment_ids) {
         if (states[id] === 'normal') states[id] = 'affected';
@@ -96,15 +112,26 @@ export default function MonitoringPage() {
     return '';
   };
 
-  // Phase-based stage status
+  const statusBorder = (status: VisualState) => {
+    if (status === 'critical' || status === 'emergency') return 'border-red-500/40';
+    if (status === 'warning') return 'border-amber-500/30';
+    if (status === 'affected') return 'border-yellow-500/30';
+    return 'border-white/[0.06]';
+  };
+
   const currentPhase = eventContext?.current_phase;
   const triggerEqId = eventContext?.trigger_equipment_id;
+
+  // 모니터링 패널용 설비 (monitorSelectedEq 또는 첫번째 설비)
+  const monitorEq = monitorSelectedEq
+    ? equipment.find(e => e.equipment_id === monitorSelectedEq)
+    : equipment.find(e => e.is_core);
 
   return (
     <div className="flex h-full">
       {/* 좌측: 공정 흐름 패널 */}
       <aside className="w-[210px] bg-[#0a0e17] border-r border-white/[0.06] overflow-y-auto scrollbar-thin p-3">
-        <div className="text-[10px] text-gray-600 font-medium uppercase tracking-wider mb-3">공정 흐름</div>
+        <div className="text-[10px] text-gray-600 font-medium tracking-wider mb-3">공정 흐름</div>
         {PROCESS_STAGES.map((stage, i) => {
           const stageEq = equipment.filter(e => stage.ids.includes(e.equipment_id));
           const hasWarning = stageEq.some(e => getStatus(e.equipment_id) !== 'normal');
@@ -176,54 +203,11 @@ export default function MonitoringPage() {
 
       {/* 중앙: 3D 뷰어 */}
       <main className="flex-1 relative">
-        {/* KPI 대시보드 (상단 중앙) */}
-        <div className="absolute top-0 left-0 right-0 z-10 flex justify-center pt-2 px-3 pointer-events-none">
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-thin pb-1 pointer-events-auto">
-            {equipment.filter(e => e.is_core).map((eq) => {
-              const status = getStatus(eq.equipment_id);
-              const mainSensor = eq.sensors?.[0];
-              const value = mainSensor ? sensorData[mainSensor.sensor_id]?.value : null;
-              const isSelected = selectedEquipmentId === eq.equipment_id;
-              const isAnomalous = status === 'critical' || status === 'emergency';
-
-              return (
-                <button
-                  key={eq.equipment_id}
-                  onClick={() => handleSelectEquipment(eq.equipment_id)}
-                  className={`flex-shrink-0 px-3 py-1.5 min-w-[90px] rounded-lg border backdrop-blur-md transition-all duration-300 ${
-                    isSelected ? 'border-cyan-500/50 bg-cyan-500/15' :
-                    isAnomalous ? 'border-red-500/40 bg-red-500/10 animate-pulse' :
-                    status === 'warning' ? 'border-amber-500/40 bg-amber-500/10' :
-                    'border-white/[0.08] bg-[#0c1220]/80'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-[10px]">{EQUIPMENT_ICONS[eq.equipment_type]}</span>
-                    <span className="text-[9px] font-medium text-gray-300">
-                      {EQUIPMENT_NAMES_KR[eq.equipment_id] || eq.equipment_id}
-                    </span>
-                    {status !== 'normal' && <div className={`w-1.5 h-1.5 rounded-full ml-auto ${statusDot(status)}`} />}
-                  </div>
-                  {mainSensor && value !== null && value !== undefined && (
-                    <div className="text-[11px] font-mono text-center">
-                      <span className={
-                        isAnomalous ? 'text-red-400 glow-red' :
-                        status === 'warning' ? 'text-amber-400' : 'text-cyan-400'
-                      }>{value.toFixed(1)}</span>
-                      <span className="text-gray-600 text-[8px] ml-0.5">{mainSensor.unit}</span>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         <div className="relative w-full h-full">
           <CameraControlsOverlay controlRef={cameraRef} pageId="monitoring" />
-          <ThreeCanvas>
+          <ThreeCanvas initialPosition={savedCamera?.position} initialTarget={savedCamera?.target}>
             <EnvironmentScene />
-            <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleSelectEquipment} />
+            <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleSelectEquipment} enableAmbientAnimations />
             <EquipmentPOIs
               equipment={equipment}
               equipmentStates={equipmentStates}
@@ -234,6 +218,120 @@ export default function MonitoringPage() {
             <CameraController targetEquipmentId={cameraTarget} />
             <CameraBookmarkInner pageId="monitoring" controlRef={cameraRef} />
           </ThreeCanvas>
+
+          {/* 핵심설비 실시간 상태 패널 (좌측 하단 오버레이) */}
+          <div className={`absolute left-2 bottom-2 z-10 transition-all duration-300 ${monitorPanelOpen ? 'w-[320px]' : 'w-[40px]'}`}>
+            {monitorPanelOpen ? (
+              <div className="bg-[#0a0e17]/95 backdrop-blur-md border border-white/[0.08] rounded-lg overflow-hidden shadow-2xl">
+                {/* 헤더 */}
+                <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
+                  <span className="text-[11px] font-bold text-cyan-400">핵심설비 실시간 상태</span>
+                  <button onClick={() => setMonitorPanelOpen(false)} className="text-gray-500 hover:text-white text-xs">✕</button>
+                </div>
+
+                {/* 설비 탭 */}
+                <div className="flex flex-wrap gap-0.5 px-2 py-1.5 border-b border-white/[0.06]">
+                  {equipment.filter(e => e.is_core).map((eq) => {
+                    const st = getStatus(eq.equipment_id);
+                    const isActive = monitorSelectedEq === eq.equipment_id || (!monitorSelectedEq && eq === equipment.find(e => e.is_core));
+                    return (
+                      <button
+                        key={eq.equipment_id}
+                        onClick={() => setMonitorSelectedEq(eq.equipment_id)}
+                        className={`px-1.5 py-0.5 rounded text-[9px] transition-all border ${
+                          isActive ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' :
+                          st === 'critical' ? 'bg-red-500/10 border-red-500/30 text-red-400' :
+                          st === 'warning' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
+                          'border-white/[0.06] text-gray-500 hover:text-gray-300'
+                        }`}
+                      >
+                        {EQUIPMENT_NAMES_KR[eq.equipment_id]?.replace(/\s*#\d+/, '') || eq.equipment_id}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 선택 설비 상세 */}
+                {monitorEq && (
+                  <div className="p-2.5">
+                    {/* 설비 헤더 */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-sm">{EQUIPMENT_ICONS[monitorEq.equipment_type]}</span>
+                      <span className="text-[12px] font-bold text-white">
+                        {EQUIPMENT_NAMES_KR[monitorEq.equipment_id] || monitorEq.equipment_name}
+                      </span>
+                      <span className={`ml-auto text-[9px] px-1.5 py-0.5 rounded ${
+                        getStatus(monitorEq.equipment_id) === 'critical' ? 'bg-red-500/20 text-red-400' :
+                        getStatus(monitorEq.equipment_id) === 'warning' ? 'bg-amber-500/20 text-amber-400' :
+                        'bg-emerald-500/20 text-emerald-400'
+                      }`}>
+                        {getStatus(monitorEq.equipment_id) === 'critical' ? '이상' :
+                         getStatus(monitorEq.equipment_id) === 'warning' ? '경고' : '정상'}
+                      </span>
+                    </div>
+
+                    {/* 센서값 테이블 */}
+                    <table className="w-full text-[10px] mb-2">
+                      <thead>
+                        <tr className="text-gray-500 border-b border-white/[0.06]">
+                          <th className="text-left py-1 font-medium">항목</th>
+                          <th className="text-right py-1 font-medium">수치</th>
+                          <th className="text-right py-1 font-medium">위험도</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {monitorEq.sensors?.map((sensor: any) => {
+                          const data = sensorData[sensor.sensor_id];
+                          const isAnomaly = data?.label === 'ANOMALY';
+                          const isWarning = data?.label === 'WARNING';
+                          return (
+                            <tr key={sensor.sensor_id} className="border-b border-white/[0.03]">
+                              <td className="py-1.5 text-gray-300">{SENSOR_TYPE_KR[sensor.sensor_type] || sensor.sensor_type}</td>
+                              <td className={`py-1.5 text-right font-mono font-medium ${
+                                isAnomaly ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-white'
+                              }`}>
+                                {data ? data.value.toFixed(2) : '—'} <span className="text-gray-600">{sensor.unit}</span>
+                              </td>
+                              <td className="py-1.5 text-right">
+                                <div className="flex justify-end">
+                                  <div className={`w-14 h-1.5 rounded-full overflow-hidden bg-white/[0.06]`}>
+                                    <div className={`h-full rounded-full transition-all ${
+                                      isAnomaly ? 'bg-red-500 w-full' :
+                                      isWarning ? 'bg-amber-500 w-3/4' :
+                                      'bg-emerald-500 w-1/4'
+                                    }`} style={{ width: isAnomaly ? '100%' : isWarning ? '75%' : '25%' }} />
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+
+                    {/* BOG 등 특수 알림 */}
+                    {getStatus(monitorEq.equipment_id) !== 'normal' && (
+                      <div className={`text-[9px] px-2 py-1.5 rounded border ${
+                        getStatus(monitorEq.equipment_id) === 'critical'
+                          ? 'bg-red-500/10 border-red-500/20 text-red-300'
+                          : 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                      }`}>
+                        ⚡ {EQUIPMENT_NAMES_KR[monitorEq.equipment_id]} 이상상태 알람 발생
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => setMonitorPanelOpen(true)}
+                className="w-10 h-10 rounded-lg bg-[#0a0e17]/90 backdrop-blur-md border border-white/[0.08] flex items-center justify-center text-cyan-400 hover:bg-cyan-500/10 transition-all"
+                title="실시간 상태 패널"
+              >
+                📊
+              </button>
+            )}
+          </div>
         </div>
       </main>
 
@@ -252,9 +350,24 @@ export default function MonitoringPage() {
               </div>
             </div>
 
-            {/* Sensors */}
-            <div className="p-3">
-              <div className="text-[10px] text-gray-600 font-medium uppercase tracking-wider mb-2">센서 현재값</div>
+            {/* 설비 자산 정보 */}
+            {EQUIPMENT_SPECS[selectedEq.equipment_id] && (
+              <div className="p-3 border-b border-white/[0.06]">
+                <div className="text-[10px] text-gray-600 font-medium tracking-wider mb-2">설비 제원</div>
+                <div className="space-y-1">
+                  {EQUIPMENT_SPECS[selectedEq.equipment_id].items.map((spec) => (
+                    <div key={spec.label} className="flex items-center justify-between text-[10px] py-1 px-2 rounded bg-white/[0.02]">
+                      <span className="text-gray-500">{spec.label}</span>
+                      <span className="text-gray-200 font-mono">{spec.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 센서 현재값 */}
+            <div className="p-3 border-b border-white/[0.06]">
+              <div className="text-[10px] text-gray-600 font-medium tracking-wider mb-2">센서 현재값</div>
               <div className="space-y-1.5">
                 {selectedEq.sensors?.map((sensor: any) => {
                   const data = sensorData[sensor.sensor_id];
@@ -268,7 +381,7 @@ export default function MonitoringPage() {
                         'bg-white/[0.03]'
                       }`}
                     >
-                      <span className="text-gray-400">{sensor.sensor_type}</span>
+                      <span className="text-gray-400">{SENSOR_TYPE_KR[sensor.sensor_type] || sensor.sensor_type}</span>
                       <span className={`font-mono font-medium ${
                         isAnomaly ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-white'
                       }`}>
@@ -281,16 +394,16 @@ export default function MonitoringPage() {
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="p-3 border-t border-white/[0.06]">
-              <div className="text-[10px] text-gray-600 font-medium uppercase tracking-wider mb-2">분석 모드</div>
+            {/* 분석 모드 버튼 */}
+            <div className="p-3 border-b border-white/[0.06]">
+              <div className="text-[10px] text-gray-600 font-medium tracking-wider mb-2">분석 모드</div>
               <div className="grid grid-cols-2 gap-1.5">
                 {[
-                  { label: '이상탐지', path: '/anomaly', color: 'from-blue-500/20 to-blue-600/10' },
-                  { label: '위험예측', path: '/risk', color: 'from-purple-500/20 to-purple-600/10' },
+                  { label: '설비 상태감시', path: '/anomaly', color: 'from-blue-500/20 to-blue-600/10' },
+                  { label: '상호영향 위험예측', path: '/risk', color: 'from-purple-500/20 to-purple-600/10' },
                   { label: '시뮬레이션', path: '/simulation', color: 'from-cyan-500/20 to-cyan-600/10' },
-                  { label: 'SOP', path: '/sop', color: 'from-emerald-500/20 to-emerald-600/10' },
-                  { label: '이력조회', path: '/history', color: 'from-amber-500/20 to-amber-600/10' },
+                  { label: '디지털 SOP', path: '/sop', color: 'from-emerald-500/20 to-emerald-600/10' },
+                  { label: '이력관리', path: '/history', color: 'from-amber-500/20 to-amber-600/10' },
                 ].map((btn) => (
                   <a key={btn.label} href={btn.path}
                     className={`text-center text-[10px] py-2 rounded-lg bg-gradient-to-br ${btn.color} border border-white/[0.06] hover:border-white/[0.15] transition-all text-gray-300 hover:text-white`}>
@@ -312,7 +425,7 @@ export default function MonitoringPage() {
         {/* 알람 이력 패널 */}
         <div className="flex-1 border-t border-white/[0.06] flex flex-col min-h-0">
           <div className="p-3 flex items-center justify-between">
-            <div className="text-[10px] text-gray-600 font-medium uppercase tracking-wider">
+            <div className="text-[10px] text-gray-600 font-medium tracking-wider">
               알람 이력
               {alarms.filter(a => !a.acknowledged).length > 0 && (
                 <span className="ml-1.5 text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded-full font-bold animate-pulse">
@@ -348,7 +461,7 @@ export default function MonitoringPage() {
                         {alarm.value?.toFixed(1)}
                       </span>
                     </div>
-                    <div className="text-gray-600 text-[9px]">{alarm.phase}</div>
+                    <div className="text-gray-600 text-[9px]">{PHASE_KR[alarm.phase] || alarm.phase}</div>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     {!alarm.acknowledged && (

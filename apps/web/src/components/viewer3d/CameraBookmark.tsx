@@ -9,8 +9,20 @@ import gsap from 'gsap';
 const STORAGE_PREFIX = 'lh2-camera-';
 
 // 기본 카메라 위치 (ThreeCanvas 초기값)
-const DEFAULT_POSITION: [number, number, number] = [350, 350, 300];
-const DEFAULT_TARGET: [number, number, number] = [90, 0, 20];
+export const DEFAULT_POSITION: [number, number, number] = [350, 350, 300];
+export const DEFAULT_TARGET: [number, number, number] = [90, 0, 20];
+
+/** localStorage에서 저장된 카메라 데이터를 동기적으로 읽음 (Canvas 마운트 전 사용) */
+export function getSavedCamera(pageId: string): SavedCamera | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_PREFIX + pageId);
+    if (!raw) return null;
+    return JSON.parse(raw) as SavedCamera;
+  } catch {
+    return null;
+  }
+}
 
 interface SavedCamera {
   position: [number, number, number];
@@ -115,11 +127,19 @@ export function CameraBookmark({ pageId, controlRef }: CameraBookmarkProps) {
     controlRef.current = { save, reset, restore };
   }, [save, reset, restore, controlRef]);
 
-  // 마운트 시 저장된 시점 자동 복원
+  // 마운트 시 저장된 시점 즉시 적용 (애니메이션 없이)
   useEffect(() => {
-    // 씬 로딩 후 복원 (약간의 지연)
-    const timer = setTimeout(() => restore(), 500);
-    return () => clearTimeout(timer);
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return;
+    try {
+      const data: SavedCamera = JSON.parse(raw);
+      const orbit = getOrbit();
+      camera.position.set(data.position[0], data.position[1], data.position[2]);
+      if (orbit) {
+        orbit.target.set(data.target[0], data.target[1], data.target[2]);
+        orbit.update();
+      }
+    } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -139,7 +159,7 @@ export function CameraControlsOverlay({ controlRef, pageId }: CameraControlsOver
   const hasSaved = typeof window !== 'undefined' && !!localStorage.getItem(STORAGE_PREFIX + pageId);
 
   return (
-    <div className="absolute top-2 right-2 z-10 flex gap-1">
+    <div className="absolute bottom-2 right-2 z-10 flex gap-1">
       <button
         onClick={() => controlRef.current?.save()}
         className="bg-white/[0.08] hover:bg-white/[0.15] backdrop-blur-sm border border-white/[0.1] text-gray-300 hover:text-white px-2.5 py-1.5 rounded-lg text-[10px] transition-all flex items-center gap-1"

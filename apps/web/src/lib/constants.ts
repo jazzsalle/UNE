@@ -21,12 +21,12 @@ export const SEVERITY_COLORS: Record<Severity, string> = {
 };
 
 export const MODE_TABS: { code: ModeCode; label: string; path: string }[] = [
-  { code: 'M-MON', label: '모니터링',    path: '/monitoring' },
-  { code: 'M-ANO', label: '이상탐지',    path: '/anomaly' },
-  { code: 'M-RSK', label: '위험예측',    path: '/risk' },
+  { code: 'M-MON', label: '전주기 운전 모니터링', path: '/monitoring' },
+  { code: 'M-ANO', label: '설비 상태감시',  path: '/anomaly' },
+  { code: 'M-RSK', label: '상호영향 위험예측', path: '/risk' },
   { code: 'M-SIM', label: '시뮬레이션',   path: '/simulation' },
-  { code: 'M-HIS', label: '이력조회',    path: '/history' },
-  { code: 'M-SOP', label: 'SOP',        path: '/sop' },
+  { code: 'M-HIS', label: '이력관리',    path: '/history' },
+  { code: 'M-SOP', label: '디지털 SOP',  path: '/sop' },
 ];
 
 // ISO/Bird-eye 뷰: position은 target 대비 항상 높고(Y↑) 대각선 오프셋(X+60~80, Z+40~60)
@@ -50,4 +50,38 @@ export const EQUIPMENT_ICONS: Record<string, string> = {
   LH2_CARRIER: '🚢', LOADING_ARM: '⚓', STORAGE_TANK: '🏭', BOG_COMPRESSOR: '💨',
   TRANSFER_PUMP: '🔧', VAPORIZER: '🌡', MAIN_PIPE: '🔗', VALVE_STATION: '🔒',
   RELIQUEFIER: '♻', SEAWATER_PUMP: '🌊',
+};
+
+// 센서 유형 한글 매핑
+export const SENSOR_TYPE_KR: Record<string, string> = {
+  PRESSURE: '압력',
+  TEMPERATURE: '온도',
+  FLOW: '유량',
+  VIBRATION: '진동',
+  CURRENT: '전류',
+  LEVEL: '레벨',
+};
+
+// 심각도 한글 매핑
+export const SEVERITY_KR: Record<string, string> = {
+  INFO: '정보',
+  WARNING: '경고',
+  CRITICAL: '위험',
+  EMERGENCY: '비상',
+};
+
+// Phase 한글 매핑
+export const PHASE_KR: Record<string, string> = {
+  NORMAL: '정상',
+  SYMPTOM: '증상감지',
+  FAULT: '고장',
+  SECONDARY_IMPACT: '2차영향',
+  RESPONSE: '대응',
+};
+
+// 알람 라벨 한글 매핑
+export const ALARM_LABEL_KR: Record<string, string> = {
+  NORMAL: '정상',
+  WARNING: '경고',
+  ANOMALY: '이상',
 };

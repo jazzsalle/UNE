@@ -23,10 +23,10 @@ export function HeatmapOverlay({ position, radius, intensity = 0.5, visible = tr
     const ctx = canvas.getContext('2d')!;
 
     const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-    gradient.addColorStop(0, 'rgba(239, 68, 68, 0.7)');     // 중심: 적색
-    gradient.addColorStop(0.3, 'rgba(249, 115, 22, 0.5)');   // 주황
-    gradient.addColorStop(0.6, 'rgba(234, 179, 8, 0.3)');    // 노랑
-    gradient.addColorStop(0.85, 'rgba(34, 197, 94, 0.15)');  // 녹색
+    gradient.addColorStop(0, 'rgba(239, 68, 68, 0.85)');     // 중심: 적색
+    gradient.addColorStop(0.25, 'rgba(249, 115, 22, 0.65)'); // 주황
+    gradient.addColorStop(0.5, 'rgba(234, 179, 8, 0.45)');   // 노랑
+    gradient.addColorStop(0.75, 'rgba(34, 197, 94, 0.25)');  // 녹색
     gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');        // 투명
 
     ctx.fillStyle = gradient;

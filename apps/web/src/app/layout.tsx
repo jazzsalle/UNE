@@ -5,6 +5,7 @@ import { GNB } from '@/components/layout/GNB';
 import { ApiStatusBar } from '@/components/layout/ApiStatusBar';
 import { EmulatorBar } from '@/components/layout/EmulatorBar';
 import { SSEProvider } from '@/components/layout/SSEProvider';
+import { AmbientProvider } from '@/components/layout/AmbientProvider';
 import { SopPopupOverlay } from '@/components/layout/SopPopupOverlay';
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko" className="dark">
       <body className="h-screen flex flex-col overflow-hidden">
         <SSEProvider />
+        <AmbientProvider />
         <GNB />
         <ApiStatusBar />
         <main className="flex-1 overflow-hidden">{children}</main>

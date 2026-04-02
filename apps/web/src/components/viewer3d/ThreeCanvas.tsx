@@ -19,17 +19,26 @@ function Loader() {
 interface ThreeCanvasProps {
   children: React.ReactNode;
   className?: string;
+  /** 초기 카메라 위치 (저장된 시점이 있으면 사용) */
+  initialPosition?: [number, number, number];
+  /** 초기 OrbitControls 타겟 (저장된 시점이 있으면 사용) */
+  initialTarget?: [number, number, number];
 }
 
-export function ThreeCanvas({ children, className }: ThreeCanvasProps) {
+const DEFAULT_POS: [number, number, number] = [350, 350, 300];
+const DEFAULT_TGT: [number, number, number] = [90, 0, 20];
+
+export function ThreeCanvas({ children, className, initialPosition, initialTarget }: ThreeCanvasProps) {
+  const pos = initialPosition || DEFAULT_POS;
+  const tgt = initialTarget || DEFAULT_TGT;
+
   return (
     <div className={`w-full h-full ${className || ''}`}>
       <Canvas
         dpr={[1, 2]}
-        camera={{ fov: 50, near: 0.1, far: 5000, position: [350, 350, 300] }}
+        camera={{ fov: 50, near: 0.1, far: 5000, position: pos }}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
         onCreated={({ gl }) => {
-          // Handle WebGL context loss gracefully
           gl.domElement.addEventListener('webglcontextlost', (e) => {
             e.preventDefault();
             console.warn('[WebGL] Context lost — waiting for restore');
@@ -51,7 +60,7 @@ export function ThreeCanvas({ children, className }: ThreeCanvasProps) {
           dampingFactor={0.1}
           minDistance={10}
           maxDistance={2000}
-          target={[90, 0, 20]}
+          target={tgt}
         />
         <Environment preset="city" />
       </Canvas>

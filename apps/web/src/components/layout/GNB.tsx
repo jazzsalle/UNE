@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { MODE_TABS } from '@/lib/constants';
+import { MODE_TABS, PHASE_KR } from '@/lib/constants';
 import { useAppStore } from '@/stores/appStore';
 import { useEmulatorStore } from '@/stores/emulatorStore';
 
@@ -101,7 +101,7 @@ export function GNB() {
                   <div className="flex items-center gap-2">
                     <span className={`w-1.5 h-1.5 rounded-full ${alarm.label === 'ANOMALY' ? 'bg-red-500' : 'bg-amber-500'}`} />
                     <span className="text-white font-medium">{alarm.sensor_id}</span>
-                    <span className="text-gray-500 ml-auto">{alarm.phase}</span>
+                    <span className="text-gray-500 ml-auto">{PHASE_KR[alarm.phase] || alarm.phase}</span>
                   </div>
                   <div className="text-gray-400 mt-0.5 pl-3.5">값: {alarm.value?.toFixed(2)}</div>
                 </div>

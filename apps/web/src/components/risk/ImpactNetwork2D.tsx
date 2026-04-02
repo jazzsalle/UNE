@@ -1,8 +1,30 @@
 // ref: CLAUDE.md §9.3 — 2D 영향 네트워크 (react-flow)
 'use client';
 import { useMemo, useCallback } from 'react';
-import ReactFlow, { Node, Edge, Background, Controls, MiniMap, Position } from 'reactflow';
+import ReactFlow, { Node, Edge, Background, Controls, Position } from 'reactflow';
 import 'reactflow/dist/style.css';
+
+const RISK_LEVEL_KR: Record<string, string> = {
+  CRITICAL: '위험',
+  HIGH: '높음',
+  WARNING: '경고',
+  MEDIUM: '보통',
+  LOW: '낮음',
+};
+
+const EQUIPMENT_NAMES_KR: Record<string, string> = {
+  'SHP-001': 'LH2 운반선',
+  'ARM-101': '로딩암',
+  'TK-101':  '저장탱크 #1',
+  'TK-102':  '저장탱크 #2',
+  'BOG-201': 'BOG 압축기',
+  'PMP-301': '이송펌프',
+  'VAP-401': '기화기',
+  'REL-701': '재액화기',
+  'VAL-601': '배출설비 #1',
+  'VAL-602': '배출설비 #2',
+  'PIP-501': '메인배관',
+};
 
 interface KgsResult {
   analysis_id: string;
@@ -19,16 +41,16 @@ interface KgsResult {
 interface ImpactNetwork2DProps {
   kgsResults: KgsResult[];
   onNodeClick?: (equipmentId: string) => void;
+  fullscreen?: boolean;
 }
 
-export function ImpactNetwork2D({ kgsResults, onNodeClick }: ImpactNetwork2DProps) {
+export function ImpactNetwork2D({ kgsResults, onNodeClick, fullscreen }: ImpactNetwork2DProps) {
   const { nodes, edges } = useMemo(() => {
     if (kgsResults.length === 0) return { nodes: [], edges: [] };
 
     const nodeMap = new Map<string, { score: number; color: string; risk: string; type: string }>();
 
     for (const r of kgsResults) {
-      // Trigger node
       if (!nodeMap.has(r.trigger_equipment_id) || r.impact_type === 'PRIMARY_EVENT') {
         nodeMap.set(r.trigger_equipment_id, {
           score: r.impact_score,
@@ -37,7 +59,6 @@ export function ImpactNetwork2D({ kgsResults, onNodeClick }: ImpactNetwork2DProp
           type: 'trigger',
         });
       }
-      // Affected node
       if (r.trigger_equipment_id !== r.affected_equipment_id) {
         nodeMap.set(r.affected_equipment_id, {
           score: r.impact_score,
@@ -49,17 +70,42 @@ export function ImpactNetwork2D({ kgsResults, onNodeClick }: ImpactNetwork2DProp
     }
 
     const nodeArray = Array.from(nodeMap.entries());
-    const nodes: Node[] = nodeArray.map(([id, data], i) => ({
+    // 트리거와 영향 설비 분리
+    const triggers = nodeArray.filter(([, d]) => d.type === 'trigger');
+    const affecteds = nodeArray.filter(([, d]) => d.type !== 'trigger');
+    const nodeWidth = fullscreen ? 150 : 110;
+    const hGap = fullscreen ? 30 : 20;
+    const vGap = fullscreen ? 120 : 90;
+
+    // 트리거 노드: 상단 중앙
+    const totalAffectedWidth = affecteds.length * (nodeWidth + hGap) - hGap;
+    const triggerX = Math.max(totalAffectedWidth / 2 - nodeWidth / 2, 50);
+
+    // 영향 설비 노드: 트리거 아래 수평 배치
+    const affectedStartX = Math.max(0, triggerX - totalAffectedWidth / 2 + nodeWidth / 2);
+
+    const allPositioned = [
+      ...triggers.map(([id, data], i) => ({
+        entry: [id, data] as [string, typeof data],
+        x: triggerX + i * (nodeWidth + hGap),
+        y: 30,
+      })),
+      ...affecteds.map(([id, data], i) => ({
+        entry: [id, data] as [string, typeof data],
+        x: affectedStartX + i * (nodeWidth + hGap),
+        y: 30 + vGap,
+      })),
+    ];
+
+    const nodes: Node[] = allPositioned.map(({ entry: [id, data], x, y }) => ({
       id,
-      position: {
-        x: data.type === 'trigger' ? 200 : 50 + (i % 3) * 150,
-        y: data.type === 'trigger' ? 50 : 150 + Math.floor(i / 3) * 100,
-      },
+      position: { x, y },
       data: {
         label: (
           <div className="text-center">
-            <div className="font-bold text-[11px]">{id}</div>
-            <div className="text-[9px]">{data.score}점 · {data.risk}</div>
+            <div className="font-bold text-[10px]">{EQUIPMENT_NAMES_KR[id] || id}</div>
+            <div className="text-[8px] text-gray-400">{id}</div>
+            <div className="text-[9px] mt-0.5">{data.score}점 · {RISK_LEVEL_KR[data.risk] || data.risk}</div>
           </div>
         ),
       },
@@ -67,10 +113,10 @@ export function ImpactNetwork2D({ kgsResults, onNodeClick }: ImpactNetwork2DProp
         background: data.color + '30',
         border: `2px solid ${data.color}`,
         borderRadius: '8px',
-        padding: '8px',
-        fontSize: '11px',
+        padding: '6px 8px',
+        fontSize: '10px',
         color: '#e5e7eb',
-        width: 120,
+        width: fullscreen ? 150 : 110,
       },
       sourcePosition: Position.Bottom,
       targetPosition: Position.Top,
@@ -88,12 +134,12 @@ export function ImpactNetwork2D({ kgsResults, onNodeClick }: ImpactNetwork2DProp
           strokeWidth: Math.max(1, r.impact_score / 30),
         },
         label: `${r.impact_score}점`,
-        labelStyle: { fontSize: 9, fill: '#9ca3af' },
+        labelStyle: { fontSize: 8, fill: '#9ca3af' },
         labelBgStyle: { fill: '#111827' },
       }));
 
     return { nodes, edges };
-  }, [kgsResults]);
+  }, [kgsResults, fullscreen]);
 
   const handleNodeClick = useCallback((_: any, node: Node) => {
     onNodeClick?.(node.id);
@@ -108,7 +154,7 @@ export function ImpactNetwork2D({ kgsResults, onNodeClick }: ImpactNetwork2DProp
   }
 
   return (
-    <div className="h-full" style={{ background: '#0a0e17' }}>
+    <div className="h-full flex flex-col" style={{ background: '#0a0e17' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -118,11 +164,6 @@ export function ImpactNetwork2D({ kgsResults, onNodeClick }: ImpactNetwork2DProp
       >
         <Background color="#1f2937" gap={20} />
         <Controls showInteractive={false} />
-        <MiniMap
-          nodeColor={(n) => n.style?.border?.toString() || '#666'}
-          maskColor="#0a0e1780"
-          style={{ background: '#111827' }}
-        />
       </ReactFlow>
     </div>
   );

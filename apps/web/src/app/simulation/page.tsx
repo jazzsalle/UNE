@@ -6,7 +6,7 @@ import { useAppStore } from '@/stores/appStore';
 import { api } from '@/lib/api';
 // CameraController now uses equipment IDs directly
 import type { VisualState } from '@/lib/constants';
-import { CameraControlsOverlay, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
+import { CameraControlsOverlay, getSavedCamera, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
 
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
 const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
@@ -23,6 +23,7 @@ export default function SimulationPage() {
   const [simRunning, setSimRunning] = useState(false);
   const [cameraTarget, setCameraTarget] = useState<string | null>(null);
   const cameraRef = useRef<CameraBookmarkRef | null>(null);
+  const savedCamera = useMemo(() => getSavedCamera('simulation'), []);
   const [appliedOption, setAppliedOption] = useState<'A' | 'B' | null>(null);
 
   // 수동 실행 파라미터
@@ -142,7 +143,7 @@ export default function SimulationPage() {
         <div className="flex-1 flex flex-col">
           <div className="flex-1 bg-bg-primary relative">
             <CameraControlsOverlay controlRef={cameraRef} pageId="simulation" />
-            <ThreeCanvas>
+            <ThreeCanvas initialPosition={savedCamera?.position} initialTarget={savedCamera?.target}>
               <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleEquipmentClick} />
               <CameraController targetEquipmentId={cameraTarget} />
               <CameraBookmarkInner pageId="simulation" controlRef={cameraRef} />

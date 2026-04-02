@@ -1,164 +1,218 @@
-# LH2 디지털 트윈 POC — 진행상황
+# LH2 디지털 트윈 POC — 개발 진행 현황 & 이어가기 가이드
 
 > 최종 업데이트: 2026-04-02
 
 ---
 
-## 전체 Phase 진행률
+## 1. 완료된 Phase 요약
 
-| Phase | 설명 | 상태 |
-|-------|------|------|
-| Phase 1 | 기반 구조 (Prisma, API, Mock, 에뮬레이터) | ✅ 완료 |
-| Phase 2 | 모니터링 + 3D (GNB, GLB, 컬러링, KPI) | ✅ 완료 |
-| Phase 3 | 이상탐지 + 위험예측 (M-ANO, M-RSK) | ✅ 완료 |
-| Phase 4 | SOP + 시뮬레이션 (M-SOP, M-SIM) | ✅ 완료 |
-| Phase 5 | 보조 기능 (보고서, 설정, 이력) + E2E | ✅ 완료 |
-| UI 개선 | 디자인 세련화 + 3D 시각 이펙트 | ✅ 완료 |
-| 3D 버그 수정 | 카메라/POI/GLB 노드명 이슈 | ✅ 완료 |
+### Phase 1: 기반 구조 (완료)
+- Prisma schema + migration + seed.ts (28개 seed JSON 파일 적재)
+- Express 서버 + 전체 API 라우트 구현
+- Mock Provider (KOGAS/KGS/KETI/세이프티아) 구현
+- 시나리오 에뮬레이터 엔진 (SSE 기반, 8개 시나리오)
 
----
+### Phase 2: 모니터링 + 3D (완료)
+- Next.js 앱 프레임 + GNB + 모드 라우팅 (6모드 + 2보조페이지)
+- Three.js GLB 로더 + Draco 디코딩 (h2.glb 30MB)
+- 3D 시각 이펙트: 배관 유체 흐름(GLSL 파티클), 탱크 레벨, 설비 글로우, 히트맵
+- 기본 모니터링 UI: 공정 흐름 패널 + 3D 뷰어 + 정보 패널 + KPI 대시보드
+- 에뮬레이터 UI: 시나리오 선택 + 재생 컨트롤 + 하단 진행바
+- EventPopup 컴포넌트 (이벤트 발생 시 모드 전환 버튼)
+- 카메라 시점 저장/복원/초기화 (CameraBookmark)
+- 상시 모니터링 애니메이션 (선박 부유, 로딩암 미세 회전)
 
-## 완료된 주요 기능
+### Phase 3: 이상탐지 + 위험예측 (완료)
+- M-ANO: KOGAS 진단 패널 + 센서 추세 차트 (8쌍) + 설비 탭 전환 + PMP-301 상세 GLB
+- M-RSK: 3분할 화면 구현 완료
+  - 좌: react-flow 2D 영향 네트워크 (리사이즈 가능)
+  - 중: 3D 뷰어 (아이소메트릭 그룹 프레이밍 + 2D/3D 토글)
+  - 우: RiskDetailPanel (위험도 예측 / 피해범위 예측 2탭)
+- 2D↔3D 동기화 (노드 클릭 → 카메라 이동)
+- 에뮬레이터 연동 (FAULT phase 진입 시 자동 KGS/HAZOP 로드)
+- 영향 전파 경로 튜브 애니메이션 (PropagationPath — 두꺼운 튜브 + 파티클)
+- TopViewSwitcher (2D 모드 = 카메라 탑뷰 + 회전 제한)
 
-### Backend (apps/api)
-- [x] Prisma schema + migration + seed (28개 JSON 파일)
-- [x] REST API 전체 라우트 (scenarios, equipment, sensors, events, providers, hazop, sop, reports, settings)
-- [x] Mock Provider (KOGAS/KGS/KETI/세이프티아) — scenario_id 기반 결과 반환
-- [x] 시나리오 에뮬레이터 엔진 — SSE 기반, phase별 센서 송출
-- [x] RESPONSE phase 자동 이벤트 종료 + 보고서 자동생성
-- [x] SOP 추천 로직 (sopRecommender.ts)
-- [x] 보고서 자동생성 서비스 (reportGenerator.ts)
+### Phase 4: SOP + 시뮬레이션 (완료)
+- SOP 추천 로직 + SOP 링크 모듈
+- SopExecutionPanel (compact/full 듀얼 UI)
+- M-SOP: 실행 + 저작/편집 + 실행이력 3탭
+- M-SIM: 이벤트 연계 + 수동 실행 모드
 
-### Frontend (apps/web)
-- [x] Next.js 14 App Router + Tailwind 다크 테마
-- [x] GNB + 모드 네비게이션 (6모드 + 2보조)
-- [x] API 연결상태 바 (KOGAS/KGS/KETI/세이프티아)
-- [x] Zustand 상태관리 (appStore, emulatorStore)
-- [x] SSE 훅 + EventContext 자동 enrichment
-
-### 3D 뷰어 (Three.js)
-- [x] h2.glb Draco 로딩 (30MB, self-hosted decoder)
-- [x] secondary_pump.glb 상세 뷰 (M-ANO용)
-- [x] 설비 mesh 컬러링 (6단계: normal → emergency)
-- [x] 동적 바운딩박스 카메라 시스템 (하드코딩 프리셋 제거)
-- [x] 설비 POI 라벨 (바운딩박스 상단 자동 배치, 한국어)
-- [x] 설비 글로우/아우라 이펙트 (GLSL shader)
-- [x] 탱크 레벨/압력 시각화 (GLSL shader, 리플 효과)
-- [x] 히트맵 오버레이 (위험 반경)
-- [x] 영향 전파 경로 애니메이션
-- [x] 바다 셰이더 (파도 애니메이션)
-- [x] 배관 유체 흐름 애니메이션 (GLSL 파티클, liquid/gas 구분, 9개 경로)
-- [x] 설비 클릭 → 카메라 이동 + 정보 패널 갱신
-
-### 모드별 화면
-- [x] **M-MON** 기본 모니터링: 공정 흐름 패널(4단계) + 3D + KPI 대시보드 + 정보패널 + 알람이력
-- [x] **M-ANO** 이상탐지: 9설비 탭 전환 + 센서 차트 + KOGAS 진단 + 설비 상세 3D
-- [x] **M-RSK** 위험예측: react-flow 2D 네트워크 + 3D 컬러링 + HAZOP 텍스트 3분할
-- [x] **M-SIM** 시뮬레이션: 이벤트연계/수동 탭 + 3D 시뮬레이션 뷰어 + 대응안 비교
-- [x] **M-HIS** 이력조회: 설비/기간/유형 필터 + 이력 테이블 + 상세 패널
-- [x] **M-SOP** SOP: 실행(순차 체크리스트) + 저작/편집 + 실행이력 탭
-- [x] **P-SET** 설정: 센서 메타(인라인 편집) + 임계치 관리 + 운영정책 토글
-- [x] **P-RPT** 보고서: 목록 + 자동생성 요약 + 관리자 코멘트 + 상태관리
-
-### 이벤트/연계 흐름
-- [x] 에뮬레이터 → SSE → EventContext → EventPopup (드래그 가능)
-- [x] EventPopup에서 모드 전환 버튼 (이상탐지/위험예측/시뮬레이션/SOP/이력)
-- [x] EventPopup enrichment 카드 (KOGAS 진단/KGS 영향/SOP 추천)
-- [x] SOP 듀얼 UI (팝업 실행 / 전체화면 전환)
-- [x] 이벤트 종료 시 보고서 자동생성
+### Phase 5: 보조 기능 (부분 완료)
+- P-RPT: 보고서 CRUD API + UI (목록/상세/수정/제출)
+- P-SET: 설정 3탭 (센서 메타/임계치/운영정책) — DB 연동 완료
+- M-HIS: 이력조회 UI (safetia 데이터 표시 + 설비/기간 필터)
 
 ---
 
-## 최근 해결된 이슈 (2026-04-01)
+## 2. 오늘 세션에서 작업한 내용 (2026-04-02)
 
-### ARM-101 GLB 노드명 불일치 (해결됨)
-- **문제**: GLB 파일에 `ARM-101`(children=0, 빈 노드)과 `ARM-101001`(실제 로딩암) 두 노드 존재
-- **증상**: `getObjectByName('ARM-101')`이 빈 노드를 먼저 반환 → 카메라/POI/컬러링 실패
-- **해결**: `equipmentUtils.ts` 공유 유틸리티 생성
-  - `findEquipmentObject()` — 3단계 폴백: ① 직접 이름 검색+mesh 확인 → ② mesh name으로 검색+부모 반환 → ③ suffix 패턴 시도
-  - 모든 설비 관련 함수를 한 곳에 통합 (중복 코드 ~155줄 제거)
+### 위험예측 모드 (M-RSK) 집중 개선
 
-### 카메라 지하 침투 (이전 세션에서 해결)
-- **문제**: CLAUDE.md 하드코딩 좌표가 Blender 좌표계(Z-up) 기준이어서 Three.js(Y-up)에서 카메라가 지면 아래로 이동
-- **해결**: 런타임 바운딩박스 기반 동적 카메라 프레이밍으로 전면 교체
+| 작업 | 파일 | 내용 |
+|------|------|------|
+| 좌측 패널 리사이즈 | `risk/page.tsx` | 드래그 핸들로 폭 조절 (160~480px) |
+| 아이소메트릭 그룹 프레이밍 | `CameraController.tsx` | frameEquipmentIds prop → 합산 bbox 기반 ISO뷰 |
+| 2D/3D 모드 토글 | `risk/page.tsx`, `TopViewSwitcher.tsx` (신규) | 2D=탑뷰 카메라 + 회전 제한 |
+| 에뮬레이터-3D 연동 | `risk/page.tsx` | phase 기반 설비 컬러링 + FAULT시 자동 KGS 로드 |
+| 글로우 이펙트 크기 수정 | `TestbedModel.tsx` | 고정 15x15x15 → 실제 bbox + 6 패딩 |
+| 2D 네트워크 노드 겹침 수정 | `ImpactNetwork2D.tsx` | 트리거/영향 분리 배치 |
+| 우측 패널 2탭 구조 | `risk/page.tsx` (RiskDetailPanel) | 위험도 예측 + 피해범위 예측 |
+| 전파 경로 시각화 개선 | `PropagationPath.tsx` | 1px 점선 → 두꺼운 튜브(2.5r) + 파티클(4.0r) |
+| 히트맵 가시성 개선 | `HeatmapOverlay.tsx` | 그라데이션 opacity 증가 |
+| 바닥 그리드 어둡게 | `EnvironmentScene.tsx` | 베이스 #060810, 라인 #151c26 |
 
----
+### 기타 모드 개선 (이전 세션 포함)
 
-## 파일 구조 핵심 변경사항
-
-```
-apps/web/src/components/viewer3d/
-├── equipmentUtils.ts      ← 신규: 설비 검색/bbox 계산 공유 유틸리티
-├── CameraController.tsx   ← 수정: equipmentUtils 사용
-├── EquipmentPOI.tsx       ← 수정: equipmentUtils 사용
-├── TestbedModel.tsx       ← 수정: equipmentUtils 사용 + 중복 코드 제거
-├── ThreeCanvas.tsx
-├── EnvironmentScene.tsx   ← 도로 제거됨
-└── effects/
-    ├── GlowEffect.tsx     ← GLSL 셰이더
-    ├── TankLevel.tsx      ← GLSL 셰이더
-    ├── PipeFlow.tsx       ← 신규: GLSL 배관 유체 흐름 파티클 (liquid/gas)
-    ├── HeatmapOverlay.tsx
-    └── PropagationPath.tsx
-```
+- **모니터링**: 공정 흐름 패널 4단계 + KPI 대시보드 9설비 + 센서 차트 개선
+- **이상탐지**: 센서 차트 8쌍 + AI 진단 타임라인 + 설비 탭 전환
+- **SOP**: 실행이력 API 라우트 수정 + 탭 조건분기
+- **3D 공통**: 배관 유체 흐름 GLSL, 카메라 북마크, 상시 모니터링 애니메이션
 
 ---
 
-## 남은 작업 / 개선 가능 사항
+## 3. 미완성 / 남은 작업
 
-### 우선순위 높음
-- [x] 배관 유체 흐름 애니메이션 (GLSL 셰이더 파티클, PipeFlow.tsx) ✅ 2026-04-02
-- [x] 에뮬레이터 바 진행률 표시 개선 (phase 마커 + 위치 인디케이터) ✅ 2026-04-02
-- [x] SC-01 E2E 재생 테스트 (60x, 전 phase 정상 통과 + 보고서 자동생성 확인) ✅ 2026-04-02
-- [ ] 시나리오 전체 E2E 재생 테스트 (SC-02~SC-08)
-- [ ] 모바일/태블릿 반응형 레이아웃 검증
+### Phase 5 잔여 (CLAUDE.md plan 참조)
 
-### 우선순위 중간
-- [x] 2D↔3D 동기화 (M-RSK react-flow 노드 클릭 → 3D 카메라 이동) ✅ 이미 구현됨
-- [x] 시간축 슬라이더 (M-RSK/M-SIM) ✅ 이미 구현됨
-- [ ] 성능 프로파일링 (8M+ 정점 GLB 최적화 여부)
+| # | 작업 | 상태 | 우선순위 |
+|---|------|------|---------|
+| 1 | RESPONSE phase에서 이벤트 자동 CLOSED 처리 | 미구현 | 높음 |
+| 2 | 보고서 자동생성 서비스 추출 (reportGenerator.ts) | 미구현 | 높음 |
+| 3 | EventContext enrichment (useSSE에서 자동 fetch) | 미구현 | 중간 |
+| 4 | EventPopup에 enrichment 요약 카드 표시 | 미구현 | 중간 |
+| 5 | 이력조회 기간/유형 필터 실제 동작 | 미구현 | 낮음 |
+| 6 | 설정 메타데이터 탭 인라인 편집 | 미구현 | 낮음 |
 
-### 우선순위 낮음
-- [ ] PDF 보고서 내보내기
-- [ ] 이펙트 ON/OFF 토글 (설정 페이지)
-- [ ] GPU 메모리 모니터링 (개발 모드)
-- [ ] Vercel/Railway/R2 배포
+### 추가 개선 사항
+
+| # | 작업 | 설명 |
+|---|------|------|
+| 1 | M-RSK 시간축 슬라이더 3D 연동 강화 | 시간에 따라 영향 설비 점진적 추가 애니메이션 |
+| 2 | M-SIM 3D 시뮬레이션 타임라인 | 타임라인 스크러버로 시간별 3D 컬러링 변화 |
+| 3 | 모바일/태블릿 반응형 | CLAUDE.md §21 참조, 현재 데스크탑 전용 |
+| 4 | 성능 최적화 | GPU 모니터링, 이펙트 ON/OFF 토글 (§22) |
+| 5 | 배포 (Vercel + Railway + R2) | CLAUDE.md §19 참조 |
 
 ---
 
-## 로컬 개발 실행 방법
+## 4. 집 PC에서 이어가기 가이드
+
+### 4.1 환경 준비
 
 ```bash
-# 1. 의존성 설치
-npm install
+# 1. 레포 클론 (이미 있으면 pull)
+git clone https://github.com/jazzsalle/UNE.git
+cd UNE
 
-# 2. DB 마이그레이션 + 시드
+# 또는 기존 레포에서
+git pull origin main
+
+# 2. 의존성 설치
+npm install          # root workspace
+cd apps/api && npm install
+cd ../web && npm install
+cd ../..
+
+# 3. DB 설정 (PostgreSQL 필요)
 cd apps/api
+cp .env.example .env   # DATABASE_URL 수정
 npx prisma migrate dev
 npx prisma db seed
+cd ../..
 
-# 3. 백엔드 실행 (포트 3001)
-npm run dev          # apps/api
+# 4. GLB 파일
+# h2.glb (30MB) → apps/web/public/models/h2.glb 에 배치
+# secondary_pump.glb → apps/web/public/models/secondary_pump.glb 에 배치
+# (이미 public/models/에 있으면 OK)
 
-# 4. 프론트엔드 실행 (포트 3000)
-npm run dev          # apps/web (별도 터미널)
+# 5. Draco 디코더
+mkdir -p apps/web/public/draco
+cp node_modules/three/examples/jsm/libs/draco/gltf/* apps/web/public/draco/
+```
 
-# 5. 브라우저에서 http://localhost:3000/monitoring 접속
+### 4.2 개발 서버 실행
+
+```bash
+# 터미널 1: API 서버
+cd apps/api && npm run dev    # → http://localhost:3001
+
+# 터미널 2: Web 프론트
+cd apps/web && npm run dev    # → http://localhost:3000
+```
+
+### 4.3 작업 이어가기 — 추천 순서
+
+1. **Phase 5 완성** — plan 파일 참조
+   - Step 1: emulatorEngine.ts에 RESPONSE phase 자동 CLOSED + 보고서 생성
+   - Step 2: reportGenerator.ts 서비스 추출
+   - Step 3-4: EventContext enrichment + EventPopup 표시
+
+2. **M-RSK 시간축 시각화 고도화**
+   - 시간축 슬라이더 드래그 시 3D에서 영향 설비가 단계적으로 컬러링 변화
+   - predicted_after_sec 기준으로 애니메이션
+
+3. **전체 시나리오 E2E 테스트**
+   - SC-01 시나리오 에뮬레이터 실행
+   - NORMAL → SYMPTOM → FAULT → SECONDARY_IMPACT → RESPONSE 전체 흐름 검증
+
+### 4.4 Claude Code 사용 시 프롬프트 예시
+
+```
+# Phase 5 잔여 작업
+"CLAUDE.md를 참고해서 Phase 5 plan을 이어서 구현해줘.
+Step 1: emulatorEngine에서 RESPONSE phase 진입 시 이벤트 CLOSED + 보고서 자동생성"
+
+# M-RSK 개선
+"위험예측 모드의 시간축 슬라이더를 드래그하면 3D에서
+predicted_after_sec에 따라 영향 설비가 단계적으로 컬러링되도록 개선해줘"
+
+# E2E 테스트
+"에뮬레이터에서 SC-01 시나리오를 60x 속도로 실행해서
+전체 phase 흐름(모니터링→이벤트→위험예측→SOP→보고서)을 테스트해줘"
 ```
 
 ---
 
-## Git 커밋 히스토리 (최근)
+## 5. 프로젝트 구조 요약
 
 ```
-7eb8c66 feat: 모니터링/이상탐지/SOP UI 대폭 개선 + 동적 카메라 시스템
-d49b223 fix: 에뮬레이터 센서 시계열 데이터 송출
-6b35f2e fix: 바다 파란색 + 바닥판 마스킹 + 도로→배관 경로
-df88e1d feat: 모니터링 3D 뷰어 — 카메라 ISO뷰 + POI + 바다/도로
-5f55091 fix: sync emulator running state from SSE
-c70f5d0 fix: 버그 3종 수정 — fetch 재시도·WebGL·이력 분류
-a172ebc feat: Phase 5 완성 — 보조 기능 + E2E 자동화
-fb05b2c feat: UI 디자인 세련화 + 미완성 기능 연결
-c5a2553 feat: 실제 GLB 로딩 + Draco + mesh-equipment 매핑
-47262ba feat: 3D 이펙트 + M-SIM 3D + SOP 팝업 + 모드 연계
+apps/
+├── web/                    # Next.js 14 Frontend (port 3000)
+│   └── src/
+│       ├── app/            # 라우트 (monitoring, anomaly, risk, simulation, history, sop, settings, reports)
+│       ├── components/     # UI 컴포넌트
+│       │   ├── viewer3d/   # 3D (ThreeCanvas, TestbedModel, CameraController, TopViewSwitcher, effects/)
+│       │   ├── risk/       # 위험예측 (ImpactNetwork2D, RiskPOIs)
+│       │   ├── common/     # 공통 (EventPopup, SensorChart)
+│       │   ├── layout/     # 레이아웃 (GNB, AmbientProvider)
+│       │   ├── sop/        # SOP (SopExecutionPanel, SopListPanel, SopEditorPanel)
+│       │   └── process-flow/ # 공정 흐름
+│       ├── stores/         # Zustand (appStore, emulatorStore)
+│       ├── hooks/          # (useSSE, useAmbientMonitor)
+│       └── lib/            # (api.ts, constants.ts)
+├── api/                    # Express Backend (port 3001)
+│   └── src/
+│       ├── routes/         # API 라우트
+│       ├── services/       # (emulatorEngine, sopRecommender)
+│       └── providers/      # Mock providers
+seed/                       # 28개 seed JSON 파일
+CLAUDE.md                   # 전체 설계 문서 (단일 소스)
 ```
+
+---
+
+## 6. 주요 기술 참고
+
+| 항목 | 기술/방식 |
+|------|----------|
+| 3D 렌더링 | Three.js + @react-three/fiber + @react-three/drei |
+| GLB 압축 | Draco (h2.glb), 디코더 self-hosted (/draco/) |
+| 2D 네트워크 | react-flow |
+| 차트 | recharts + 커스텀 SensorChart |
+| 상태관리 | Zustand (appStore, emulatorStore) |
+| 실시간 | SSE (Server-Sent Events) |
+| 카메라 전환 | gsap 애니메이션 (0.8s ease) |
+| 셰이더 | GLSL (배관 흐름, 글로우, 그리드, 바다, 하늘) |
+| ORM | Prisma + PostgreSQL |

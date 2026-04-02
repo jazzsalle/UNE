@@ -9,6 +9,8 @@ import { computeEquipmentBBox } from './equipmentUtils';
 
 interface CameraControllerProps {
   targetEquipmentId: string | null;
+  /** 여러 설비를 한 번에 프레이밍 (그룹 아이소메트릭 뷰) */
+  frameEquipmentIds?: string[] | null;
 }
 
 // 바운딩박스에서 카메라가 객체 전체를 넉넉히 잡을 수 있는 위치 계산
@@ -44,10 +46,41 @@ function computeCameraFromBBox(
   };
 }
 
-export function CameraController({ targetEquipmentId }: CameraControllerProps) {
+export function CameraController({ targetEquipmentId, frameEquipmentIds }: CameraControllerProps) {
   const { camera, scene, controls } = useThree();
   const prevId = useRef<string | null>(null);
+  const prevFrameKey = useRef<string | null>(null);
 
+  // 그룹 프레이밍 (여러 설비를 아이소메트릭 뷰로 한 번에 보여줌)
+  useEffect(() => {
+    if (!frameEquipmentIds || frameEquipmentIds.length === 0) return;
+    const frameKey = frameEquipmentIds.sort().join(',');
+    if (frameKey === prevFrameKey.current) return;
+    prevFrameKey.current = frameKey;
+
+    // 모든 설비의 합산 바운딩박스 계산 (GLB 로드 대기)
+    const tryFrame = () => {
+      const unionBox = new THREE.Box3();
+      let found = 0;
+      for (const eqId of frameEquipmentIds) {
+        const box = computeEquipmentBBox(scene, eqId);
+        if (box) { unionBox.union(box); found++; }
+      }
+      if (found === 0) return false;
+
+      const { target, position } = computeCameraFromBBox(unionBox, camera as THREE.PerspectiveCamera);
+      animateCamera(camera, controls as unknown as OrbitControlsImpl, target, position);
+      return true;
+    };
+
+    // GLB가 아직 로드 안됐을 수 있으므로 재시도
+    if (!tryFrame()) {
+      const timer = setTimeout(tryFrame, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [frameEquipmentIds, camera, scene, controls]);
+
+  // 개별 설비 프레이밍
   useEffect(() => {
     if (!targetEquipmentId || targetEquipmentId === prevId.current) return;
     prevId.current = targetEquipmentId;

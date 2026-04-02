@@ -2,10 +2,10 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { Html } from '@react-three/drei';
-import { useThree } from '@react-three/fiber';
+import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { VisualState } from '@/lib/constants';
-import { computeTopCenter } from './equipmentUtils';
+import { computeTopCenter, findEquipmentObject } from './equipmentUtils';
 
 // 한국어 설비명 매핑
 const EQUIPMENT_NAMES_KR: Record<string, string> = {
@@ -17,8 +17,8 @@ const EQUIPMENT_NAMES_KR: Record<string, string> = {
   'PMP-301': '이송펌프',
   'VAP-401': '기화기',
   'REL-701': '재액화기',
-  'VAL-601': '밸브 #1',
-  'VAL-602': '밸브 #2',
+  'VAL-601': '배출설비 #1',
+  'VAL-602': '배출설비 #2',
   'PIP-501': '메인배관',
 };
 
@@ -64,19 +64,7 @@ function SinglePOI({ equipmentId, position, state, selected, onClick, sensorValu
           userSelect: 'none',
         }}
       >
-        {/* 수직 연결선 */}
-        <div style={{
-          width: 1.5,
-          height: 28,
-          background: selected
-            ? 'linear-gradient(to bottom, #38bdf8, rgba(56,189,248,0.3))'
-            : isNormal
-              ? 'linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0.1))'
-              : `linear-gradient(to bottom, ${cfg.color}, rgba(255,255,255,0.1))`,
-          borderRadius: 1,
-        }} />
-
-        {/* 라벨 카드 */}
+        {/* 라벨 카드 (상단) */}
         <div
           style={{
             background: selected ? 'rgba(14,165,233,0.2)' : cfg.bg,
@@ -128,6 +116,18 @@ function SinglePOI({ equipmentId, position, state, selected, onClick, sensorValu
             )}
           </div>
         </div>
+
+        {/* 수직 연결선 (카드에서 설비 방향으로 아래로) */}
+        <div style={{
+          width: 1.5,
+          height: 28,
+          background: selected
+            ? 'linear-gradient(to bottom, rgba(56,189,248,0.3), #38bdf8)'
+            : isNormal
+              ? 'linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.5))'
+              : `linear-gradient(to bottom, rgba(255,255,255,0.1), ${cfg.color})`,
+          borderRadius: 1,
+        }} />
       </div>
       <style>{`
         @keyframes poipulse {
@@ -147,10 +147,14 @@ interface EquipmentPOIsProps {
   sensorData?: Record<string, any>;
 }
 
+// 선박처럼 움직이는 설비의 POI를 매 프레임 추적
+const MOVING_EQUIPMENT = ['SHP-001'];
+
 export function EquipmentPOIs({ equipment, equipmentStates, selectedId, onSelect, sensorData }: EquipmentPOIsProps) {
   const { scene } = useThree();
   const [positions, setPositions] = useState<Record<string, [number, number, number]>>({});
   const computedRef = useRef(false);
+  const shipOffsetRef = useRef<[number, number, number] | null>(null);
 
   // 씬 로드 후 바운딩박스에서 POI 위치 계산 (1회)
   useEffect(() => {
@@ -163,6 +167,17 @@ export function EquipmentPOIs({ equipment, equipmentStates, selectedId, onSelect
         const pos = computeTopCenter(scene, eq.equipment_id);
         if (pos) {
           newPositions[eq.equipment_id] = pos;
+          // 선박 POI: 설비 위치 대비 오프셋 저장
+          if (eq.equipment_id === 'SHP-001') {
+            const shipObj = findEquipmentObject(scene, 'SHP-001');
+            if (shipObj) {
+              shipOffsetRef.current = [
+                pos[0] - shipObj.position.x,
+                pos[1] - shipObj.position.y,
+                pos[2] - shipObj.position.z,
+              ];
+            }
+          }
         }
       }
       if (Object.keys(newPositions).length > 0) {
@@ -173,6 +188,24 @@ export function EquipmentPOIs({ equipment, equipmentStates, selectedId, onSelect
 
     return () => clearTimeout(timer);
   }, [scene, equipment]);
+
+  // 선박 POI 위치를 매 프레임 추적
+  useFrame(() => {
+    if (!shipOffsetRef.current) return;
+    const shipObj = findEquipmentObject(scene, 'SHP-001');
+    if (!shipObj) return;
+    const offset = shipOffsetRef.current;
+    const newPos: [number, number, number] = [
+      shipObj.position.x + offset[0],
+      shipObj.position.y + offset[1],
+      shipObj.position.z + offset[2],
+    ];
+    // 직접 state 업데이트 대신 ref로 비교하여 변경 시에만 업데이트
+    const cur = positions['SHP-001'];
+    if (cur && (Math.abs(cur[0] - newPos[0]) > 0.5 || Math.abs(cur[2] - newPos[2]) > 0.5)) {
+      setPositions(prev => ({ ...prev, 'SHP-001': newPos }));
+    }
+  });
 
   return (
     <>

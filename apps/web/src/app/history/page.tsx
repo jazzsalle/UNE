@@ -154,7 +154,7 @@ export default function HistoryPage() {
                 <button onClick={() => {
                   router.push('/risk');
                 }} className="text-[10px] px-2 py-1 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/30">
-                  위험예측
+                  상호영향 위험예측
                 </button>
                 <button onClick={() => {
                   router.push(`/sop`);

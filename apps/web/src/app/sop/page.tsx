@@ -91,7 +91,35 @@ export default function SopPage() {
 
         {/* 메인 콘텐츠 */}
         <main className="flex-1 overflow-y-auto">
-          {!selectedSop ? (
+          {tab === 'history' ? (
+            /* 실행이력 탭 — SOP 선택 불필요 */
+            <div className="p-4">
+              <h3 className="text-sm font-bold mb-3">SOP 실행이력</h3>
+              <table className="w-full text-[11px]">
+                <thead><tr className="text-gray-500 border-b border-white/[0.06]">
+                  <th className="text-left py-2">실행ID</th><th className="text-left">SOP</th><th className="text-left">이벤트</th>
+                  <th className="text-left">상태</th><th className="text-left">시작</th><th className="text-left">종료</th>
+                </tr></thead>
+                <tbody>
+                  {executions.map((ex: any) => (
+                    <tr key={ex.execution_id} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
+                      <td className="py-1.5 text-white font-mono text-[10px]">{ex.execution_id.slice(0, 8)}</td>
+                      <td className="text-gray-300">{ex.sop?.sop_name || ex.sop_id}</td>
+                      <td className="text-gray-400">{ex.event_id?.slice(0, 12)}</td>
+                      <td><span className={`text-[9px] px-1.5 py-0.5 rounded ${
+                        ex.execution_status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                      }`}>{ex.execution_status}</span></td>
+                      <td className="text-gray-500">{new Date(ex.started_at).toLocaleDateString()}</td>
+                      <td className="text-gray-500">{ex.ended_at ? new Date(ex.ended_at).toLocaleDateString() : '—'}</td>
+                    </tr>
+                  ))}
+                  {executions.length === 0 && (
+                    <tr><td colSpan={6} className="text-center text-gray-600 py-4">실행이력이 없습니다</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : !selectedSop ? (
             <div className="text-gray-500 text-xs text-center mt-10">SOP를 선택하세요</div>
           ) : tab === 'execute' ? (
             <SopExecutionPanel sop={selectedSop} eventId={eventContext?.event_id || 'EVT-SC-01-001'} />
@@ -173,35 +201,7 @@ export default function SopPage() {
                 <button onClick={() => setTab('execute')} className="text-gray-400 hover:text-white px-4 py-1.5 text-xs">취소</button>
               </div>
             </div>
-          ) : (
-            /* 실행이력 탭 */
-            <div className="p-4">
-              <h3 className="text-sm font-bold mb-3">SOP 실행이력</h3>
-              <table className="w-full text-[11px]">
-                <thead><tr className="text-gray-500 border-b border-white/[0.06]">
-                  <th className="text-left py-2">실행ID</th><th className="text-left">SOP</th><th className="text-left">이벤트</th>
-                  <th className="text-left">상태</th><th className="text-left">시작</th><th className="text-left">종료</th>
-                </tr></thead>
-                <tbody>
-                  {executions.map((ex: any) => (
-                    <tr key={ex.execution_id} className="border-b border-white/[0.04]">
-                      <td className="py-1.5 text-white font-mono text-[10px]">{ex.execution_id.slice(0, 8)}</td>
-                      <td className="text-gray-300">{ex.sop_id}</td>
-                      <td className="text-gray-400">{ex.event_id?.slice(0, 12)}</td>
-                      <td><span className={`text-[9px] px-1.5 py-0.5 rounded ${
-                        ex.execution_status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
-                      }`}>{ex.execution_status}</span></td>
-                      <td className="text-gray-500">{new Date(ex.started_at).toLocaleDateString()}</td>
-                      <td className="text-gray-500">{ex.ended_at ? new Date(ex.ended_at).toLocaleDateString() : '—'}</td>
-                    </tr>
-                  ))}
-                  {executions.length === 0 && (
-                    <tr><td colSpan={6} className="text-center text-gray-600 py-4">실행이력이 없습니다</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+          ) : null}
         </main>
       </div>
     </div>

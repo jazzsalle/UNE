@@ -15,6 +15,16 @@ sopRoutes.get('/', async (req, res) => {
   res.json(sops.map(s => ({ ...s, steps: JSON.parse(s.steps), keywords: s.keywords ? JSON.parse(s.keywords) : null })));
 });
 
+// GET /api/sop/executions (MUST be before /:id to avoid being caught by :id param)
+sopRoutes.get('/executions', async (req, res) => {
+  const { event_id, scenario_id } = req.query;
+  const where: any = {};
+  if (event_id) where.event_id = event_id;
+  if (scenario_id) where.scenario_id = scenario_id;
+  const executions = await prisma.sopExecutionLog.findMany({ where, include: { sop: true }, orderBy: { started_at: 'desc' } });
+  res.json(executions);
+});
+
 // GET /api/sop/recommend
 sopRoutes.get('/recommend', async (req, res) => {
   const { event_id, equipment_id, severity } = req.query;
@@ -129,12 +139,3 @@ sopRoutes.post('/execution/:exec_id/broadcast', async (req, res) => {
   res.json({ status: 'broadcast_logged', execution_id: req.params.exec_id });
 });
 
-// GET /api/sop/executions
-sopRoutes.get('/executions', async (req, res) => {
-  const { event_id, scenario_id } = req.query;
-  const where: any = {};
-  if (event_id) where.event_id = event_id;
-  if (scenario_id) where.scenario_id = scenario_id;
-  const executions = await prisma.sopExecutionLog.findMany({ where, include: { sop: true } });
-  res.json(executions);
-});

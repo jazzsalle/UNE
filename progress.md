@@ -1,6 +1,6 @@
 # LH2 디지털 트윈 POC — 진행상황
 
-> 최종 업데이트: 2026-04-01
+> 최종 업데이트: 2026-04-02
 
 ---
 
@@ -47,6 +47,7 @@
 - [x] 히트맵 오버레이 (위험 반경)
 - [x] 영향 전파 경로 애니메이션
 - [x] 바다 셰이더 (파도 애니메이션)
+- [x] 배관 유체 흐름 애니메이션 (GLSL 파티클, liquid/gas 구분, 9개 경로)
 - [x] 설비 클릭 → 카메라 이동 + 정보 패널 갱신
 
 ### 모드별 화면
@@ -96,6 +97,7 @@ apps/web/src/components/viewer3d/
 └── effects/
     ├── GlowEffect.tsx     ← GLSL 셰이더
     ├── TankLevel.tsx      ← GLSL 셰이더
+    ├── PipeFlow.tsx       ← 신규: GLSL 배관 유체 흐름 파티클 (liquid/gas)
     ├── HeatmapOverlay.tsx
     └── PropagationPath.tsx
 ```
@@ -105,14 +107,15 @@ apps/web/src/components/viewer3d/
 ## 남은 작업 / 개선 가능 사항
 
 ### 우선순위 높음
-- [ ] 배관 유체 흐름 애니메이션 (파티클/UV 스크롤 셰이더)
-- [ ] 시나리오 전체 E2E 재생 테스트 (SC-01~SC-08)
+- [x] 배관 유체 흐름 애니메이션 (GLSL 셰이더 파티클, PipeFlow.tsx) ✅ 2026-04-02
+- [x] 에뮬레이터 바 진행률 표시 개선 (phase 마커 + 위치 인디케이터) ✅ 2026-04-02
+- [x] SC-01 E2E 재생 테스트 (60x, 전 phase 정상 통과 + 보고서 자동생성 확인) ✅ 2026-04-02
+- [ ] 시나리오 전체 E2E 재생 테스트 (SC-02~SC-08)
 - [ ] 모바일/태블릿 반응형 레이아웃 검증
 
 ### 우선순위 중간
-- [ ] 2D↔3D 동기화 개선 (M-RSK에서 react-flow 노드 클릭 → 3D 카메라 이동)
-- [ ] 시간축 슬라이더 (M-RSK/M-SIM에서 predicted_after_sec 기반 단계적 컬러링)
-- [ ] 에뮬레이터 바 진행률 표시 개선
+- [x] 2D↔3D 동기화 (M-RSK react-flow 노드 클릭 → 3D 카메라 이동) ✅ 이미 구현됨
+- [x] 시간축 슬라이더 (M-RSK/M-SIM) ✅ 이미 구현됨
 - [ ] 성능 프로파일링 (8M+ 정점 GLB 최적화 여부)
 
 ### 우선순위 낮음

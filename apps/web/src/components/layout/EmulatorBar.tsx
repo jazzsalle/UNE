@@ -92,27 +92,47 @@ export function EmulatorBar() {
           <span>▶</span> 시작
         </button>
       ) : (
-        <button onClick={handleStop}
-          className="flex items-center gap-1.5 bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-1.5 rounded-lg font-medium text-[11px] hover:bg-red-500/30 transition-colors">
-          <span>⏹</span> 중지
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-cyan-400/60 text-[10px] hidden md:inline">{scenario_id}</span>
+          <button onClick={handleStop}
+            className="flex items-center gap-1.5 bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg font-medium text-[11px] hover:bg-red-500/30 transition-colors">
+            <span>⏹</span> 중지
+          </button>
+        </div>
       )}
 
       {/* Progress */}
       <div className="flex-1 flex items-center gap-3 mx-2">
-        <div className="flex-1 relative">
+        <div className="flex-1 relative group">
+          {/* Phase label markers (shown on hover or running) */}
+          {running && (
+            <div className="absolute -top-4 left-0 w-full flex text-[8px] text-gray-600 pointer-events-none">
+              <span style={{ position: 'absolute', left: '10%', transform: 'translateX(-50%)' }}>정상</span>
+              <span style={{ position: 'absolute', left: '30%', transform: 'translateX(-50%)' }}>증상</span>
+              <span style={{ position: 'absolute', left: '53%', transform: 'translateX(-50%)' }}>고장</span>
+              <span style={{ position: 'absolute', left: '77%', transform: 'translateX(-50%)' }}>2차</span>
+              <span style={{ position: 'absolute', left: '93%', transform: 'translateX(-50%)' }}>대응</span>
+            </div>
+          )}
           <div className="w-full bg-white/[0.06] rounded-full h-1.5 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${ps.bg}`}
               style={{ width: `${Math.min(progress, 100)}%`, opacity: 0.8 }}
             />
           </div>
-          {/* Phase markers */}
+          {/* Phase divider markers */}
           <div className="absolute top-0 left-0 w-full h-full flex">
             {[20, 40, 67, 87].map((pct) => (
               <div key={pct} className="absolute top-0 h-full w-px bg-white/[0.1]" style={{ left: `${pct}%` }} />
             ))}
           </div>
+          {/* Current position indicator */}
+          {running && progress > 0 && (
+            <div
+              className={`absolute top-[-1px] w-2 h-2 rounded-full ${ps.bg} shadow-sm`}
+              style={{ left: `calc(${Math.min(progress, 100)}% - 4px)` }}
+            />
+          )}
         </div>
       </div>
 

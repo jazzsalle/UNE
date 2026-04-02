@@ -8,6 +8,7 @@ import { GlowEffect } from './effects/GlowEffect';
 import { TankLevel } from './effects/TankLevel';
 import { HeatmapOverlay } from './effects/HeatmapOverlay';
 import { PropagationPath } from './effects/PropagationPath';
+import { PipeFlowSystem } from './effects/PipeFlow';
 import { COLOR_MAP, type VisualState } from '@/lib/constants';
 import { darkenTerrain } from './EnvironmentScene';
 import {
@@ -74,11 +75,14 @@ interface TestbedModelProps {
   tankLevels?: Record<string, { level: number; pressure: 'normal' | 'warning' | 'critical' }>;
   heatmapTarget?: { equipmentId: string; radius: number } | null;
   propagationPaths?: { from: string; to: string }[];
+  pipeFlowStatus?: 'normal' | 'warning' | 'critical';
+  pipeFlowSpeed?: number;
 }
 
 export function TestbedModel({
   equipmentStates = {}, onEquipmentClick, showEffects = true,
   tankLevels = {}, heatmapTarget = null, propagationPaths = [],
+  pipeFlowStatus = 'normal', pipeFlowSpeed = 1,
 }: TestbedModelProps) {
   // useGLTF 2nd arg=true → auto Draco decoding (drei uses /draco/ path)
   const { scene } = useGLTF('/models/h2.glb', true);
@@ -185,6 +189,22 @@ export function TestbedModel({
               />
             );
           })}
+
+          {/* Pipe flow animation */}
+          {(() => {
+            const posMap: Record<string, [number, number, number]> = {};
+            for (const eqId of EQUIPMENT_IDS) {
+              const c = computeEquipmentCenter(scene, eqId);
+              if (c) posMap[eqId] = c;
+            }
+            return (
+              <PipeFlowSystem
+                equipmentPositions={posMap}
+                flowStatus={pipeFlowStatus}
+                flowSpeed={pipeFlowSpeed}
+              />
+            );
+          })()}
 
           {/* Heatmap */}
           {heatmapTarget && (() => {

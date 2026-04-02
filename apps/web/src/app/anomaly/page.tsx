@@ -1,16 +1,18 @@
 // ref: CLAUDE.md §9.4 — 이상탐지 (M-ANO) — 개별 설비 상세 뷰 + 하단 완성
 'use client';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useAppStore } from '@/stores/appStore';
 import { api } from '@/lib/api';
 import { EQUIPMENT_ICONS, type VisualState } from '@/lib/constants';
 import { SensorChart } from '@/components/common/SensorChart';
+import { CameraControlsOverlay, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
 
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
 const PumpDetailModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.PumpDetailModel })), { ssr: false });
 const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
 const CameraController = dynamic(() => import('@/components/viewer3d/CameraController').then(m => ({ default: m.CameraController })), { ssr: false });
+const CameraBookmarkInner = dynamic(() => import('@/components/viewer3d/CameraBookmark').then(m => ({ default: m.CameraBookmark })), { ssr: false });
 
 // 한국어 설비명 매핑
 const EQUIPMENT_NAMES_KR: Record<string, string> = {
@@ -24,6 +26,7 @@ const EQUIPMENT_NAMES_KR: Record<string, string> = {
 export default function AnomalyPage() {
   const [equipment, setEquipment] = useState<any[]>([]);
   const [selectedTab, setSelectedTab] = useState('PMP-301');
+  const cameraRef = useRef<CameraBookmarkRef | null>(null);
   const [kogasResult, setKogasResult] = useState<any>(null);
   const [sensorHistory, setSensorHistory] = useState<Record<string, any[]>>({});
   const { eventContext, sensorData } = useAppStore();
@@ -140,14 +143,17 @@ export default function AnomalyPage() {
 
         {/* 3D 뷰어 — 선택 설비에 따라 다른 모델/카메라 */}
         <div className="flex-1 relative">
+          <CameraControlsOverlay controlRef={cameraRef} pageId="anomaly" />
           {isPumpDetail ? (
             <ThreeCanvas>
               <PumpDetailModel meshStates={pumpMeshStates} />
+              <CameraBookmarkInner pageId="anomaly" controlRef={cameraRef} />
             </ThreeCanvas>
           ) : (
             <ThreeCanvas>
               <TestbedModel equipmentStates={equipmentStates} />
               <CameraController targetEquipmentId={selectedTab} />
+              <CameraBookmarkInner pageId="anomaly" controlRef={cameraRef} />
             </ThreeCanvas>
           )}
 

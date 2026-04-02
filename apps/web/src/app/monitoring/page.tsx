@@ -13,6 +13,8 @@ const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').
 const CameraController = dynamic(() => import('@/components/viewer3d/CameraController').then(m => ({ default: m.CameraController })), { ssr: false });
 const EquipmentPOIs = dynamic(() => import('@/components/viewer3d/EquipmentPOI').then(m => ({ default: m.EquipmentPOIs })), { ssr: false });
 const EnvironmentScene = dynamic(() => import('@/components/viewer3d/EnvironmentScene').then(m => ({ default: m.EnvironmentScene })), { ssr: false });
+const CameraBookmarkInner = dynamic(() => import('@/components/viewer3d/CameraBookmark').then(m => ({ default: m.CameraBookmark })), { ssr: false });
+import { CameraControlsOverlay, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
 
 // 한국어 설비명 매핑
 const EQUIPMENT_NAMES_KR: Record<string, string> = {
@@ -39,6 +41,7 @@ const PROCESS_STAGES = [
 export default function MonitoringPage() {
   const [equipment, setEquipment] = useState<any[]>([]);
   const [cameraTarget, setCameraTarget] = useState<string | null>(null);
+  const cameraRef = useRef<CameraBookmarkRef | null>(null);
   const { selectedEquipmentId, setSelectedEquipment, sensorData, showEventPopup, eventContext, alarms, acknowledgeAlarm, removeAlarm } = useAppStore();
 
   useEffect(() => {
@@ -216,18 +219,22 @@ export default function MonitoringPage() {
           </div>
         </div>
 
-        <ThreeCanvas>
-          <EnvironmentScene />
-          <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleSelectEquipment} />
-          <EquipmentPOIs
-            equipment={equipment}
-            equipmentStates={equipmentStates}
-            selectedId={selectedEquipmentId}
-            onSelect={handleSelectEquipment}
-            sensorData={sensorData}
-          />
-          <CameraController targetEquipmentId={cameraTarget} />
-        </ThreeCanvas>
+        <div className="relative w-full h-full">
+          <CameraControlsOverlay controlRef={cameraRef} pageId="monitoring" />
+          <ThreeCanvas>
+            <EnvironmentScene />
+            <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleSelectEquipment} />
+            <EquipmentPOIs
+              equipment={equipment}
+              equipmentStates={equipmentStates}
+              selectedId={selectedEquipmentId}
+              onSelect={handleSelectEquipment}
+              sensorData={sensorData}
+            />
+            <CameraController targetEquipmentId={cameraTarget} />
+            <CameraBookmarkInner pageId="monitoring" controlRef={cameraRef} />
+          </ThreeCanvas>
+        </div>
       </main>
 
       {/* 우측: 설비 정보 + 알람 이력 패널 */}

@@ -1,15 +1,17 @@
 // ref: CLAUDE.md §9.5 — 시뮬레이션/의사결정지원 (M-SIM) 3D 통합
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useAppStore } from '@/stores/appStore';
 import { api } from '@/lib/api';
 // CameraController now uses equipment IDs directly
 import type { VisualState } from '@/lib/constants';
+import { CameraControlsOverlay, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
 
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
 const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
 const CameraController = dynamic(() => import('@/components/viewer3d/CameraController').then(m => ({ default: m.CameraController })), { ssr: false });
+const CameraBookmarkInner = dynamic(() => import('@/components/viewer3d/CameraBookmark').then(m => ({ default: m.CameraBookmark })), { ssr: false });
 
 export default function SimulationPage() {
   const { eventContext, setSelectedEquipment } = useAppStore();
@@ -20,6 +22,7 @@ export default function SimulationPage() {
   const [simTime, setSimTime] = useState(0);
   const [simRunning, setSimRunning] = useState(false);
   const [cameraTarget, setCameraTarget] = useState<string | null>(null);
+  const cameraRef = useRef<CameraBookmarkRef | null>(null);
   const [appliedOption, setAppliedOption] = useState<'A' | 'B' | null>(null);
 
   // 수동 실행 파라미터
@@ -137,10 +140,12 @@ export default function SimulationPage() {
       <div className="flex-1 flex min-h-0">
         {/* 3D 뷰어 + 타임라인 */}
         <div className="flex-1 flex flex-col">
-          <div className="flex-1 bg-bg-primary">
+          <div className="flex-1 bg-bg-primary relative">
+            <CameraControlsOverlay controlRef={cameraRef} pageId="simulation" />
             <ThreeCanvas>
               <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleEquipmentClick} />
               <CameraController targetEquipmentId={cameraTarget} />
+              <CameraBookmarkInner pageId="simulation" controlRef={cameraRef} />
             </ThreeCanvas>
           </div>
 

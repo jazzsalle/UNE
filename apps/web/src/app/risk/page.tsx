@@ -1,16 +1,18 @@
 // ref: CLAUDE.md §9.3 — 위험예측 (M-RSK)
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useAppStore } from '@/stores/appStore';
 import { api } from '@/lib/api';
 // CameraController now uses equipment IDs directly
 import type { VisualState } from '@/lib/constants';
+import { CameraControlsOverlay, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
 
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
 const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
 const CameraController = dynamic(() => import('@/components/viewer3d/CameraController').then(m => ({ default: m.CameraController })), { ssr: false });
 const ImpactNetwork2D = dynamic(() => import('@/components/risk/ImpactNetwork2D').then(m => ({ default: m.ImpactNetwork2D })), { ssr: false });
+const CameraBookmarkInner = dynamic(() => import('@/components/viewer3d/CameraBookmark').then(m => ({ default: m.CameraBookmark })), { ssr: false });
 
 export default function RiskPage() {
   const { eventContext, setSelectedEquipment } = useAppStore();
@@ -18,6 +20,7 @@ export default function RiskPage() {
   const [hazop, setHazop] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [cameraTarget, setCameraTarget] = useState<string | null>(null);
+  const cameraRef = useRef<CameraBookmarkRef | null>(null);
   const [timeSlider, setTimeSlider] = useState(0);
 
   const scenarioId = eventContext?.scenario_id || 'SC-01';
@@ -77,7 +80,8 @@ export default function RiskPage() {
 
         {/* 중: 3D 뷰어 + 시간축 */}
         <div className="flex-1 flex flex-col">
-          <div className="flex-1 bg-bg-primary">
+          <div className="flex-1 bg-bg-primary relative">
+            <CameraControlsOverlay controlRef={cameraRef} pageId="risk" />
             <ThreeCanvas>
               <TestbedModel
                 equipmentStates={equipmentStates}
@@ -91,6 +95,7 @@ export default function RiskPage() {
                   .map(r => ({ from: r.trigger_equipment_id, to: r.affected_equipment_id }))}
               />
               <CameraController targetEquipmentId={cameraTarget} />
+              <CameraBookmarkInner pageId="risk" controlRef={cameraRef} />
             </ThreeCanvas>
           </div>
 

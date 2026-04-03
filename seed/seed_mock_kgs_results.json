@@ -42,6 +42,20 @@
     "recommended_action": "압축기 정지 확인 후 저장탱크 압력상승률 감시"
   },
   {
+    "scenario_id": "SC-01",
+    "analysis_id": "KGS-SC-01-04",
+    "trigger_equipment_id": "BOG-201",
+    "affected_equipment_id": "VAL-601",
+    "impact_type": "PSV_ACTIVATION_RISK",
+    "impact_score": 58,
+    "risk_level": "WARNING",
+    "predicted_after_sec": 540,
+    "color_2d": "#FFA726",
+    "color_3d": "warning",
+    "hazop_id": "HZ-LH2-001",
+    "recommended_action": "벤트스택 안전밸브(PSV) 개방 준비, 수동 개방 대기"
+  },
+  {
     "scenario_id": "SC-02",
     "analysis_id": "KGS-SC-02-01",
     "trigger_equipment_id": "PMP-301",
@@ -180,6 +194,20 @@
     "color_3d": "affected",
     "hazop_id": "HZ-LH2-004",
     "recommended_action": "밸브 상태 확인 후 우회경로 전환"
+  },
+  {
+    "scenario_id": "SC-04",
+    "analysis_id": "KGS-SC-04-04",
+    "trigger_equipment_id": "VAL-601",
+    "affected_equipment_id": "VAL-602",
+    "impact_type": "BACKUP_ACTIVATION",
+    "impact_score": 52,
+    "risk_level": "WARNING",
+    "predicted_after_sec": 420,
+    "color_2d": "#FFA726",
+    "color_3d": "warning",
+    "hazop_id": "HZ-LH2-004",
+    "recommended_action": "벤트스택 #2(예비) 우회경로 전환 준비"
   },
   {
     "scenario_id": "SC-05",

@@ -176,6 +176,30 @@
     "critical_high": 4212.0
   },
   {
+    "sensor_id": "VAL-602-PRE-01",
+    "normal_value": 6.5,
+    "warning_low": 5.2,
+    "warning_high": 7.48,
+    "critical_low": 4.23,
+    "critical_high": 8.45
+  },
+  {
+    "sensor_id": "VAL-602-TEM-02",
+    "normal_value": -238.0,
+    "warning_low": -246.0,
+    "warning_high": -228.0,
+    "critical_low": -253.0,
+    "critical_high": -218.0
+  },
+  {
+    "sensor_id": "VAL-602-FLO-03",
+    "normal_value": 2980,
+    "warning_low": 2235.0,
+    "warning_high": 3576.0,
+    "critical_low": 1639.0,
+    "critical_high": 4023.0
+  },
+  {
     "sensor_id": "REL-701-PRE-01",
     "normal_value": 5.8,
     "warning_low": 4.64,

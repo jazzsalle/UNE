@@ -46,12 +46,12 @@
   },
   {
     "equipment_id": "VAL-601",
-    "equipment_name": "주요 차단밸브 스테이션 #1",
+    "equipment_name": "벤트스택 #1",
     "equipment_type": "VALVE_STATION",
     "zone_id": "Z-VAL",
     "is_core": true,
     "glb_object_name": "valve_station_601",
-    "description": "주요 차단/격리 밸브"
+    "description": "벤트스택 차단/격리 밸브 (주)"
   },
   {
     "equipment_id": "REL-701",
@@ -91,12 +91,12 @@
   },
   {
     "equipment_id": "VAL-602",
-    "equipment_name": "주요 차단밸브 스테이션 #2",
+    "equipment_name": "벤트스택 #2",
     "equipment_type": "VALVE_STATION",
     "zone_id": "Z-VAL",
     "is_core": false,
     "glb_object_name": "valve_station_602",
-    "description": "배출설비 차단/격리 밸브 (예비)"
+    "description": "벤트스택 차단/격리 밸브 (예비)"
   },
   {
     "equipment_id": "SWP-001",

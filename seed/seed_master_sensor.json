@@ -134,23 +134,44 @@
   },
   {
     "sensor_id": "VAL-601-PRE-01",
-    "sensor_name": "주요 차단밸브 스테이션 #1 PRESSURE",
+    "sensor_name": "벤트스택 #1 PRESSURE",
     "sensor_type": "PRESSURE",
     "equipment_id": "VAL-601",
     "unit": "bar(g)"
   },
   {
     "sensor_id": "VAL-601-TEM-02",
-    "sensor_name": "주요 차단밸브 스테이션 #1 TEMPERATURE",
+    "sensor_name": "벤트스택 #1 TEMPERATURE",
     "sensor_type": "TEMPERATURE",
     "equipment_id": "VAL-601",
     "unit": "°C"
   },
   {
     "sensor_id": "VAL-601-FLO-03",
-    "sensor_name": "주요 차단밸브 스테이션 #1 FLOW",
+    "sensor_name": "벤트스택 #1 FLOW",
     "sensor_type": "FLOW",
     "equipment_id": "VAL-601",
+    "unit": "kg/h"
+  },
+  {
+    "sensor_id": "VAL-602-PRE-01",
+    "sensor_name": "벤트스택 #2 PRESSURE",
+    "sensor_type": "PRESSURE",
+    "equipment_id": "VAL-602",
+    "unit": "bar(g)"
+  },
+  {
+    "sensor_id": "VAL-602-TEM-02",
+    "sensor_name": "벤트스택 #2 TEMPERATURE",
+    "sensor_type": "TEMPERATURE",
+    "equipment_id": "VAL-602",
+    "unit": "°C"
+  },
+  {
+    "sensor_id": "VAL-602-FLO-03",
+    "sensor_name": "벤트스택 #2 FLOW",
+    "sensor_type": "FLOW",
+    "equipment_id": "VAL-602",
     "unit": "kg/h"
   },
   {

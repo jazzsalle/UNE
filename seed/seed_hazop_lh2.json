@@ -10,13 +10,14 @@
     "event_scenario": "저장탱크에서 발생한 BOG를 처리하지 못함",
     "hazard_scenario": "저장탱크 압력 상승, PSV 접근, 저장계통 운전제한",
     "preventive_action": "압축기 진동·전류 실시간 감시, 예비 압축기/우회라인 준비, 토출측 차압 모니터링 강화",
-    "emergency_response": "압축기 정지 확인 후 저장탱크 압력상승률 감시, 필요 시 BOG 우회처리 및 충전/이송부하 저감, 현장 점검 후 단계복구",
+    "emergency_response": "압축기 정지 확인 후 저장탱크 압력상승률 감시, PSV 접근 시 벤트스택(VAL-601) 수동 개방 준비, 필요 시 BOG 우회처리 및 충전/이송부하 저감, 현장 점검 후 단계복구",
     "linked_sop_id": "SOP-BOG-TRIP-01",
     "risk_level": "CRITICAL",
     "impact_chain": [
       "BOG-201",
       "TK-101",
-      "REL-701"
+      "REL-701",
+      "VAL-601"
     ],
     "kgs_impact_score": 88
   },
@@ -66,7 +67,7 @@
   {
     "hazop_id": "HZ-LH2-004",
     "scenario_id": "SC-04",
-    "node": "저장탱크 출구 메인배관 밸브 스테이션",
+    "node": "저장탱크 출구 메인배관 벤트스택",
     "equipment_id": "VAL-601",
     "process_parameter": "FLOW",
     "deviation": "무유량/저유량",

@@ -25,8 +25,8 @@ const EQUIPMENT_NAMES_KR: Record<string, string> = {
   'PMP-301': '이송펌프',
   'VAP-401': '기화기',
   'REL-701': '재액화기',
-  'VAL-601': '배출설비 #1',
-  'VAL-602': '배출설비 #2',
+  'VAL-601': '벤트스택 #1',
+  'VAL-602': '벤트스택 #2',
   'PIP-501': '메인배관',
 };
 
@@ -122,6 +122,16 @@ export default function MonitoringPage() {
   const currentPhase = eventContext?.current_phase;
   const triggerEqId = eventContext?.trigger_equipment_id;
 
+  // 벤트스택 비상 경로 활성화: BOG 과압 또는 벤트스택 이상 시
+  const ventStackActive = useMemo(() => {
+    const bogStatus = equipmentStates['BOG-201'];
+    const tk101Status = equipmentStates['TK-101'];
+    const val601Status = equipmentStates['VAL-601'];
+    return (bogStatus === 'critical' || bogStatus === 'emergency') ||
+           (tk101Status === 'critical' || tk101Status === 'emergency') ||
+           (val601Status === 'warning' || val601Status === 'critical' || val601Status === 'emergency');
+  }, [equipmentStates]);
+
   // 모니터링 패널용 설비 (monitorSelectedEq 또는 첫번째 설비)
   const monitorEq = monitorSelectedEq
     ? equipment.find(e => e.equipment_id === monitorSelectedEq)
@@ -186,6 +196,23 @@ export default function MonitoringPage() {
                   );
                 })}
               </div>
+
+              {/* 2단계→3단계 사이: 벤트스택 비상 경로 인디케이터 */}
+              {stage.no === 2 && ventStackActive && (
+                <div className="my-1.5 mx-1 p-2 rounded border border-red-500/40 bg-red-500/5 animate-pulse">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[10px]">🔴</span>
+                    <span className="text-[9px] font-bold text-red-400 tracking-wide">벤트스택 비상 경로</span>
+                  </div>
+                  <div className="text-[8px] text-red-300/70 leading-relaxed">
+                    BOG 과압 → 안전밸브(PSV) 개방 대기
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <div className="flex-1 h-0.5 bg-gradient-to-r from-red-500/60 via-orange-500/40 to-yellow-500/30 rounded" />
+                    <span className="text-[7px] text-red-400/60">VAL-601</span>
+                  </div>
+                </div>
+              )}
 
               {i < PROCESS_STAGES.length - 1 && (
                 <div className="flex justify-center py-1">

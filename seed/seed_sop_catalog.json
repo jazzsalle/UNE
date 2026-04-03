@@ -163,7 +163,7 @@
   },
   {
     "sop_id": "SOP-VAL-STUCK-01",
-    "sop_name": "밸브 Stuck Close 대응",
+    "sop_name": "벤트스택 밸브 Stuck Close 대응",
     "sop_category": "EVENT_RESPONSE",
     "trigger_type": "EQUIPMENT_EVENT",
     "target_space_id": "Z-VALVE",

@@ -63,6 +63,22 @@ const DAMAGE_NODE_DATA: Record<string, {
       { kw: 12.5, radius: 3.6 }, { kw: 25, radius: 2.5 }, { kw: 37.5, radius: 2.0 },
     ],
   },
+  'VAL-601': {
+    name: '벤트스택 #1', pressure: 6.8, temperature: -238,
+    leakSize: 12, leakArea: 0.000113, leakRate: 0.098,
+    fireIntensity: [
+      { kw: 4, radius: 5.8 }, { kw: 8, radius: 4.1 },
+      { kw: 12.5, radius: 3.3 }, { kw: 25, radius: 2.3 }, { kw: 37.5, radius: 1.9 },
+    ],
+  },
+  'VAL-602': {
+    name: '벤트스택 #2', pressure: 6.5, temperature: -238,
+    leakSize: 12, leakArea: 0.000113, leakRate: 0.092,
+    fireIntensity: [
+      { kw: 4, radius: 5.5 }, { kw: 8, radius: 3.9 },
+      { kw: 12.5, radius: 3.1 }, { kw: 25, radius: 2.2 }, { kw: 37.5, radius: 1.8 },
+    ],
+  },
 };
 
 const FIRE_COLORS = ['#2196F3', '#4CAF50', '#FFC107', '#FF9800', '#F44336'];

@@ -5,7 +5,8 @@
     "trigger_equipment_id": "BOG-201",
     "affected_equipment_ids": [
       "TK-101",
-      "REL-701"
+      "REL-701",
+      "VAL-601"
     ],
     "hazop_id": "HZ-LH2-001",
     "default_duration_sec": 900,
@@ -137,11 +138,12 @@
   },
   {
     "scenario_id": "SC-04",
-    "scenario_name": "출구 배관 밸브 Stuck Close → 무유량/과압",
+    "scenario_name": "벤트스택 밸브 Stuck Close → 무유량/과압",
     "trigger_equipment_id": "VAL-601",
     "affected_equipment_ids": [
       "PIP-501",
-      "PMP-301"
+      "PMP-301",
+      "VAL-602"
     ],
     "hazop_id": "HZ-LH2-004",
     "default_duration_sec": 720,

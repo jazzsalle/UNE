@@ -37,7 +37,7 @@
     "opened_at": "2026-01-15T10:00:00+09:00",
     "closed_at": "2026-01-15T10:24:00+09:00",
     "severity": "CRITICAL",
-    "summary": "출구 배관 밸브 Stuck Close → 무유량/과압"
+    "summary": "벤트스택 밸브 Stuck Close → 무유량/과압"
   },
   {
     "event_id": "EVT-SC-05-001",

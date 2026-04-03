@@ -154,6 +154,27 @@
     "sample_interval_sec": 5
   },
   {
+    "equipment_id": "VAL-602",
+    "sensor_id": "VAL-602-PRE-01",
+    "sensor_type": "PRESSURE",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
+    "equipment_id": "VAL-602",
+    "sensor_id": "VAL-602-TEM-02",
+    "sensor_type": "TEMPERATURE",
+    "enabled": true,
+    "sample_interval_sec": 10
+  },
+  {
+    "equipment_id": "VAL-602",
+    "sensor_id": "VAL-602-FLO-03",
+    "sensor_type": "FLOW",
+    "enabled": true,
+    "sample_interval_sec": 5
+  },
+  {
     "equipment_id": "REL-701",
     "sensor_id": "REL-701-PRE-01",
     "sensor_type": "PRESSURE",

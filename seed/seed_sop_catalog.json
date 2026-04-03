@@ -34,9 +34,20 @@
       },
       {
         "order": 4,
-        "type": "TEXT",
-        "title": "부하조정",
-        "content": "필요 시 이송부하를 낮추고 BOG 우회처리 검토"
+        "type": "DECISION",
+        "title": "이상 해소 판단",
+        "content": "BOG 압축기 재기동이 가능하고 탱크 압력이 안정화되었습니까?",
+        "yes_label": "정상복귀",
+        "no_label": "추가조치",
+        "yes_steps": [
+          {"content": "BOG 압축기 재기동 절차 진행"},
+          {"content": "탱크 압력 정상범위 확인 후 모니터링 복귀"}
+        ],
+        "no_steps": [
+          {"content": "벤트스택(VAL-601) PSV 수동개방 준비"},
+          {"content": "재액화기(REL-701) 비상가동"},
+          {"content": "이송부하 추가 저감 또는 하역 중단 검토"}
+        ]
       },
       {
         "order": 5,
@@ -142,9 +153,20 @@
       },
       {
         "order": 4,
-        "type": "TEXT",
-        "title": "비상압력완화 검토",
-        "content": "필요 시 비상압력완화 절차에 따라 대응"
+        "type": "DECISION",
+        "title": "압력 안정화 판단",
+        "content": "부하저감 후 탱크 압력이 정상범위로 하강하고 있습니까?",
+        "yes_label": "안정화",
+        "no_label": "비상조치",
+        "yes_steps": [
+          {"content": "압력 하강 추세 확인 후 모니터링 강화"},
+          {"content": "BOG 처리계 운전 파라미터 기록"}
+        ],
+        "no_steps": [
+          {"content": "비상압력완화(PSV) 절차 개시"},
+          {"content": "벤트스택 수동개방 판단"},
+          {"content": "인근 설비 긴급 격리 및 대피 검토"}
+        ]
       },
       {
         "order": 5,
@@ -444,8 +466,20 @@
       },
       {
         "step_no": 6,
-        "type": "TEXT",
-        "content": "ESD 원인 제거 후 하역 재개 절차: ① 양측 밸브 상태 재확인 → ② 로딩암 플랜지 기밀 시험 → ③ 소량 하역 테스트 → ④ 정상 하역 재개"
+        "type": "DECISION",
+        "title": "누출 여부 판단",
+        "content": "로딩암 플랜지 연결부 및 주변 가스검지기에서 누출이 감지되었습니까?",
+        "yes_label": "누출 확인",
+        "no_label": "누출 없음",
+        "yes_steps": [
+          {"content": "누출 구역 즉시 격리 및 접근통제 강화"},
+          {"content": "소방/방재팀 출동 요청"},
+          {"content": "선박 이안 준비 (계류삭 해제 대기)"}
+        ],
+        "no_steps": [
+          {"content": "ESD 원인 조사 후 재개 절차 진행"},
+          {"content": "양측 밸브 재확인 → 기밀시험 → 소량 하역 테스트"}
+        ]
       },
       {
         "step_no": 7,

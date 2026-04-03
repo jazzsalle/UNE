@@ -7,11 +7,13 @@ import { api } from '@/lib/api';
 // CameraController now uses equipment IDs directly
 import type { VisualState } from '@/lib/constants';
 import { CameraControlsOverlay, getSavedCamera, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
+import { EQUIPMENT_POSITIONS } from '@/components/viewer3d/deckUtils';
 
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
 const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
 const CameraController = dynamic(() => import('@/components/viewer3d/CameraController').then(m => ({ default: m.CameraController })), { ssr: false });
 const CameraBookmarkInner = dynamic(() => import('@/components/viewer3d/CameraBookmark').then(m => ({ default: m.CameraBookmark })), { ssr: false });
+const GasDispersion = dynamic(() => import('@/components/viewer3d/effects/GasDispersion').then(m => ({ default: m.GasDispersion })), { ssr: false });
 
 export default function SimulationPage() {
   const { eventContext, setSelectedEquipment } = useAppStore();
@@ -147,6 +149,27 @@ export default function SimulationPage() {
               <TestbedModel equipmentStates={equipmentStates} onEquipmentClick={handleEquipmentClick} />
               <CameraController targetEquipmentId={cameraTarget} />
               <CameraBookmarkInner pageId="simulation" controlRef={cameraRef} />
+              {/* 가스 확산 시뮬레이션 — 시뮬레이션 실행 중 trigger 설비 위치에 표시 */}
+              {simRunning && kgsResults.length > 0 && (() => {
+                const triggerId = kgsResults[0]?.trigger_equipment_id;
+                const origin = EQUIPMENT_POSITIONS[triggerId];
+                if (!origin) return null;
+                const totalMin = ketiResult?.expected_stabilization_min || 60;
+                const gasProgress = appliedOption
+                  ? Math.max(0, 1 - (simTime / totalMin) * 1.5)  // 대응안 적용: 점진적 축소
+                  : Math.min(1, simTime / totalMin);
+                return (
+                  <GasDispersion
+                    origin={origin}
+                    maxRadius={60 + (kgsResults[0]?.impact_score || 70) * 0.5}
+                    windDirection={45}
+                    windSpeed={0.3}
+                    progress={gasProgress}
+                    gasType="h2"
+                    visible={gasProgress > 0.01}
+                  />
+                );
+              })()}
             </ThreeCanvas>
           </div>
 

@@ -1,6 +1,6 @@
 # LH2 디지털 트윈 POC — 개발 진행 현황 & 이어가기 가이드
 
-> 최종 업데이트: 2026-04-02
+> 최종 업데이트: 2026-04-03
 
 ---
 
@@ -30,70 +30,55 @@
   - 우: RiskDetailPanel (위험도 예측 / 피해범위 예측 2탭)
 - 2D↔3D 동기화 (노드 클릭 → 카메라 이동)
 - 에뮬레이터 연동 (FAULT phase 진입 시 자동 KGS/HAZOP 로드)
-- 영향 전파 경로 튜브 애니메이션 (PropagationPath — 두꺼운 튜브 + 파티클)
+- 영향 전파 경로 튜브 애니메이션 (PropagationPath — impactScore 기반 두께/색상)
 - TopViewSwitcher (2D 모드 = 카메라 탑뷰 + 회전 제한)
 
 ### Phase 4: SOP + 시뮬레이션 (완료)
 - SOP 추천 로직 + SOP 링크 모듈
 - SopExecutionPanel (compact/full 듀얼 UI)
 - M-SOP: 실행 + 저작/편집 + 실행이력 3탭
-- M-SIM: 이벤트 연계 + 수동 실행 모드
+- M-SIM: 이벤트 연계 + 수동 실행 모드 + 가스 확산 시뮬레이션
 
-### Phase 5: 보조 기능 (부분 완료)
-- P-RPT: 보고서 CRUD API + UI (목록/상세/수정/제출)
-- P-SET: 설정 3탭 (센서 메타/임계치/운영정책) — DB 연동 완료
-- M-HIS: 이력조회 UI (safetia 데이터 표시 + 설비/기간 필터)
-
----
-
-## 2. 오늘 세션에서 작업한 내용 (2026-04-02)
-
-### 위험예측 모드 (M-RSK) 집중 개선
-
-| 작업 | 파일 | 내용 |
-|------|------|------|
-| 좌측 패널 리사이즈 | `risk/page.tsx` | 드래그 핸들로 폭 조절 (160~480px) |
-| 아이소메트릭 그룹 프레이밍 | `CameraController.tsx` | frameEquipmentIds prop → 합산 bbox 기반 ISO뷰 |
-| 2D/3D 모드 토글 | `risk/page.tsx`, `TopViewSwitcher.tsx` (신규) | 2D=탑뷰 카메라 + 회전 제한 |
-| 에뮬레이터-3D 연동 | `risk/page.tsx` | phase 기반 설비 컬러링 + FAULT시 자동 KGS 로드 |
-| 글로우 이펙트 크기 수정 | `TestbedModel.tsx` | 고정 15x15x15 → 실제 bbox + 6 패딩 |
-| 2D 네트워크 노드 겹침 수정 | `ImpactNetwork2D.tsx` | 트리거/영향 분리 배치 |
-| 우측 패널 2탭 구조 | `risk/page.tsx` (RiskDetailPanel) | 위험도 예측 + 피해범위 예측 |
-| 전파 경로 시각화 개선 | `PropagationPath.tsx` | 1px 점선 → 두꺼운 튜브(2.5r) + 파티클(4.0r) |
-| 히트맵 가시성 개선 | `HeatmapOverlay.tsx` | 그라데이션 opacity 증가 |
-| 바닥 그리드 어둡게 | `EnvironmentScene.tsx` | 베이스 #060810, 라인 #151c26 |
-
-### 기타 모드 개선 (이전 세션 포함)
-
-- **모니터링**: 공정 흐름 패널 4단계 + KPI 대시보드 9설비 + 센서 차트 개선
-- **이상탐지**: 센서 차트 8쌍 + AI 진단 타임라인 + 설비 탭 전환
-- **SOP**: 실행이력 API 라우트 수정 + 탭 조건분기
-- **3D 공통**: 배관 유체 흐름 GLSL, 카메라 북마크, 상시 모니터링 애니메이션
+### Phase 5: 보조 기능 (완료)
+- P-RPT: 보고서 CRUD API + UI (목록/상세/수정/제출) + 자동생성 서비스
+- P-SET: 설정 3탭 (센서 메타/임계치/운영정책) — DB 연동 + 인라인 편집 완료
+- M-HIS: 이력조회 UI (safetia 데이터 표시 + 설비/기간/유형 필터)
+- RESPONSE phase 자동 CLOSED + 보고서 자동생성
+- EventContext enrichment (useSSE에서 자동 fetch)
+- EventPopup enrichment 요약 카드 표시
 
 ---
 
-## 3. 미완성 / 남은 작업
+## 2. deck.gl 컨셉 3D 시각화 강화 (2026-04-03)
 
-### Phase 5 잔여 (CLAUDE.md plan 참조)
+Three.js 네이티브로 deck.gl 레이어 컨셉을 구현하여 시각화 품질 대폭 향상:
 
-| # | 작업 | 상태 | 우선순위 |
+| Step | 구현 내용 | 파일 |
+|------|----------|------|
+| 1 | Three.js 카메라 동기화 기반 구조 + deckUtils.ts | `deckUtils.ts` |
+| 2 | 다중포인트 Gaussian 히트맵 (DeckHeatmap) | `effects/DeckHeatmap.tsx` |
+| 3 | PropagationPath impactScore 기반 두께/색상 그라데이션 | `effects/PropagationPath.tsx` |
+| 4 | 가스 확산 InstancedMesh 파티클 (GasDispersion) | `effects/GasDispersion.tsx` |
+| 5 | 설비 상태 Billboard 아이콘 (StatusIcons) | `effects/StatusIcons.tsx` |
+
+### 상세 설명
+
+- **DeckHeatmap**: 512x512 오프스크린 Canvas에 Gaussian blob을 렌더링 → CanvasTexture로 지면 평면에 매핑. 다중 위험 지점의 중첩 표현 지원.
+- **PropagationPath**: impact_score(0~100)에 비례하여 튜브 두께(1.5~4.0), 파티클 크기(2.5~5.5), 아크 높이가 동적 변화. GLSL로 소스(적색)→타겟(황색) 색상 그라데이션.
+- **GasDispersion**: 300개 InstancedMesh 파티클로 가스 구름 시뮬레이션. 풍향/풍속에 따른 비대칭 확산, progress 기반 반경 팽창. H2(시안)/BOG(주황) 구분.
+- **StatusIcons**: 이상 상태 설비 위에 떠다니는 다이아몬드 형태 Billboard 아이콘. GPU 가속 InstancedMesh로 단일 드로우콜.
+
+---
+
+## 3. 남은 작업 / 개선 사항
+
+| # | 작업 | 설명 | 우선순위 |
 |---|------|------|---------|
-| 1 | RESPONSE phase에서 이벤트 자동 CLOSED 처리 | 미구현 | 높음 |
-| 2 | 보고서 자동생성 서비스 추출 (reportGenerator.ts) | 미구현 | 높음 |
-| 3 | EventContext enrichment (useSSE에서 자동 fetch) | 미구현 | 중간 |
-| 4 | EventPopup에 enrichment 요약 카드 표시 | 미구현 | 중간 |
-| 5 | 이력조회 기간/유형 필터 실제 동작 | 미구현 | 낮음 |
-| 6 | 설정 메타데이터 탭 인라인 편집 | 미구현 | 낮음 |
-
-### 추가 개선 사항
-
-| # | 작업 | 설명 |
-|---|------|------|
-| 1 | M-RSK 시간축 슬라이더 3D 연동 강화 | 시간에 따라 영향 설비 점진적 추가 애니메이션 |
-| 2 | M-SIM 3D 시뮬레이션 타임라인 | 타임라인 스크러버로 시간별 3D 컬러링 변화 |
-| 3 | 모바일/태블릿 반응형 | CLAUDE.md §21 참조, 현재 데스크탑 전용 |
-| 4 | 성능 최적화 | GPU 모니터링, 이펙트 ON/OFF 토글 (§22) |
-| 5 | 배포 (Vercel + Railway + R2) | CLAUDE.md §19 참조 |
+| 1 | M-RSK 시간축 슬라이더 3D 연동 강화 | 시간에 따라 영향 설비 점진적 추가 애니메이션 | 중간 |
+| 2 | 모바일/태블릿 반응형 | CLAUDE.md §21 참조, 현재 데스크탑 전용 | 중간 |
+| 3 | 성능 최적화 | GPU 모니터링, 이펙트 ON/OFF 토글 (§22) | 낮음 |
+| 4 | 배포 (Vercel + Railway + R2) | CLAUDE.md §19 참조 | 높음 |
+| 5 | 전체 시나리오 E2E 테스트 | SC-01~SC-08 전체 흐름 검증 | 높음 |
 
 ---
 
@@ -125,7 +110,6 @@ cd ../..
 # 4. GLB 파일
 # h2.glb (30MB) → apps/web/public/models/h2.glb 에 배치
 # secondary_pump.glb → apps/web/public/models/secondary_pump.glb 에 배치
-# (이미 public/models/에 있으면 OK)
 
 # 5. Draco 디코더
 mkdir -p apps/web/public/draco
@@ -142,35 +126,18 @@ cd apps/api && npm run dev    # → http://localhost:3001
 cd apps/web && npm run dev    # → http://localhost:3000
 ```
 
-### 4.3 작업 이어가기 — 추천 순서
-
-1. **Phase 5 완성** — plan 파일 참조
-   - Step 1: emulatorEngine.ts에 RESPONSE phase 자동 CLOSED + 보고서 생성
-   - Step 2: reportGenerator.ts 서비스 추출
-   - Step 3-4: EventContext enrichment + EventPopup 표시
-
-2. **M-RSK 시간축 시각화 고도화**
-   - 시간축 슬라이더 드래그 시 3D에서 영향 설비가 단계적으로 컬러링 변화
-   - predicted_after_sec 기준으로 애니메이션
-
-3. **전체 시나리오 E2E 테스트**
-   - SC-01 시나리오 에뮬레이터 실행
-   - NORMAL → SYMPTOM → FAULT → SECONDARY_IMPACT → RESPONSE 전체 흐름 검증
-
-### 4.4 Claude Code 사용 시 프롬프트 예시
+### 4.3 Claude Code 사용 시 프롬프트 예시
 
 ```
-# Phase 5 잔여 작업
-"CLAUDE.md를 참고해서 Phase 5 plan을 이어서 구현해줘.
-Step 1: emulatorEngine에서 RESPONSE phase 진입 시 이벤트 CLOSED + 보고서 자동생성"
-
-# M-RSK 개선
-"위험예측 모드의 시간축 슬라이더를 드래그하면 3D에서
-predicted_after_sec에 따라 영향 설비가 단계적으로 컬러링되도록 개선해줘"
+# 배포
+"CLAUDE.md §19를 참고해서 Railway + Vercel + R2 배포를 진행해줘"
 
 # E2E 테스트
 "에뮬레이터에서 SC-01 시나리오를 60x 속도로 실행해서
 전체 phase 흐름(모니터링→이벤트→위험예측→SOP→보고서)을 테스트해줘"
+
+# 반응형
+"CLAUDE.md §21을 참고해서 모바일/태블릿 반응형 레이아웃을 구현해줘"
 ```
 
 ---
@@ -183,7 +150,8 @@ apps/
 │   └── src/
 │       ├── app/            # 라우트 (monitoring, anomaly, risk, simulation, history, sop, settings, reports)
 │       ├── components/     # UI 컴포넌트
-│       │   ├── viewer3d/   # 3D (ThreeCanvas, TestbedModel, CameraController, TopViewSwitcher, effects/)
+│       │   ├── viewer3d/   # 3D (ThreeCanvas, TestbedModel, CameraController, effects/)
+│       │   │   └── effects/ # GlowEffect, TankLevel, HeatmapOverlay, DeckHeatmap, PropagationPath, GasDispersion, StatusIcons, PipeFlow
 │       │   ├── risk/       # 위험예측 (ImpactNetwork2D, RiskPOIs)
 │       │   ├── common/     # 공통 (EventPopup, SensorChart)
 │       │   ├── layout/     # 레이아웃 (GNB, AmbientProvider)
@@ -195,10 +163,11 @@ apps/
 ├── api/                    # Express Backend (port 3001)
 │   └── src/
 │       ├── routes/         # API 라우트
-│       ├── services/       # (emulatorEngine, sopRecommender)
+│       ├── services/       # (emulatorEngine, sopRecommender, reportGenerator)
 │       └── providers/      # Mock providers
 seed/                       # 28개 seed JSON 파일
 CLAUDE.md                   # 전체 설계 문서 (단일 소스)
+progress.md                 # 이 파일
 ```
 
 ---
@@ -214,5 +183,6 @@ CLAUDE.md                   # 전체 설계 문서 (단일 소스)
 | 상태관리 | Zustand (appStore, emulatorStore) |
 | 실시간 | SSE (Server-Sent Events) |
 | 카메라 전환 | gsap 애니메이션 (0.8s ease) |
-| 셰이더 | GLSL (배관 흐름, 글로우, 그리드, 바다, 하늘) |
+| 셰이더 | GLSL (배관 흐름, 글로우, 그리드, 바다, 하늘, 히트맵, 전파경로) |
+| 3D 이펙트 | InstancedMesh (가스확산, 상태아이콘), CanvasTexture (히트맵) |
 | ORM | Prisma + PostgreSQL |

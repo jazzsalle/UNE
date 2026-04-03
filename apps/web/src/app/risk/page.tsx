@@ -424,13 +424,16 @@ export default function RiskPage() {
               <TestbedModel
                 equipmentStates={equipmentStates}
                 onEquipmentClick={handleNodeClick}
-                heatmapTarget={kgsResults.length > 0 ? {
-                  equipmentId: kgsResults[0]?.trigger_equipment_id,
-                  radius: Math.max(...kgsResults.map(r => r.impact_score)) * 1.5,
-                } : null}
+                heatmapPoints={kgsResults.length > 0 ? [
+                  { equipmentId: kgsResults[0]?.trigger_equipment_id, weight: 95 },
+                  ...kgsResults
+                    .filter(r => r.predicted_after_sec == null || r.predicted_after_sec <= timeSlider * 60)
+                    .map(r => ({ equipmentId: r.affected_equipment_id, weight: r.impact_score })),
+                ] : []}
+                heatmapTarget={null}
                 propagationPaths={kgsResults
                   .filter(r => r.trigger_equipment_id !== r.affected_equipment_id)
-                  .map(r => ({ from: r.trigger_equipment_id, to: r.affected_equipment_id }))}
+                  .map(r => ({ from: r.trigger_equipment_id, to: r.affected_equipment_id, impactScore: r.impact_score }))}
               />
               <EnvironmentScene />
               <RiskPOIs kgsResults={kgsResults} onNodeClick={handleNodeClick} />

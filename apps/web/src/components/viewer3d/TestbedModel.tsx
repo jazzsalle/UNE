@@ -7,9 +7,11 @@ import * as THREE from 'three';
 import { GlowEffect } from './effects/GlowEffect';
 import { TankLevel } from './effects/TankLevel';
 import { HeatmapOverlay } from './effects/HeatmapOverlay';
+import { DeckHeatmap } from './effects/DeckHeatmap';
 import { PropagationPath } from './effects/PropagationPath';
 import { PipeFlowSystem } from './effects/PipeFlow';
 import { AmbientAnimations } from './effects/AmbientAnimations';
+import { StatusIcons } from './effects/StatusIcons';
 import { COLOR_MAP, type VisualState } from '@/lib/constants';
 import { darkenTerrain } from './EnvironmentScene';
 import {
@@ -76,7 +78,9 @@ interface TestbedModelProps {
   showEffects?: boolean;
   tankLevels?: Record<string, { level: number; pressure: 'normal' | 'warning' | 'critical' }>;
   heatmapTarget?: { equipmentId: string; radius: number } | null;
-  propagationPaths?: { from: string; to: string }[];
+  /** Multi-point heatmap (deck.gl style) — takes priority over heatmapTarget */
+  heatmapPoints?: { equipmentId: string; weight: number }[];
+  propagationPaths?: { from: string; to: string; impactScore?: number }[];
   pipeFlowStatus?: 'normal' | 'warning' | 'critical';
   pipeFlowSpeed?: number;
   /** 상시 모니터링 선박/로딩암 애니메이션 활성화 */
@@ -85,7 +89,8 @@ interface TestbedModelProps {
 
 export function TestbedModel({
   equipmentStates = {}, onEquipmentClick, showEffects = true,
-  tankLevels = {}, heatmapTarget = null, propagationPaths = [],
+  tankLevels = {}, heatmapTarget = null, heatmapPoints = [],
+  propagationPaths = [],
   pipeFlowStatus = 'normal', pipeFlowSpeed = 1,
   enableAmbientAnimations = false,
 }: TestbedModelProps) {
@@ -211,8 +216,13 @@ export function TestbedModel({
             flowSpeed={pipeFlowSpeed}
           />
 
-          {/* Heatmap */}
-          {heatmapTarget && (() => {
+          {/* Multi-point Heatmap (deck.gl style) */}
+          {heatmapPoints && heatmapPoints.length > 0 && (
+            <DeckHeatmap points={heatmapPoints} />
+          )}
+
+          {/* Single-point Heatmap (legacy fallback) */}
+          {(!heatmapPoints || heatmapPoints.length === 0) && heatmapTarget && (() => {
             const pos = computeEquipmentCenter(scene, heatmapTarget.equipmentId);
             return pos ? <HeatmapOverlay position={pos} radius={heatmapTarget.radius} /> : null;
           })()}
@@ -222,8 +232,19 @@ export function TestbedModel({
             const fromPos = computeEquipmentCenter(scene, path.from);
             const toPos = computeEquipmentCenter(scene, path.to);
             if (!fromPos || !toPos) return null;
-            return <PropagationPath key={`path-${i}`} from={fromPos} to={toPos} />;
+            return <PropagationPath key={`path-${i}`} from={fromPos} to={toPos} impactScore={path.impactScore} />;
           })}
+
+          {/* Status icons — billboard diamonds above non-normal equipment */}
+          <StatusIcons
+            items={Object.entries(equipmentStates)
+              .filter(([, state]) => state !== 'normal')
+              .map(([eqId, state]) => {
+                const pos = computeEquipmentCenter(scene, eqId);
+                return pos ? { equipmentId: eqId, position: pos, state } : null;
+              })
+              .filter((item): item is NonNullable<typeof item> => item !== null)}
+          />
         </>
       )}
     </>

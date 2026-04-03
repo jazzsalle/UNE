@@ -9,17 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@deck.gl/aggregation-layers": "^9.2.11",
+    "@deck.gl/core": "^9.2.11",
+    "@deck.gl/layers": "^9.2.11",
+    "@deck.gl/react": "^9.2.11",
+    "@react-three/drei": "^9.120.0",
+    "@react-three/fiber": "^8.17.0",
+    "@reactflow/core": "^11.11.0",
+    "gsap": "^3.12.0",
     "next": "^14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "zustand": "^5.0.0",
+    "reactflow": "^11.11.0",
     "recharts": "^2.15.0",
-    "gsap": "^3.12.0",
-    "@react-three/fiber": "^8.17.0",
-    "@react-three/drei": "^9.120.0",
     "three": "^0.170.0",
-    "@reactflow/core": "^11.11.0",
-    "reactflow": "^11.11.0"
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",

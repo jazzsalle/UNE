@@ -53,6 +53,10 @@ export const api = {
   executeSop: (sopId: string, data: any) => apiFetch(`/api/sop/${sopId}/execute`, { method: 'POST', body: JSON.stringify(data) }),
   updateExecution: (execId: string, data: any) => apiFetch(`/api/sop/execution/${execId}`, { method: 'PUT', body: JSON.stringify(data) }),
   completeExecution: (execId: string) => apiFetch(`/api/sop/execution/${execId}/complete`, { method: 'POST' }),
+  deleteSop: (id: string) => apiFetch(`/api/sop/${id}`, { method: 'DELETE' }),
+  getTrash: () => apiFetch('/api/sop/trash'),
+  restoreSop: (id: string) => apiFetch(`/api/sop/${id}/restore`, { method: 'POST' }),
+  permanentDeleteSop: (id: string) => apiFetch(`/api/sop/${id}/permanent`, { method: 'DELETE' }),
 
   // Reports
   getReports: () => apiFetch('/api/reports'),

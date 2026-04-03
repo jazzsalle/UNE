@@ -4,15 +4,49 @@ import { prisma } from '../lib/prisma';
 
 export const sopRoutes = Router();
 
+// Priority 매핑: 한글 문자열 ↔ 정수
+const PRIORITY_TO_INT: Record<string, number> = { '심각': 1, '경계': 2, '주의': 3, '관심': 4 };
+const INT_TO_PRIORITY: Record<number, string> = { 1: '심각', 2: '경계', 3: '주의', 4: '관심' };
+
+function priorityToInt(val: any): number {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string' && PRIORITY_TO_INT[val] !== undefined) return PRIORITY_TO_INT[val];
+  return 4; // default: 관심
+}
+
+function enrichSop(s: any) {
+  return {
+    ...s,
+    steps: typeof s.steps === 'string' ? JSON.parse(s.steps) : s.steps,
+    keywords: s.keywords ? (typeof s.keywords === 'string' ? JSON.parse(s.keywords) : s.keywords) : null,
+    priority: INT_TO_PRIORITY[s.priority] || '관심',
+  };
+}
+
 // GET /api/sop
 sopRoutes.get('/', async (req, res) => {
   const { category, equipment_id, status } = req.query;
-  const where: any = {};
+  const where: any = { status: { not: 'DELETED' } };
   if (category) where.sop_category = category;
   if (equipment_id) where.target_equipment_id = equipment_id;
   if (status) where.status = status;
   const sops = await prisma.sopCatalog.findMany({ where });
-  res.json(sops.map(s => ({ ...s, steps: JSON.parse(s.steps), keywords: s.keywords ? JSON.parse(s.keywords) : null })));
+  res.json(sops.map(enrichSop));
+});
+
+// GET /api/sop/trash — 휴지통 목록 (30일 이내 삭제된 SOP)
+sopRoutes.get('/trash', async (req, res) => {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const trashed = await prisma.sopCatalog.findMany({
+    where: { status: 'DELETED', deleted_at: { gte: thirtyDaysAgo } },
+    orderBy: { deleted_at: 'desc' },
+  });
+  res.json(trashed.map(s => ({
+    ...enrichSop(s),
+    deleted_at: s.deleted_at,
+    days_remaining: s.deleted_at ? Math.max(0, 30 - Math.floor((Date.now() - new Date(s.deleted_at).getTime()) / 86400000)) : 0,
+  })));
 });
 
 // GET /api/sop/executions (MUST be before /:id to avoid being caught by :id param)
@@ -59,13 +93,11 @@ sopRoutes.get('/recommend', async (req, res) => {
 
   if (maps.length === 0) {
     const fallback = await prisma.sopCatalog.findUnique({ where: { sop_id: 'SOP-GENERIC-INSPECT-01' } });
-    return res.json({ primary: fallback, all: fallback ? [fallback] : [] });
+    return res.json({ primary: fallback ? enrichSop(fallback) : null, all: fallback ? [enrichSop(fallback)] : [] });
   }
 
   const allSops = maps.map(m => ({
-    ...m.sop,
-    steps: JSON.parse(m.sop.steps),
-    keywords: m.sop.keywords ? JSON.parse(m.sop.keywords) : null,
+    ...enrichSop(m.sop),
     is_primary: m.is_primary,
   }));
 
@@ -76,30 +108,79 @@ sopRoutes.get('/recommend', async (req, res) => {
 sopRoutes.get('/:id', async (req, res) => {
   const sop = await prisma.sopCatalog.findUnique({ where: { sop_id: req.params.id } });
   if (!sop) return res.status(404).json({ error: 'SOP not found' });
-  res.json({ ...sop, steps: JSON.parse(sop.steps), keywords: sop.keywords ? JSON.parse(sop.keywords) : null });
+  res.json(enrichSop(sop));
 });
 
 // POST /api/sop
 sopRoutes.post('/', async (req, res) => {
-  const data = req.body;
-  const sop = await prisma.sopCatalog.create({
-    data: { ...data, steps: JSON.stringify(data.steps || []), keywords: data.keywords ? JSON.stringify(data.keywords) : null },
-  });
-  res.status(201).json(sop);
+  try {
+    const data = req.body;
+    const { steps, keywords, _isNew, priority, ...rest } = data;
+    const sop = await prisma.sopCatalog.create({
+      data: {
+        ...rest,
+        priority: priorityToInt(priority),
+        steps: JSON.stringify(steps || []),
+        keywords: keywords ? JSON.stringify(keywords) : null,
+      },
+    });
+    res.status(201).json(enrichSop(sop));
+  } catch (err: any) {
+    console.error('SOP create error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PUT /api/sop/:id
 sopRoutes.put('/:id', async (req, res) => {
-  const data = req.body;
+  const { steps, keywords, priority, _isNew, ...rest } = req.body;
   const sop = await prisma.sopCatalog.update({
     where: { sop_id: req.params.id },
     data: {
-      ...data,
-      ...(data.steps && { steps: JSON.stringify(data.steps) }),
-      ...(data.keywords && { keywords: JSON.stringify(data.keywords) }),
+      ...rest,
+      ...(priority !== undefined && { priority: priorityToInt(priority) }),
+      ...(steps && { steps: JSON.stringify(steps) }),
+      ...(keywords && { keywords: JSON.stringify(keywords) }),
     },
   });
-  res.json(sop);
+  res.json(enrichSop(sop));
+});
+
+// DELETE /api/sop/:id — 소프트 삭제 (휴지통 이동)
+sopRoutes.delete('/:id', async (req, res) => {
+  try {
+    const sop = await prisma.sopCatalog.update({
+      where: { sop_id: req.params.id },
+      data: { status: 'DELETED', deleted_at: new Date() },
+    });
+    res.json({ success: true, sop_id: sop.sop_id });
+  } catch (err: any) {
+    res.status(404).json({ error: 'SOP not found' });
+  }
+});
+
+// POST /api/sop/:id/restore — 휴지통에서 복원
+sopRoutes.post('/:id/restore', async (req, res) => {
+  try {
+    const sop = await prisma.sopCatalog.update({
+      where: { sop_id: req.params.id },
+      data: { status: 'ACTIVE', deleted_at: null },
+    });
+    res.json(enrichSop(sop));
+  } catch (err: any) {
+    res.status(404).json({ error: 'SOP not found' });
+  }
+});
+
+// DELETE /api/sop/:id/permanent — 영구 삭제
+sopRoutes.delete('/:id/permanent', async (req, res) => {
+  try {
+    // 관련 equipment_map과 execution은 유지 (참조 무결성)
+    await prisma.sopCatalog.delete({ where: { sop_id: req.params.id } });
+    res.json({ success: true, permanently_deleted: req.params.id });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // POST /api/sop/:id/execute

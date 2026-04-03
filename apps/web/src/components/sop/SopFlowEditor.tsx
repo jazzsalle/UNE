@@ -1,7 +1,7 @@
 // ref: CLAUDE.md §9.8 — SOP 저작/편집 플로우차트 스타일 UI
 // DECISION(상황판단) 노드 편집 지원
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 
 interface EditStep {
   step_no: number;
@@ -17,11 +17,14 @@ interface EditStep {
 
 interface SopFlowEditorProps {
   sop: any;
-  onSave?: () => void;
+  isNew?: boolean;
+  onSave?: (newSopId?: string) => void;
   onCancel?: () => void;
+  onDelete?: (sopId: string) => void;
+  customCategories?: { value: string; label: string }[];
 }
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { value: 'EMERGENCY', label: '비상대응' },
   { value: 'EVENT_RESPONSE', label: '이벤트 대응' },
   { value: 'SAFETY', label: '안전관리' },
@@ -29,30 +32,108 @@ const CATEGORIES = [
   { value: 'INSPECTION', label: '현장점검' },
 ];
 
+const PRIORITIES = [
+  { value: '심각', label: '심각', color: 'text-red-400' },
+  { value: '경계', label: '경계', color: 'text-amber-400' },
+  { value: '주의', label: '주의', color: 'text-yellow-400' },
+  { value: '관심', label: '관심', color: 'text-blue-400' },
+];
+
 const STEP_TYPES: { value: EditStep['type']; label: string; icon: string; color: string }[] = [
-  { value: 'CHECK', label: 'CHECK', icon: '☑', color: 'bg-cyan-500/20 text-cyan-400' },
-  { value: 'TEXT', label: 'TEXT', icon: 'ℹ', color: 'bg-blue-500/20 text-blue-400' },
+  { value: 'CHECK', label: '임무절차', icon: '☑', color: 'bg-cyan-500/20 text-cyan-400' },
+  { value: 'TEXT', label: '점검사항', icon: 'ℹ', color: 'bg-blue-500/20 text-blue-400' },
   { value: 'DECISION', label: '상황판단', icon: '◇', color: 'bg-amber-500/20 text-amber-400' },
 ];
 
-export function SopFlowEditor({ sop, onSave, onCancel }: SopFlowEditorProps) {
-  const rawSteps: EditStep[] = (sop.steps || []).map((s: any, i: number) => ({
-    step_no: s.order || s.step_no || i + 1,
-    type: s.type || 'CHECK',
-    title: s.title || '',
-    content: s.content || '',
-    yes_label: s.yes_label || 'YES',
-    no_label: s.no_label || 'NO',
-    yes_steps: s.yes_steps || [],
-    no_steps: s.no_steps || [],
-  }));
+/* ── 커스텀 드롭다운 (다크테마 대응) ── */
+function CustomSelect({ value, options, onChange, placeholder }: {
+  value: string;
+  options: { value: string; label: string; color?: string }[];
+  onChange: (val: string) => void;
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = options.find(o => o.value === value);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative mt-0.5">
+      <button type="button" onClick={() => setOpen(!open)}
+        className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-md
+          px-2 py-1.5 text-[11px] text-left flex items-center justify-between
+          hover:border-purple-500/30 focus:outline-none focus:border-purple-500/40 transition-colors">
+        <span className={selected?.color || 'text-white'}>{selected?.label || placeholder || '선택...'}</span>
+        <svg className="w-3 h-3 text-gray-500 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d={open ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-lg border border-white/[0.1]
+          bg-[#141a28] shadow-xl shadow-black/50 max-h-48 overflow-y-auto">
+          {options.map(opt => (
+            <button key={opt.value} type="button"
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors
+                ${opt.value === value
+                  ? 'bg-purple-500/20 text-white'
+                  : 'text-gray-300 hover:bg-white/[0.06] hover:text-white'
+                }`}>
+              <span className={opt.color || ''}>{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, customCategories = [] }: SopFlowEditorProps) {
+  const allCategories = useMemo(() => {
+    const merged = [...DEFAULT_CATEGORIES];
+    customCategories.forEach(c => {
+      if (!merged.find(m => m.value === c.value)) merged.push(c);
+    });
+    return merged;
+  }, [customCategories]);
+
+  const defaultNewSteps: EditStep[] = isNew && (!sop.steps || sop.steps.length === 0)
+    ? [
+        { step_no: 1, type: 'TEXT', title: '상황 인지 및 초기 확인', content: '이상 발생 설비의 현장 상태를 확인합니다. 알람 내용과 현장 상황을 대조하세요.', yes_label: 'YES', no_label: 'NO', yes_steps: [], no_steps: [] },
+        { step_no: 2, type: 'CHECK', title: '현장 안전 조치', content: '개인보호구(PPE) 착용 여부를 확인합니다. 작업 구역 내 위험요소를 점검합니다.', yes_label: 'YES', no_label: 'NO', yes_steps: [], no_steps: [] },
+        { step_no: 3, type: 'CHECK', title: '설비 상태 점검', content: '해당 설비의 센서값(압력, 온도, 진동 등)을 확인합니다. 이상 수치가 지속되는지 모니터링합니다.', yes_label: 'YES', no_label: 'NO', yes_steps: [], no_steps: [] },
+        { step_no: 4, type: 'DECISION', title: '이상 해소 여부 판단', content: '조치 후 설비 상태가 정상 범위로 복귀했습니까?', yes_label: '정상복귀', no_label: '이상지속', yes_steps: [{ content: '정상운전 복귀 절차를 진행합니다.' }], no_steps: [{ content: '추가 비상조치를 실시하고 관리자에게 보고합니다.' }] },
+        { step_no: 5, type: 'CHECK', title: '후속 조치 및 보고', content: '조치 내용을 기록하고, 관련 부서에 상황을 전파합니다.', yes_label: 'YES', no_label: 'NO', yes_steps: [], no_steps: [] },
+      ]
+    : [];
+
+  const rawSteps: EditStep[] = defaultNewSteps.length > 0
+    ? defaultNewSteps
+    : (sop.steps || []).map((s: any, i: number) => ({
+        step_no: s.order || s.step_no || i + 1,
+        type: s.type || 'CHECK',
+        title: s.title || '',
+        content: s.content || '',
+        yes_label: s.yes_label || 'YES',
+        no_label: s.no_label || 'NO',
+        yes_steps: s.yes_steps || [],
+        no_steps: s.no_steps || [],
+      }));
 
   const [form, setForm] = useState({
+    sop_id: sop.sop_id || '',
     sop_name: sop.sop_name || '',
     sop_category: sop.sop_category || 'EVENT_RESPONSE',
     target_equipment_id: sop.target_equipment_id || '',
     target_space_id: sop.target_space_id || '',
-    priority: sop.priority || 'CRITICAL',
+    priority: sop.priority || '관심',
     camera_preset: sop.camera_preset || '',
     estimated_duration_min: sop.estimated_duration_min || 15,
     broadcast_action: sop.broadcast_action || '',
@@ -60,12 +141,13 @@ export function SopFlowEditor({ sop, onSave, onCancel }: SopFlowEditorProps) {
 
   const [steps, setSteps] = useState<EditStep[]>(rawSteps);
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const addStep = useCallback((type: EditStep['type']) => {
     setSteps(prev => [...prev, {
       step_no: prev.length + 1,
       type,
-      title: type === 'CHECK' ? '확인 항목' : type === 'DECISION' ? '상황판단' : '안내',
+      title: type === 'CHECK' ? '임무절차' : type === 'DECISION' ? '상황판단' : '점검사항',
       content: type === 'DECISION' ? '조치가 완료되었습니까?' : '',
       yes_label: 'YES',
       no_label: 'NO',
@@ -91,7 +173,7 @@ export function SopFlowEditor({ sop, onSave, onCancel }: SopFlowEditorProps) {
       return {
         ...s,
         type: nextType,
-        title: s.title || (nextType === 'DECISION' ? '상황판단' : nextType === 'CHECK' ? '확인 항목' : '안내'),
+        title: s.title || (nextType === 'DECISION' ? '상황판단' : nextType === 'CHECK' ? '임무절차' : '점검사항'),
         yes_steps: nextType === 'DECISION' && s.yes_steps.length === 0 ? [{ content: '' }] : s.yes_steps,
         no_steps: nextType === 'DECISION' && s.no_steps.length === 0 ? [{ content: '' }] : s.no_steps,
       };
@@ -128,37 +210,88 @@ export function SopFlowEditor({ sop, onSave, onCancel }: SopFlowEditorProps) {
   }, []);
 
   const handleSave = async () => {
+    if (!form.sop_name.trim()) {
+      alert('SOP 이름을 입력해주세요.');
+      return;
+    }
+    if (!form.sop_id.trim()) {
+      alert('SOP ID를 입력해주세요.');
+      return;
+    }
     setSaving(true);
     try {
-      const payload = {
-        ...form,
-        steps: steps.map(s => {
-          const base: any = { order: s.step_no, type: s.type, title: s.title, content: s.content };
-          if (s.type === 'DECISION') {
-            base.yes_label = s.yes_label;
-            base.no_label = s.no_label;
-            base.yes_steps = s.yes_steps;
-            base.no_steps = s.no_steps;
-          }
-          return base;
-        }),
-      };
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sop/${sop.sop_id}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      const stepsPayload = steps.map(s => {
+        const base: any = { order: s.step_no, type: s.type, title: s.title, content: s.content };
+        if (s.type === 'DECISION') {
+          base.yes_label = s.yes_label;
+          base.no_label = s.no_label;
+          base.yes_steps = s.yes_steps;
+          base.no_steps = s.no_steps;
+        }
+        return base;
       });
-      onSave?.();
-    } catch (err) { console.error(err); }
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+      if (isNew) {
+        // 신규 생성 (POST)
+        const payload = {
+          sop_id: form.sop_id,
+          sop_name: form.sop_name,
+          sop_category: form.sop_category,
+          trigger_type: 'MANUAL',
+          target_space_id: form.target_space_id || null,
+          target_equipment_id: form.target_equipment_id || null,
+          priority: form.priority,
+          camera_preset: form.camera_preset || null,
+          estimated_duration_min: form.estimated_duration_min,
+          broadcast_action: form.broadcast_action || null,
+          steps: stepsPayload,
+          status: 'ACTIVE',
+        };
+        const resp = await fetch(`${baseUrl}/api/sop`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.error || '생성 실패');
+        }
+        onSave?.(form.sop_id);
+      } else {
+        // 기존 수정 (PUT)
+        const payload = { ...form, steps: stepsPayload };
+        delete (payload as any).sop_id; // id는 URL param으로
+        await fetch(`${baseUrl}/api/sop/${sop.sop_id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        onSave?.();
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || '저장 중 오류가 발생했습니다.');
+    }
     finally { setSaving(false); }
   };
+
+  const inputCls = "w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-md px-2 py-1.5 text-[11px] text-white mt-0.5 focus:outline-none focus:border-purple-500/40 placeholder:text-gray-600";
 
   return (
     <div className="flex flex-col h-full" style={{ background: 'linear-gradient(180deg, #0c1220 0%, #0a0f1a 100%)' }}>
       {/* 헤더 */}
       <div className="px-4 py-3 border-b border-white/[0.08]">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[9px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-bold">편집모드</span>
-          <span className="text-xs text-gray-500">{sop.sop_id}</span>
+          <span className={`text-[9px] px-2 py-0.5 rounded font-bold ${
+            isNew ? 'bg-green-500/20 text-green-400' : 'bg-purple-500/20 text-purple-400'
+          }`}>{isNew ? '신규 생성' : '편집모드'}</span>
+          {isNew ? (
+            <input value={form.sop_id} onChange={e => setForm(p => ({ ...p, sop_id: e.target.value.toUpperCase().replace(/\s+/g, '-') }))}
+              className="bg-transparent text-xs text-gray-400 border-b border-white/[0.1] focus:border-cyan-500/40 focus:outline-none
+                placeholder:text-gray-600 font-mono"
+              placeholder="SOP-ID-입력 (예: SOP-LEAK-01)" />
+          ) : (
+            <span className="text-xs text-gray-500">{sop.sop_id}</span>
+          )}
         </div>
         <input value={form.sop_name} onChange={e => setForm(p => ({ ...p, sop_name: e.target.value }))}
           className="w-full bg-transparent text-sm font-black text-amber-400 tracking-wide border-b border-amber-500/20 pb-1
@@ -167,33 +300,39 @@ export function SopFlowEditor({ sop, onSave, onCancel }: SopFlowEditorProps) {
       </div>
 
       {/* 메타 정보 */}
-      <div className="px-4 py-3 border-b border-white/[0.06] grid grid-cols-2 gap-2">
+      <div className="px-4 py-3 border-b border-white/[0.06] grid grid-cols-2 gap-3">
         <FieldBox label="카테고리">
-          <select value={form.sop_category} onChange={e => setForm(p => ({ ...p, sop_category: e.target.value }))} className="edit-input">
-            {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
+          <CustomSelect
+            value={form.sop_category}
+            options={allCategories}
+            onChange={val => setForm(p => ({ ...p, sop_category: val }))}
+            placeholder="카테고리 선택"
+          />
         </FieldBox>
         <FieldBox label="우선순위">
-          <select value={form.priority} onChange={e => setForm(p => ({ ...p, priority: e.target.value }))} className="edit-input">
-            <option value="EMERGENCY">긴급</option><option value="CRITICAL">중요</option><option value="INFO">일반</option>
-          </select>
+          <CustomSelect
+            value={form.priority}
+            options={PRIORITIES}
+            onChange={val => setForm(p => ({ ...p, priority: val }))}
+            placeholder="우선순위 선택"
+          />
         </FieldBox>
         <FieldBox label="대상 설비">
           <input value={form.target_equipment_id} onChange={e => setForm(p => ({ ...p, target_equipment_id: e.target.value }))}
-            className="edit-input" placeholder="BOG-201" />
+            className={inputCls} placeholder="BOG-201" />
         </FieldBox>
         <FieldBox label="대상 공간">
           <input value={form.target_space_id} onChange={e => setForm(p => ({ ...p, target_space_id: e.target.value }))}
-            className="edit-input" placeholder="Z-BOG" />
+            className={inputCls} placeholder="Z-BOG" />
         </FieldBox>
         <FieldBox label="예상 소요(분)">
           <input type="number" value={form.estimated_duration_min}
             onChange={e => setForm(p => ({ ...p, estimated_duration_min: Number(e.target.value) }))}
-            className="edit-input" min={1} />
+            className={inputCls} min={1} />
         </FieldBox>
         <FieldBox label="카메라 프리셋">
           <input value={form.camera_preset} onChange={e => setForm(p => ({ ...p, camera_preset: e.target.value }))}
-            className="edit-input" placeholder="cam_bog_compressor_201" />
+            className={inputCls} placeholder="cam_bog_compressor_201" />
         </FieldBox>
       </div>
 
@@ -321,7 +460,7 @@ export function SopFlowEditor({ sop, onSave, onCancel }: SopFlowEditorProps) {
                     className={`text-[8px] px-1.5 py-0.5 rounded font-bold transition-colors ${
                       step.type === 'CHECK' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-blue-500/20 text-blue-400'
                     }`}>
-                    {step.type === 'CHECK' ? '☑ CHECK' : 'ℹ TEXT'}
+                    {step.type === 'CHECK' ? '☑ 임무절차' : 'ℹ 점검사항'}
                   </button>
                   <input value={step.title} onChange={e => updateStep(idx, 'title', e.target.value)}
                     className="flex-1 bg-transparent text-[10px] font-bold text-gray-200 focus:outline-none
@@ -374,30 +513,40 @@ export function SopFlowEditor({ sop, onSave, onCancel }: SopFlowEditorProps) {
         <button onClick={handleSave} disabled={saving}
           className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-purple-500/80 to-blue-500/80 text-white text-xs font-bold
             hover:from-purple-500 hover:to-blue-500 transition-all disabled:opacity-50">
-          {saving ? '저장 중...' : '💾 저장'}
+          {saving ? '저장 중...' : isNew ? '+ 생성' : '저장'}
         </button>
         <button onClick={onCancel}
           className="px-4 py-2.5 rounded-lg border border-white/[0.08] text-gray-400 text-xs hover:text-white hover:border-white/[0.15] transition-colors">
           취소
         </button>
-      </div>
 
-      <style jsx>{`
-        .edit-input {
-          width: 100%;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 6px;
-          padding: 4px 8px;
-          font-size: 11px;
-          color: white;
-          margin-top: 2px;
-        }
-        .edit-input:focus {
-          outline: none;
-          border-color: rgba(139,92,246,0.4);
-        }
-      `}</style>
+        {/* 삭제 버튼 (기존 SOP 편집 시만 표시) */}
+        {!isNew && onDelete && (
+          showDeleteConfirm ? (
+            <div className="flex items-center gap-1.5 ml-auto">
+              <span className="text-[10px] text-red-400">삭제하시겠습니까?</span>
+              <button onClick={() => onDelete(sop.sop_id)}
+                className="px-3 py-2.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-bold
+                  hover:bg-red-500/30 border border-red-500/30 transition-colors">
+                확인
+              </button>
+              <button onClick={() => setShowDeleteConfirm(false)}
+                className="px-2 py-2.5 rounded-lg text-gray-500 text-xs hover:text-gray-300 transition-colors">
+                취소
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setShowDeleteConfirm(true)}
+              className="ml-auto px-3 py-2.5 rounded-lg border border-red-500/15 text-red-400/60 text-xs
+                hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all"
+              title="휴지통으로 이동">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )
+        )}
+      </div>
     </div>
   );
 }

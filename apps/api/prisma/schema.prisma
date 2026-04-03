@@ -110,6 +110,7 @@ model SopCatalog {
   steps                 String  // JSON
   keywords              String? // JSON
   status                String  @default("ACTIVE")
+  deleted_at            DateTime?
   equipment_maps        SopEquipmentMap[]
   executions            SopExecutionLog[]
 }

@@ -45,11 +45,16 @@ const CATEGORY_COLORS: Record<string, { bg: string; border: string; text: string
 };
 
 function PriorityBadge({ priority }: { priority?: string | number }) {
-  const label = typeof priority === 'number' ? `P${priority}` : priority || '';
-  const color = priority === 'EMERGENCY' || priority === 1 ? 'bg-red-500/30 text-red-300'
-    : priority === 'CRITICAL' || priority === 2 ? 'bg-amber-500/30 text-amber-300'
-    : 'bg-blue-500/30 text-blue-300';
-  return <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold ${color}`}>{label}</span>;
+  // 우선순위: 심각 > 경계 > 주의 > 관심
+  const PRIORITY_MAP: Record<string, { label: string; color: string }> = {
+    '심각': { label: '심각', color: 'bg-red-500/30 text-red-300' },
+    '경계': { label: '경계', color: 'bg-amber-500/30 text-amber-300' },
+    '주의': { label: '주의', color: 'bg-yellow-500/30 text-yellow-300' },
+    '관심': { label: '관심', color: 'bg-blue-500/30 text-blue-300' },
+  };
+  const p = typeof priority === 'string' ? priority : '';
+  const info = PRIORITY_MAP[p] || PRIORITY_MAP['관심'];
+  return <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold ${info.color}`}>{info.label}</span>;
 }
 
 export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlowChartProps) {
@@ -294,7 +299,7 @@ export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlow
                     <span className={`text-[10px] font-bold flex-1 ${
                       isPast ? 'text-green-300' : isCurrent ? colors.text : isFuture ? 'text-gray-600' : 'text-gray-300'
                     }`}>
-                      {step.title || (step.type === 'CHECK' ? '확인 항목' : '안내')}
+                      {step.title || (step.type === 'CHECK' ? '임무절차' : '점검사항')}
                     </span>
                     {isPastCheck && checkedSteps[step.stepNo]?.time && (
                       <span className="text-[8px] text-green-400/60 font-mono">

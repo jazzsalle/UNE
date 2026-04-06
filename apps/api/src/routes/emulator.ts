@@ -23,6 +23,18 @@ emulatorRoutes.post('/stop', (_req, res) => {
   res.json({ status: 'stopped' });
 });
 
+// POST /api/emulator/pause
+emulatorRoutes.post('/pause', (_req, res) => {
+  engine.pause();
+  res.json({ status: 'paused' });
+});
+
+// POST /api/emulator/resume
+emulatorRoutes.post('/resume', (_req, res) => {
+  engine.resume();
+  res.json({ status: 'resumed' });
+});
+
 // GET /api/emulator/status
 emulatorRoutes.get('/status', (_req, res) => {
   res.json(engine.getStatus());

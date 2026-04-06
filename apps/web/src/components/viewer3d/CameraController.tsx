@@ -6,6 +6,13 @@ import gsap from 'gsap';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { computeEquipmentBBox } from './equipmentUtils';
+import { DEFAULT_POSITION, DEFAULT_TARGET } from './CameraBookmark';
+import { CAMERA_PRESETS } from '@/lib/constants';
+
+// 바운딩박스가 너무 작아 프리셋 카메라를 사용하는 설비 목록
+const PRESET_CAMERA_OVERRIDES: Record<string, string> = {
+  'PIP-501': 'cam_pipe_main_a',  // 메인 배관: 전체 시설 조망
+};
 
 interface CameraControllerProps {
   targetEquipmentId: string | null;
@@ -85,13 +92,26 @@ export function CameraController({ targetEquipmentId, frameEquipmentIds }: Camer
     if (!targetEquipmentId || targetEquipmentId === prevId.current) return;
     prevId.current = targetEquipmentId;
 
-    // overview는 고정 프리셋
+    // overview는 고정 프리셋 (DEFAULT_POSITION/TARGET과 동일)
     if (targetEquipmentId === 'overview') {
       animateCamera(
         camera,
         controls as unknown as OrbitControlsImpl,
-        new THREE.Vector3(90, 20, 0),
-        new THREE.Vector3(350, 300, 350)
+        new THREE.Vector3(...DEFAULT_TARGET),
+        new THREE.Vector3(...DEFAULT_POSITION)
+      );
+      return;
+    }
+
+    // 프리셋 카메라 오버라이드가 있는 설비는 프리셋 좌표 사용
+    const presetKey = PRESET_CAMERA_OVERRIDES[targetEquipmentId];
+    if (presetKey && CAMERA_PRESETS[presetKey]) {
+      const preset = CAMERA_PRESETS[presetKey];
+      animateCamera(
+        camera,
+        controls as unknown as OrbitControlsImpl,
+        new THREE.Vector3(...preset.target),
+        new THREE.Vector3(...preset.position)
       );
       return;
     }

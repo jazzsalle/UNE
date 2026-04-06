@@ -54,6 +54,7 @@ interface AppState {
   acknowledgeAlarm: (id: string) => void;
   removeAlarm: (id: string) => void;
   clearAlarms: () => void;
+  clearSensorData: () => void;
   setShowEventPopup: (show: boolean) => void;
   setShowSopPanel: (show: boolean) => void;
 }
@@ -76,9 +77,30 @@ export const useAppStore = create<AppState>((set) => ({
     for (const d of data) updated[d.sensor_id] = d;
     return { sensorData: updated };
   }),
-  addAlarm: (alarm) => set((state) => ({
-    alarms: [{ ...alarm, acknowledged: false, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}` }, ...state.alarms].slice(0, 100),
-  })),
+  addAlarm: (alarm) => set((state) => {
+    // 같은 sensor_id로 미확인 알람이 이미 있으면 값만 갱신 (중복 방지)
+    const existingIdx = state.alarms.findIndex(
+      (a) => a.sensor_id === alarm.sensor_id && !a.acknowledged
+    );
+    if (existingIdx !== -1) {
+      const updated = [...state.alarms];
+      updated[existingIdx] = {
+        ...updated[existingIdx],
+        value: alarm.value,
+        label: alarm.label,
+        phase: alarm.phase,
+        timestamp: alarm.timestamp,
+      };
+      return { alarms: updated };
+    }
+    // 미확인 알람이 없으면 새로 추가
+    return {
+      alarms: [
+        { ...alarm, acknowledged: false, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}` },
+        ...state.alarms,
+      ].slice(0, 100),
+    };
+  }),
   acknowledgeAlarm: (id) => set((state) => ({
     alarms: state.alarms.map(a => a.id === id ? { ...a, acknowledged: true } : a),
   })),
@@ -86,6 +108,7 @@ export const useAppStore = create<AppState>((set) => ({
     alarms: state.alarms.filter(a => a.id !== id),
   })),
   clearAlarms: () => set({ alarms: [] }),
+  clearSensorData: () => set({ sensorData: {} }),
   setShowEventPopup: (show) => set({ showEventPopup: show }),
   setShowSopPanel: (show) => set({ showSopPanel: show }),
 }));

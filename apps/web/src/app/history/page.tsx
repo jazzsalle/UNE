@@ -8,6 +8,22 @@ import { useAppStore } from '@/stores/appStore';
 type PeriodFilter = '1m' | '3m' | '1y' | 'all';
 type TypeFilter = '정비' | '점검' | '교체' | '사고';
 
+const EQUIPMENT_NAMES_KR: Record<string, string> = {
+  'SHP-001': 'LH2 운반선',
+  'ARM-101': '로딩암',
+  'TK-101':  '저장탱크 #1',
+  'TK-102':  '저장탱크 #2',
+  'BOG-201': 'BOG 압축기',
+  'PMP-301': '이송펌프',
+  'VAP-401': '기화기',
+  'REL-701': '재액화기',
+  'VAL-601': '벤트스택 #1',
+  'VAL-602': '벤트스택 #2',
+  'PIP-501': '메인배관',
+  'SWP-001': '해수펌프',
+};
+const eqName = (id: string) => EQUIPMENT_NAMES_KR[id] || id;
+
 const TYPE_KEYWORDS: Record<TypeFilter, string[]> = {
   '정비': ['정비', '보수', '유지', '교체 예정', '베어링', '윤활'],
   '점검': ['점검', '검사', '확인', '측정', '성능'],
@@ -46,6 +62,7 @@ export default function HistoryPage() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter[]>([]);
   const router = useRouter();
   const setEventContext = useAppStore(s => s.setEventContext);
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     Promise.all(['SC-01','SC-02','SC-03','SC-04','SC-05','SC-06','SC-07','SC-08'].map(s => api.getSafetia(s).catch(() => [])))
@@ -70,28 +87,52 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="h-full flex">
+    <div className="h-full flex flex-col lg:flex-row">
       {/* Sidebar filters */}
-      <aside className="w-[200px] bg-bg-secondary border-r border-gray-700 p-3 overflow-y-auto">
-        <h4 className="text-xs text-gray-400 mb-2 font-semibold">설비 필터</h4>
+      <aside className="w-full lg:w-[200px] bg-bg-secondary border-b lg:border-b-0 lg:border-r border-gray-700 p-3 overflow-y-auto max-h-[30vh] lg:max-h-none">
+        {/* Mobile: collapsible filter toggle */}
+        <div className="lg:block">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-xs text-gray-400 font-semibold">설비 필터</h4>
+          <button onClick={() => setShowHelp(!showHelp)}
+            className="text-[10px] text-gray-500 hover:text-cyan-400 border border-gray-600 hover:border-cyan-500/30 px-1.5 py-0.5 rounded transition-all"
+            title="도움말">?</button>
+        </div>
+        {showHelp && (
+          <div className="mb-3 p-2.5 bg-gray-800/80 rounded border border-gray-600 text-[11px] space-y-1.5">
+            <div className="text-cyan-400 font-bold text-[12px]">이력관리 / 분석</div>
+            <ul className="text-gray-400 space-y-1 list-disc ml-3">
+              <li><b className="text-white">세이프티아 이력 데이터</b>: 각 설비의 정비/점검/사고/교체 이력을 조회</li>
+              <li><b className="text-white">설비 필터</b>: 좌측에서 특정 설비를 선택하여 필터링</li>
+              <li><b className="text-white">기간 필터</b>: 최근 1개월/3개월/1년/전체 기간 선택</li>
+              <li><b className="text-white">유형 필터</b>: 정비/점검/교체/사고 유형별 분류</li>
+              <li><b className="text-white">이력 상세</b>: 목록에서 항목 클릭 시 운영자 메모, 관련 SOP, 위험예측 연계 확인</li>
+            </ul>
+            <div className="text-gray-500 text-[10px] border-t border-gray-700 pt-1">
+              시나리오 에뮬레이터의 SYMPTOM(이상감지) 단계에서 자동으로 관련 이력이 조회됩니다.
+            </div>
+          </div>
+        )}
         <button onClick={() => setEquipmentFilter([])}
-          className={`text-[10px] mb-2 ${equipmentFilter.length === 0 ? 'text-cyan-400' : 'text-gray-500 hover:text-gray-300'}`}>
+          className={`text-[12px] mb-2 ${equipmentFilter.length === 0 ? 'text-cyan-400' : 'text-gray-500 hover:text-gray-300'}`}>
           [전체 설비]
         </button>
+        <div className="flex flex-wrap lg:block gap-2 lg:gap-0">
         {['BOG-201','TK-101','PMP-301','VAP-401','VAL-601','REL-701','ARM-101','SHP-001','PIP-501'].map(id => (
-          <label key={id} className="flex items-center gap-2 text-[11px] text-gray-300 mb-1 cursor-pointer">
+          <label key={id} className="flex items-center gap-2 text-[13px] text-gray-300 mb-1 cursor-pointer">
             <input type="checkbox" checked={equipmentFilter.includes(id)} onChange={(e) => {
               setEquipmentFilter(prev => e.target.checked ? [...prev, id] : prev.filter(x => x !== id));
             }} className="rounded accent-cyan-500" />
-            {id}
+            {eqName(id)}
           </label>
         ))}
+        </div>
 
         <div className="border-t border-gray-700 mt-3 pt-3">
           <h4 className="text-xs text-gray-400 mb-2 font-semibold">기간 필터</h4>
           {([['1m', '최근 1개월'], ['3m', '최근 3개월'], ['1y', '최근 1년'], ['all', '전체']] as [PeriodFilter, string][]).map(([k, label]) => (
             <button key={k} onClick={() => setPeriodFilter(k)}
-              className={`block text-[11px] mb-1 ${periodFilter === k ? 'text-cyan-400' : 'text-gray-500 hover:text-gray-300'}`}>
+              className={`block text-[13px] mb-1 ${periodFilter === k ? 'text-cyan-400' : 'text-gray-500 hover:text-gray-300'}`}>
               [{label}]
             </button>
           ))}
@@ -100,13 +141,14 @@ export default function HistoryPage() {
         <div className="border-t border-gray-700 mt-3 pt-3">
           <h4 className="text-xs text-gray-400 mb-2 font-semibold">유형 필터</h4>
           {(['정비', '점검', '교체', '사고'] as TypeFilter[]).map(type => (
-            <label key={type} className="flex items-center gap-2 text-[11px] text-gray-300 mb-1 cursor-pointer">
+            <label key={type} className="flex items-center gap-2 text-[13px] text-gray-300 mb-1 cursor-pointer">
               <input type="checkbox" checked={typeFilter.includes(type)} onChange={(e) => {
                 setTypeFilter(prev => e.target.checked ? [...prev, type] : prev.filter(x => x !== type));
               }} className="rounded accent-cyan-500" />
               <span className={TYPE_COLORS[type]}>{type}</span>
             </label>
           ))}
+        </div>
         </div>
       </aside>
 
@@ -116,7 +158,7 @@ export default function HistoryPage() {
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs text-gray-400">이력 목록 ({filtered.length}건)</h3>
           </div>
-          <table className="w-full text-[11px]">
+          <table className="w-full text-[13px]">
             <thead><tr className="text-gray-500 border-b border-gray-700">
               <th className="text-left py-2 w-16">구분</th>
               <th className="text-left">설비</th>
@@ -131,7 +173,7 @@ export default function HistoryPage() {
                   <tr key={h.history_id} onClick={() => setSelected(h)}
                     className={`border-b border-gray-800 cursor-pointer hover:bg-bg-tertiary ${selected?.history_id === h.history_id ? 'bg-bg-tertiary' : ''}`}>
                     <td className={`py-2 font-medium ${TYPE_COLORS[hType]}`}>{hType}</td>
-                    <td className="text-white">{h.equipment_id}</td>
+                    <td className="text-white">{eqName(h.equipment_id)}</td>
                     <td className="text-gray-400">{h.last_maintenance_date || '—'}</td>
                     <td className="text-gray-400 max-w-[200px] truncate">{h.past_incident_summary || '—'}</td>
                     <td className="text-accent-blue">{h.linked_sop_id || '—'}</td>
@@ -147,24 +189,24 @@ export default function HistoryPage() {
 
         {/* Detail panel */}
         {selected && (
-          <div className="h-[220px] border-t border-gray-700 bg-bg-secondary p-4 overflow-y-auto">
+          <div className="h-auto lg:h-[220px] border-t border-gray-700 bg-bg-secondary p-4 overflow-y-auto">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold">이력 상세 — {selected.equipment_id}</h4>
+              <h4 className="text-xs font-bold">이력 상세 — {eqName(selected.equipment_id)}</h4>
               <div className="flex gap-2">
                 <button onClick={() => {
                   router.push('/risk');
-                }} className="text-[10px] px-2 py-1 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/30">
+                }} className="text-[12px] px-2 py-1 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/30">
                   상호영향 위험예측
                 </button>
                 <button onClick={() => {
                   router.push(`/sop`);
-                }} className="text-[10px] px-2 py-1 rounded bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30">
+                }} className="text-[12px] px-2 py-1 rounded bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30">
                   관련 SOP
                 </button>
               </div>
             </div>
-            <div className="text-[11px] space-y-2">
-              <div className="flex gap-8">
+            <div className="text-[13px] space-y-2">
+              <div className="flex flex-wrap gap-4 lg:gap-8">
                 <div><span className="text-gray-500">점검일:</span> <span className="text-white">{selected.last_maintenance_date || '—'}</span></div>
                 <div><span className="text-gray-500">시나리오:</span> <span className="text-cyan-400">{selected.scenario_id}</span></div>
                 <div><span className="text-gray-500">유형:</span> <span className={TYPE_COLORS[getHistoryType(selected.past_incident_summary || '')]}>{getHistoryType(selected.past_incident_summary || '')}</span></div>

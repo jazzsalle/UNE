@@ -184,7 +184,7 @@ export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlow
         </div>
         <div className="px-4 py-3">
           <h2 className="text-sm font-black text-amber-400 tracking-wide leading-tight">{sop.sop_name}</h2>
-          <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
+          <div className="flex items-center gap-3 mt-1.5 text-[12px] text-gray-400">
             {sop.target_equipment_id && (
               <span className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block" />{sop.target_equipment_id}
@@ -219,12 +219,12 @@ export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlow
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-4">
         {/* 시작 노드 */}
         <div className="flex flex-col items-center mb-1">
-          <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide ${
+          <div className={`px-6 py-2.5 rounded-full text-[18px] font-bold tracking-wide ${
             status === 'idle' ? 'bg-gray-700/50 text-gray-400' :
             status === 'executing' ? `${colors.bg} ${colors.text} shadow-lg ${colors.glow}` :
             'bg-green-500/20 text-green-400'
           }`}>
-            {status === 'idle' ? '대기 중' : status === 'executing' ? '비상상황 발생' : '조치 완료'}
+            {status === 'idle' ? '대기 중' : status === 'executing' ? '상황발생' : '조치 완료'}
           </div>
           <FlowArrow />
         </div>
@@ -296,7 +296,7 @@ export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlow
                         <span className="text-[9px] text-blue-400 font-bold">i</span>
                       </div>
                     )}
-                    <span className={`text-[10px] font-bold flex-1 ${
+                    <span className={`text-[12px] font-bold flex-1 ${
                       isPast ? 'text-green-300' : isCurrent ? colors.text : isFuture ? 'text-gray-600' : 'text-gray-300'
                     }`}>
                       {step.title || (step.type === 'CHECK' ? '임무절차' : '점검사항')}
@@ -308,7 +308,7 @@ export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlow
                     )}
                   </div>
                   {/* 내용 */}
-                  <div className={`px-3 py-2 text-[11px] leading-relaxed ${
+                  <div className={`px-3 py-2 text-[13px] leading-relaxed ${
                     isPast ? 'text-green-300/70' : isCurrent ? 'text-white' : isFuture ? 'text-gray-600' : 'text-gray-300'
                   }`}>
                     <BulletContent content={step.content} isPast={isPast} isCurrent={isCurrent} colors={colors} />
@@ -336,7 +336,7 @@ export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlow
           <div className="flex flex-col items-center mt-1">
             <FlowArrow active color="green" />
             <div className="px-5 py-2 rounded-lg bg-green-500/10 border border-green-500/30">
-              <div className="text-[10px] font-bold text-green-400 text-center">상황보고</div>
+              <div className="text-[12px] font-bold text-green-400 text-center">상황보고</div>
             </div>
           </div>
         )}
@@ -344,11 +344,11 @@ export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlow
           <div className="flex flex-col items-center mt-2">
             <FlowArrow active color="green" />
             <div className="px-5 py-2 rounded-lg bg-green-500/10 border border-green-500/30">
-              <div className="text-[10px] font-bold text-green-400 text-center">상황보고</div>
+              <div className="text-[12px] font-bold text-green-400 text-center">상황보고</div>
             </div>
             <FlowArrow active color="green" />
-            <div className="px-6 py-2 rounded-full bg-green-500/20 border-2 border-green-500/40">
-              <div className="text-[11px] font-black text-green-300 text-center">상황종료</div>
+            <div className="px-8 py-3 rounded-full bg-green-500/20 border-2 border-green-500/40">
+              <div className="text-[18px] font-black text-green-300 text-center">상황종료</div>
             </div>
           </div>
         )}
@@ -361,7 +361,7 @@ export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlow
           <div className="px-3 py-2">
             <textarea value={memo} onChange={(e) => setMemo(e.target.value)}
               placeholder="조치 메모 입력..." rows={2}
-              className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg p-2 text-[11px] text-white resize-none focus:border-cyan-500/30 focus:outline-none placeholder:text-gray-600" />
+              className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg p-2 text-[13px] text-white resize-none focus:border-cyan-500/30 focus:outline-none placeholder:text-gray-600" />
           </div>
         )}
         <div className="px-3 py-2.5 flex gap-2">
@@ -461,7 +461,7 @@ function DecisionNode({ step, isCurrent, isPast, isFuture, result, onDecide, col
 
             {/* 판단 질문 */}
             {(isCurrent || isPast) && (
-              <div className={`-mt-1 mb-2 px-3 py-1.5 rounded text-[10px] text-center max-w-[280px] ${
+              <div className={`-mt-1 mb-2 px-3 py-1.5 rounded text-[12px] text-center max-w-[280px] ${
                 isCurrent ? 'bg-white/[0.05] text-white border border-white/[0.08]' :
                 'text-gray-500'
               }`}>
@@ -474,7 +474,7 @@ function DecisionNode({ step, isCurrent, isPast, isFuture, result, onDecide, col
               <div className="flex gap-3 mb-2">
                 <button onClick={() => onDecide('yes')}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-lg border-2 border-green-500/50
-                    bg-green-500/10 text-green-400 text-[11px] font-bold
+                    bg-green-500/10 text-green-400 text-[13px] font-bold
                     hover:bg-green-500/20 hover:border-green-500/70 hover:shadow-lg hover:shadow-green-500/20
                     transition-all active:scale-95">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -484,7 +484,7 @@ function DecisionNode({ step, isCurrent, isPast, isFuture, result, onDecide, col
                 </button>
                 <button onClick={() => onDecide('no')}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-lg border-2 border-red-500/50
-                    bg-red-500/10 text-red-400 text-[11px] font-bold
+                    bg-red-500/10 text-red-400 text-[13px] font-bold
                     hover:bg-red-500/20 hover:border-red-500/70 hover:shadow-lg hover:shadow-red-500/20
                     transition-all active:scale-95">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -514,7 +514,7 @@ function DecisionNode({ step, isCurrent, isPast, isFuture, result, onDecide, col
                 {yesSteps.length > 0 && (
                   <div className="px-2.5 py-1.5 space-y-0.5">
                     {yesSteps.map((s, i) => (
-                      <div key={i} className={`flex items-start gap-1.5 text-[10px] ${
+                      <div key={i} className={`flex items-start gap-1.5 text-[12px] ${
                         result === 'yes' ? 'text-green-300/80' : 'text-gray-600'
                       }`}>
                         <span className={`mt-1 w-1 h-1 rounded-full flex-shrink-0 ${
@@ -542,7 +542,7 @@ function DecisionNode({ step, isCurrent, isPast, isFuture, result, onDecide, col
                 {noSteps.length > 0 && (
                   <div className="px-2.5 py-1.5 space-y-0.5">
                     {noSteps.map((s, i) => (
-                      <div key={i} className={`flex items-start gap-1.5 text-[10px] ${
+                      <div key={i} className={`flex items-start gap-1.5 text-[12px] ${
                         result === 'no' ? 'text-red-300/80' : 'text-gray-600'
                       }`}>
                         <span className={`mt-1 w-1 h-1 rounded-full flex-shrink-0 ${

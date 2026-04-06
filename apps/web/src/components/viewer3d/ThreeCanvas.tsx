@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, useProgress, Html } from '@react-three/drei';
+import { DEFAULT_POSITION, DEFAULT_TARGET } from './CameraBookmark';
 
 function Loader() {
   const { progress, active } = useProgress();
@@ -25,15 +26,12 @@ interface ThreeCanvasProps {
   initialTarget?: [number, number, number];
 }
 
-const DEFAULT_POS: [number, number, number] = [350, 350, 300];
-const DEFAULT_TGT: [number, number, number] = [90, 0, 20];
-
 export function ThreeCanvas({ children, className, initialPosition, initialTarget }: ThreeCanvasProps) {
-  const pos = initialPosition || DEFAULT_POS;
-  const tgt = initialTarget || DEFAULT_TGT;
+  const pos = initialPosition || DEFAULT_POSITION;
+  const tgt = initialTarget || DEFAULT_TARGET;
 
   return (
-    <div className={`w-full h-full ${className || ''}`}>
+    <div className={`w-full h-full min-h-[50vh] lg:min-h-0 ${className || ''}`}>
       <Canvas
         dpr={[1, 2]}
         camera={{ fov: 50, near: 0.1, far: 5000, position: pos }}

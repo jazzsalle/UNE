@@ -1,4 +1,4 @@
-// ref: CLAUDE.md §9.1 — API 연결상태 바 (세련된 디자인)
+// ref: CLAUDE.md §9.1, §21 — API 연결상태 바 (반응형)
 'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
@@ -30,12 +30,12 @@ export function ApiStatusBar() {
   }, []);
 
   return (
-    <div className="h-7 bg-[#060a13]/80 border-b border-white/[0.04] flex items-center px-4 gap-5 text-[10px]">
-      <span className="text-gray-600 font-medium">외부기관</span>
+    <div className="h-7 bg-[#060a13]/80 border-b border-white/[0.04] flex items-center px-2 sm:px-4 gap-3 sm:gap-5 text-[11px] sm:text-[12px] overflow-x-auto">
+      <span className="text-gray-600 font-medium hidden sm:inline shrink-0">외부기관</span>
       {PROVIDERS.map((p) => {
         const status = statuses[p.key] || 'loading';
         return (
-          <div key={p.key} className="flex items-center gap-1.5">
+          <div key={p.key} className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <div className={`w-1.5 h-1.5 rounded-full ${
               status === 'ok' ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50' :
               status === 'error' ? 'bg-red-500 animate-pulse' :

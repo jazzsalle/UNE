@@ -11,9 +11,11 @@ export function useSSE() {
   const esRef = useRef<EventSource | null>(null);
   const updateSensorData = useAppStore((s) => s.updateSensorData);
   const addAlarm = useAppStore((s) => s.addAlarm);
+  const clearAlarms = useAppStore((s) => s.clearAlarms);
   const setEventContext = useAppStore((s) => s.setEventContext);
   const setShowEventPopup = useAppStore((s) => s.setShowEventPopup);
   const setEmulatorStatus = useEmulatorStore((s) => s.setStatus);
+  const resetEmulator = useEmulatorStore((s) => s.reset);
 
   useEffect(() => {
     // On mount: sync current emulator status so the bar reflects server state after page reload
@@ -23,6 +25,7 @@ export function useSSE() {
         if (status.running) {
           setEmulatorStatus({
             running: true,
+            paused: status.paused || false,
             scenario_id: status.scenario_id,
             elapsed_sec: status.elapsed_sec,
             phase: status.phase,
@@ -50,9 +53,28 @@ export function useSSE() {
           case 'ALARM':
             for (const a of event.data) addAlarm({ ...a, timestamp: event.timestamp, phase: event.phase });
             break;
+          case 'SYMPTOM_ENRICHMENT': {
+            // SYMPTOM phase: 세이프티아 이력 + KOGAS 초기 진단
+            const sd = event.data;
+            const existingCtx = useAppStore.getState().eventContext;
+            setEventContext({
+              event_id: existingCtx?.event_id || null,
+              scenario_id: sd.scenario_id,
+              trigger_equipment_id: sd.trigger_equipment_id,
+              affected_equipment_ids: existingCtx?.affected_equipment_ids || [],
+              severity: existingCtx?.severity || 'WARNING',
+              current_phase: 'SYMPTOM',
+              hazop_id: existingCtx?.hazop_id || null,
+              safetia_history: sd.safetia_history || undefined,
+              kogas_result: sd.kogas_result || undefined,
+            });
+            setShowEventPopup(true);
+            break;
+          }
           case 'EVENT_CREATE': {
             const d = event.data;
-            // Set minimal context first, then enrich
+            // Preserve SYMPTOM enrichment data (safetia, kogas) if already available
+            const prevCtx = useAppStore.getState().eventContext;
             setEventContext({
               event_id: d.event_id,
               scenario_id: d.scenario_id,
@@ -61,10 +83,13 @@ export function useSSE() {
               severity: d.severity,
               current_phase: event.phase,
               hazop_id: null,
+              // Carry over SYMPTOM-phase data
+              safetia_history: prevCtx?.safetia_history,
+              kogas_result: prevCtx?.kogas_result,
             });
             setShowEventPopup(true);
 
-            // Async enrichment: fetch provider data + SOP recommendations
+            // Async enrichment: fetch provider data + SOP recommendations (now includes KETI at FAULT)
             enrichEventContext(d.event_id, d.scenario_id, d.trigger_equipment_id, d.severity, event.phase);
             break;
           }
@@ -79,8 +104,27 @@ export function useSSE() {
             // Could show a toast notification - for now just log
             console.log('[SSE] Report auto-generated:', event.data.report_id, event.data.title);
             break;
+          case 'EMULATOR_PAUSED':
+            setEmulatorStatus({ paused: true });
+            break;
+          case 'EMULATOR_RESUMED':
+            setEmulatorStatus({ paused: false });
+            break;
           case 'SCENARIO_END':
-            setEmulatorStatus({ running: false, phase: 'END', elapsed_sec: event.elapsed_sec });
+            setEmulatorStatus({ running: false, paused: false, phase: 'END', elapsed_sec: event.elapsed_sec });
+            // 시나리오 자연 종료 시에도 앱 상태 초기화
+            clearAlarms();
+            setEventContext(null);
+            setShowEventPopup(false);
+            useAppStore.getState().clearSensorData();
+            break;
+          case 'SCENARIO_RESET':
+            // 사용자가 중지 버튼 클릭 시: 에뮬레이터 + 앱 상태 전체 초기화
+            resetEmulator();
+            clearAlarms();
+            setEventContext(null);
+            setShowEventPopup(false);
+            useAppStore.getState().clearSensorData();
             break;
         }
       } catch {}
@@ -113,6 +157,8 @@ async function enrichEventContext(
     const kgsResults = enrichedEvent.kgs_results || [];
     const affectedIds = kgsResults.map((k: any) => k.affected_equipment_id);
 
+    const safetiaData = enrichedEvent.safetia_history || undefined;
+
     useAppStore.getState().setEventContext({
       event_id: eventId,
       scenario_id: scenarioId,
@@ -124,7 +170,7 @@ async function enrichEventContext(
       kogas_result: enrichedEvent.kogas_result || undefined,
       kgs_results: kgsResults.length > 0 ? kgsResults : undefined,
       keti_result: enrichedEvent.keti_result || undefined,
-      safetia_history: enrichedEvent.safetia_history || undefined,
+      safetia_history: safetiaData,
       recommended_sops: sopResult ? (sopResult.all || [sopResult.primary]).filter(Boolean) : undefined,
     });
   } catch (err) {

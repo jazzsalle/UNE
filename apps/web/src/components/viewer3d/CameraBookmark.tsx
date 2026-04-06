@@ -162,7 +162,7 @@ export function CameraControlsOverlay({ controlRef, pageId }: CameraControlsOver
     <div className="absolute bottom-2 right-2 z-10 flex gap-1">
       <button
         onClick={() => controlRef.current?.save()}
-        className="bg-white/[0.08] hover:bg-white/[0.15] backdrop-blur-sm border border-white/[0.1] text-gray-300 hover:text-white px-2.5 py-1.5 rounded-lg text-[10px] transition-all flex items-center gap-1"
+        className="bg-white/[0.08] hover:bg-white/[0.15] backdrop-blur-sm border border-white/[0.1] text-gray-300 hover:text-white px-2.5 py-1.5 rounded-lg text-[12px] transition-all flex items-center gap-1"
         title="현재 카메라 시점 저장"
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -174,7 +174,7 @@ export function CameraControlsOverlay({ controlRef, pageId }: CameraControlsOver
       </button>
       <button
         onClick={() => controlRef.current?.restore()}
-        className={`backdrop-blur-sm border border-white/[0.1] px-2.5 py-1.5 rounded-lg text-[10px] transition-all flex items-center gap-1 ${
+        className={`backdrop-blur-sm border border-white/[0.1] px-2.5 py-1.5 rounded-lg text-[12px] transition-all flex items-center gap-1 ${
           hasSaved
             ? 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 hover:text-cyan-300 border-cyan-500/20'
             : 'bg-white/[0.08] hover:bg-white/[0.15] text-gray-500 cursor-default'
@@ -189,7 +189,7 @@ export function CameraControlsOverlay({ controlRef, pageId }: CameraControlsOver
       </button>
       <button
         onClick={() => controlRef.current?.reset()}
-        className="bg-white/[0.08] hover:bg-white/[0.15] backdrop-blur-sm border border-white/[0.1] text-gray-300 hover:text-white px-2.5 py-1.5 rounded-lg text-[10px] transition-all flex items-center gap-1"
+        className="bg-white/[0.08] hover:bg-white/[0.15] backdrop-blur-sm border border-white/[0.1] text-gray-300 hover:text-white px-2.5 py-1.5 rounded-lg text-[12px] transition-all flex items-center gap-1"
         title="기본 시점으로 초기화"
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

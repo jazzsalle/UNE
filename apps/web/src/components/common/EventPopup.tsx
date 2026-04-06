@@ -5,6 +5,13 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import { useAppStore } from '@/stores/appStore';
 import { SEVERITY_COLORS, SEVERITY_KR, PHASE_KR, SENSOR_TYPE_KR } from '@/lib/constants';
 
+// 설비 ID → 한글명 매핑
+const EQ_NAMES_KR: Record<string, string> = {
+  'SHP-001': 'LH2 운반선', 'ARM-101': '로딩암', 'TK-101': '저장탱크 #1', 'TK-102': '저장탱크 #2',
+  'BOG-201': 'BOG 압축기', 'PMP-301': '이송펌프', 'VAP-401': '기화기', 'REL-701': '재액화기',
+  'VAL-601': '벤트스택 #1', 'VAL-602': '벤트스택 #2', 'PIP-501': '메인배관', 'SWP-001': '해수펌프',
+};
+
 const MODE_BUTTONS = [
   { label: '상태감시', path: '/anomaly', icon: '📊' },
   { label: '위험예측', path: '/risk', icon: '🎯' },
@@ -21,12 +28,13 @@ export function EventPopup() {
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
+  // 우측 상단 구석에 팝업 배치
   useEffect(() => {
     if (popupRef.current) {
       const rect = popupRef.current.getBoundingClientRect();
       setPos({
-        x: (window.innerWidth - rect.width) / 2,
-        y: Math.min(80, (window.innerHeight - rect.height) / 3),
+        x: window.innerWidth - rect.width - 240,
+        y: 80,
       });
     }
   }, []);
@@ -52,7 +60,7 @@ export function EventPopup() {
 
   const severityColor = SEVERITY_COLORS[eventContext.severity] || '#fff';
   const isEmergency = eventContext.severity === 'EMERGENCY' || eventContext.severity === 'CRITICAL';
-  const hasEnrichment = !!(eventContext.kogas_result || eventContext.kgs_results?.length || eventContext.recommended_sops?.length);
+  const hasEnrichment = !!(eventContext.kogas_result || eventContext.kgs_results?.length || eventContext.recommended_sops?.length || (eventContext.safetia_history as any)?.length);
 
   const navigateMode = (path: string) => {
     setShowEventPopup(false);
@@ -80,8 +88,8 @@ export function EventPopup() {
             <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ backgroundColor: severityColor + '20', color: severityColor }}>
               {SEVERITY_KR[eventContext.severity] || eventContext.severity}
             </span>
-            <span className="text-[11px] font-bold text-white flex-1 truncate">
-              {eventContext.trigger_equipment_id} 이상 감지
+            <span className="text-[13px] font-bold text-white flex-1 truncate">
+              {(eventContext.trigger_equipment_id && EQ_NAMES_KR[eventContext.trigger_equipment_id]) || eventContext.trigger_equipment_id || '설비'} 이상 감지
             </span>
             <button onClick={() => setShowEventPopup(false)} className="text-gray-600 hover:text-white p-0.5 rounded hover:bg-white/[0.05]">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,7 +100,7 @@ export function EventPopup() {
 
           {/* 이벤트 상세 정보 (핵심 강조) */}
           <div className="space-y-1.5 mb-2.5">
-            <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+            <div className="grid grid-cols-3 gap-1.5 text-[12px]">
               <div className="bg-white/[0.03] rounded px-2 py-1.5">
                 <div className="text-gray-500 text-[9px]">시나리오</div>
                 <div className="text-white font-medium">{eventContext.scenario_id}</div>
@@ -109,34 +117,43 @@ export function EventPopup() {
 
             {/* 영향 설비 목록 */}
             {eventContext.affected_equipment_ids && eventContext.affected_equipment_ids.length > 0 && (
-              <div className="bg-white/[0.03] rounded px-2 py-1.5 text-[10px]">
+              <div className="bg-white/[0.03] rounded px-2 py-1.5 text-[12px]">
                 <span className="text-gray-500">영향 범위: </span>
                 <span className="text-yellow-300">
-                  {eventContext.affected_equipment_ids.join(', ')}
+                  {eventContext.affected_equipment_ids.map(id => EQ_NAMES_KR[id] || id).join(', ')}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Enrichment 결과 (KOGAS/KGS/SOP) */}
+          {/* Enrichment 결과 (KOGAS/KGS/이력/SOP) */}
           {hasEnrichment && (
             <div className="mb-2.5 space-y-1">
               {eventContext.kogas_result && (
-                <div className="flex items-center gap-2 bg-white/[0.03] rounded px-2 py-1.5 text-[10px]">
+                <div className="flex items-center gap-2 bg-white/[0.03] rounded px-2 py-1.5 text-[12px]">
                   <span className="text-cyan-400 font-bold text-[9px] w-12 shrink-0">KOGAS</span>
                   <span className="text-white flex-1 truncate">{eventContext.kogas_result.fault_name}</span>
                   <span className="text-cyan-400 font-mono text-[9px]">{Math.round((eventContext.kogas_result.diagnosis_confidence || 0) * 100)}%</span>
                 </div>
               )}
               {eventContext.kgs_results && eventContext.kgs_results.length > 0 && (
-                <div className="flex items-center gap-2 bg-white/[0.03] rounded px-2 py-1.5 text-[10px]">
+                <div className="flex items-center gap-2 bg-white/[0.03] rounded px-2 py-1.5 text-[12px]">
                   <span className="text-amber-400 font-bold text-[9px] w-12 shrink-0">KGS</span>
                   <span className="text-white">영향 {eventContext.kgs_results.length}개</span>
                   <span className="text-amber-400 font-mono text-[9px] ml-auto">최대 {Math.max(...eventContext.kgs_results.map((k: any) => k.impact_score))}점</span>
                 </div>
               )}
+              {eventContext.safetia_history && eventContext.safetia_history.length > 0 && (
+                <div className="flex items-center gap-2 bg-white/[0.03] rounded px-2 py-1.5 text-[12px]">
+                  <span className="text-purple-400 font-bold text-[9px] w-12 shrink-0">이력</span>
+                  <span className="text-white flex-1 truncate">
+                    {eventContext.safetia_history[0].past_incident_summary || '정비이력 있음'}
+                  </span>
+                  <span className="text-purple-400 font-mono text-[9px]">{eventContext.safetia_history.length}건</span>
+                </div>
+              )}
               {eventContext.recommended_sops && eventContext.recommended_sops.length > 0 && (
-                <div className="flex items-center gap-2 bg-white/[0.03] rounded px-2 py-1.5 text-[10px]">
+                <div className="flex items-center gap-2 bg-white/[0.03] rounded px-2 py-1.5 text-[12px]">
                   <span className="text-green-400 font-bold text-[9px] w-12 shrink-0">SOP</span>
                   <span className="text-white flex-1 truncate">{eventContext.recommended_sops[0].sop_name}</span>
                   <button

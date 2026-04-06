@@ -203,6 +203,12 @@ model MockKetiResult {
   recommended_option_a       String?
   recommended_option_b       String?
   expected_stabilization_min Int?
+  option_a_stabilization_min Int?
+  option_b_stabilization_min Int?
+  option_a_risk              String?
+  option_b_risk              String?
+  option_a_detail            String?
+  option_b_detail            String?
 }
 
 model MockSafetiaHistory {

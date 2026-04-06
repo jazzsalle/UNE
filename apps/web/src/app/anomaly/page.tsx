@@ -38,6 +38,7 @@ export default function AnomalyPage() {
   const [kogasResult, setKogasResult] = useState<any>(null);
   const [sensorHistory, setSensorHistory] = useState<Record<string, any[]>>({});
   const { eventContext, sensorData } = useAppStore();
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => { api.getEquipment().then(setEquipment).catch(console.error); }, []);
 
@@ -121,7 +122,7 @@ export default function AnomalyPage() {
 
   // 센서 패널 렌더링 (좌/우)
   const renderSensorPanel = (sensors: any[], side: 'left' | 'right') => (
-    <div className={`w-[22%] ${side === 'left' ? 'border-r' : 'border-l'} border-white/[0.04] p-2 overflow-y-auto scrollbar-thin`}>
+    <div className={`w-full ${side === 'left' ? 'lg:border-r' : 'lg:border-l'} border-white/[0.04] p-2 overflow-y-auto scrollbar-thin h-full`}>
       <div className="text-[9px] text-gray-600 font-medium uppercase tracking-wider mb-2 px-1">
         {side === 'left' ? '센서 모니터링 (좌)' : '센서 모니터링 (우)'}
       </div>
@@ -136,7 +137,7 @@ export default function AnomalyPage() {
             isAnomaly ? '!border-red-500/30' : isWarning ? '!border-amber-500/30' : ''
           }`}>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] text-gray-400 font-medium">{SENSOR_TYPE_KR[s.sensor_type] || s.sensor_type}</span>
+              <span className="text-[12px] text-gray-400 font-medium">{SENSOR_TYPE_KR[s.sensor_type] || s.sensor_type}</span>
               <div className="flex items-center gap-1.5">
                 {(isAnomaly || isWarning) && (
                   <span className={`text-[8px] px-1 py-0.5 rounded ${
@@ -173,11 +174,13 @@ export default function AnomalyPage() {
   return (
     <div className="h-full flex flex-col">
       {/* 상단: 3분할 (센서차트 + 3D 뷰어 + 센서차트) */}
-      <div className="flex-[3] flex min-h-0">
-        {renderSensorPanel(leftSensors, 'left')}
+      <div className="flex-[3] flex flex-col lg:flex-row min-h-0">
+        <div className="hidden lg:block lg:w-[22%]">
+          {renderSensorPanel(leftSensors, 'left')}
+        </div>
 
         {/* 3D 뷰어 — 펌프는 상세 GLB (X-ray), 나머지는 격리 뷰 */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-h-[50vh] lg:min-h-0">
           <CameraControlsOverlay controlRef={cameraRef} pageId="anomaly" />
           {isPumpDetail ? (
             <ThreeCanvas initialPosition={savedCamera?.position} initialTarget={savedCamera?.target}>
@@ -194,13 +197,36 @@ export default function AnomalyPage() {
 
           {/* 설비 정보 오버레이 */}
           <div className="absolute top-3 left-3 glass-sm px-3 py-2">
-            <div className="text-xs font-bold text-white">
-              {EQUIPMENT_NAMES_KR[selectedTab] || selectedTab}
+            <div className="flex items-center gap-2">
+              <div className="text-xs font-bold text-white">
+                {EQUIPMENT_NAMES_KR[selectedTab] || selectedTab}
+              </div>
+              <button onClick={() => setShowHelp(!showHelp)}
+                className="text-[10px] text-gray-500 hover:text-cyan-400 border border-gray-600 hover:border-cyan-500/30 px-1.5 py-0.5 rounded transition-all"
+                title="도움말">?</button>
             </div>
             <div className="text-[9px] text-gray-500">
               {selectedTab} · {isPumpDetail ? '상세 모델 (내부 구조)' : '설비 격리 뷰'}
             </div>
           </div>
+          {showHelp && (
+            <div className="absolute top-16 left-3 z-20 w-[320px] p-3 bg-gray-800/95 backdrop-blur rounded-lg border border-gray-600 text-[11px] space-y-2 shadow-xl">
+              <div className="flex items-center justify-between">
+                <span className="text-cyan-400 font-bold text-[12px]">설비 상태감시 / 이상탐지</span>
+                <button onClick={() => setShowHelp(false)} className="text-gray-500 hover:text-white text-xs">✕</button>
+              </div>
+              <ul className="text-gray-400 space-y-1 list-disc ml-3">
+                <li><b className="text-white">설비 탭 선택</b>: 하단 탭에서 9개 설비 중 하나를 선택하여 개별 상세 뷰 전환</li>
+                <li><b className="text-white">3D 뷰어</b>: 선택 설비를 격리하여 표시. PMP-301(2차펌프)은 내부 구조(X-ray) 상세 모델 제공</li>
+                <li><b className="text-white">좌/우 센서 차트</b>: 선택 설비의 주요 센서 시계열 추세. 임계선(경고/위험) 표시</li>
+                <li><b className="text-white">KOGAS AI 진단</b>: 하단에 이상탐지 AI 모델의 진단 결과(고장명, 확신도, 의심부위) 표시</li>
+                <li><b className="text-white">이상탐지 차트</b>: 실측값 vs 학습값 비교, 오차 추세, 이상 구간 강조</li>
+              </ul>
+              <div className="text-gray-500 text-[10px] mt-1 border-t border-gray-700 pt-1">
+                시나리오 에뮬레이터 실행 중 이상 발생 시 해당 설비의 센서 차트와 3D 컬러링이 자동 갱신됩니다.
+              </div>
+            </div>
+          )}
 
           {/* 2차펌프 상태 인디케이터 */}
           {isPumpDetail && (
@@ -226,7 +252,15 @@ export default function AnomalyPage() {
           )}
         </div>
 
-        {renderSensorPanel(rightSensors, 'right')}
+        <div className="hidden lg:block lg:w-[22%]">
+          {renderSensorPanel(rightSensors, 'right')}
+        </div>
+
+        {/* 모바일: 센서 차트 스크롤 */}
+        <div className="lg:hidden overflow-x-auto flex gap-2 p-2 border-t border-white/[0.04]">
+          <div className="flex-shrink-0 w-[70vw]">{renderSensorPanel(leftSensors, 'left')}</div>
+          <div className="flex-shrink-0 w-[70vw]">{renderSensorPanel(rightSensors, 'right')}</div>
+        </div>
       </div>
 
       {/* 설비 선택 탭 */}
@@ -252,17 +286,17 @@ export default function AnomalyPage() {
       </div>
 
       {/* 하단: 이상탐지 상세 (3분할) */}
-      <div className="flex-[2] border-t border-white/[0.06] flex min-h-0">
+      <div className="flex-[2] border-t border-white/[0.06] flex flex-col lg:flex-row min-h-0">
         {/* 좌: 이상탐지 그래프 (실측값 vs 학습값 + 오차) */}
-        <div className="flex-1 border-r border-white/[0.04] p-3 overflow-y-auto scrollbar-thin">
+        <div className="flex-1 lg:border-r border-white/[0.04] p-3 overflow-y-auto scrollbar-thin">
           <AnomalyDetectionChart data={anomalyChartData} height={160} />
         </div>
 
         {/* 중: 시간별 상세 테이블 */}
-        <div className="w-[28%] border-r border-white/[0.04] p-3 overflow-y-auto scrollbar-thin">
-          <span className="text-[11px] text-gray-300 font-medium">시간별 상세</span>
+        <div className="w-full lg:w-[28%] lg:border-r border-white/[0.04] p-3 overflow-y-auto scrollbar-thin">
+          <span className="text-[13px] text-gray-300 font-medium">시간별 상세</span>
           <div className="mt-2">
-            <table className="w-full text-[10px]">
+            <table className="w-full text-[12px]">
               <thead>
                 <tr className="text-gray-500 border-b border-white/[0.06]">
                   <th className="text-left py-1.5 font-medium">시간</th>
@@ -302,12 +336,12 @@ export default function AnomalyPage() {
         </div>
 
         {/* 우: 진단 데이터 */}
-        <div className="w-[28%] p-3 overflow-y-auto scrollbar-thin">
-          <span className="text-[11px] text-gray-300 font-medium">이상탐지 진단 결과</span>
+        <div className="w-full lg:w-[28%] p-3 overflow-y-auto scrollbar-thin">
+          <span className="text-[13px] text-gray-300 font-medium">이상탐지 진단 결과</span>
           <div className="mt-3 space-y-3">
             <div className="glass-sm p-2.5">
               <div className="text-[9px] text-gray-500 mb-1.5">비교 구간 (정상 패턴)</div>
-              <div className="h-12 bg-emerald-500/5 border border-emerald-500/10 rounded flex items-center justify-center text-[10px] text-emerald-400">
+              <div className="h-12 bg-emerald-500/5 border border-emerald-500/10 rounded flex items-center justify-center text-[12px] text-emerald-400">
                 <svg width="120" height="20" viewBox="0 0 120 20" className="mr-2">
                   <path d="M0,10 Q15,8 30,10 Q45,12 60,10 Q75,8 90,10 Q105,12 120,10" fill="none" stroke="#22c55e" strokeWidth="1.5" opacity="0.6"/>
                 </svg>
@@ -316,7 +350,7 @@ export default function AnomalyPage() {
             </div>
             <div className="glass-sm p-2.5">
               <div className="text-[9px] text-gray-500 mb-1.5">이상탐지 구간</div>
-              <div className="h-12 bg-red-500/5 border border-red-500/10 rounded flex items-center justify-center text-[10px] text-red-400">
+              <div className="h-12 bg-red-500/5 border border-red-500/10 rounded flex items-center justify-center text-[12px] text-red-400">
                 <svg width="120" height="20" viewBox="0 0 120 20" className="mr-2">
                   <path d="M0,10 L15,10 L25,3 L35,17 L45,5 L55,15 L65,2 L75,18 L85,10 L95,10 L105,10 L120,10" fill="none" stroke="#ef4444" strokeWidth="1.5" opacity="0.7"/>
                 </svg>
@@ -328,27 +362,27 @@ export default function AnomalyPage() {
                 <div className="text-[9px] text-gray-500 mb-2">KOGAS AI 진단 결과</div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-gray-400">고장명</span>
-                    <span className="text-[11px] text-red-400 font-medium">{kogasResult.fault_name}</span>
+                    <span className="text-[12px] text-gray-400">고장명</span>
+                    <span className="text-[13px] text-red-400 font-medium">{kogasResult.fault_name}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-gray-400">확신도</span>
+                    <span className="text-[12px] text-gray-400">확신도</span>
                     <div className="flex items-center gap-2">
                       <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
                         <div className="h-full bg-cyan-400 rounded-full" style={{ width: `${(kogasResult.diagnosis_confidence * 100)}%` }} />
                       </div>
-                      <span className="text-[11px] text-cyan-400 font-mono">{(kogasResult.diagnosis_confidence * 100).toFixed(0)}%</span>
+                      <span className="text-[13px] text-cyan-400 font-mono">{(kogasResult.diagnosis_confidence * 100).toFixed(0)}%</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-gray-400">의심부위</span>
-                    <span className="text-[11px] text-amber-400">{kogasResult.suspected_part}</span>
+                    <span className="text-[12px] text-gray-400">의심부위</span>
+                    <span className="text-[13px] text-amber-400">{kogasResult.suspected_part}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-gray-400">고장코드</span>
-                    <span className="text-[11px] text-white font-mono">{kogasResult.fault_code || 'N/A'}</span>
+                    <span className="text-[12px] text-gray-400">고장코드</span>
+                    <span className="text-[13px] text-white font-mono">{kogasResult.fault_code || 'N/A'}</span>
                   </div>
-                  <div className="text-[10px] text-gray-300 mt-2 pt-2 border-t border-white/[0.06] leading-relaxed">
+                  <div className="text-[12px] text-gray-300 mt-2 pt-2 border-t border-white/[0.06] leading-relaxed">
                     [{sensorHistory[selectedEq?.sensors?.[0]?.sensor_id]?.length || 0}개 샘플] 분석 구간에서{' '}
                     <span className="text-red-400 font-medium">{kogasResult.fault_name}</span> 감지
                   </div>
@@ -361,7 +395,7 @@ export default function AnomalyPage() {
 
       {/* KOGAS 진단 결과 바 */}
       {kogasResult && (
-        <div className="h-11 border-t border-white/[0.06] bg-[#0a0e17] flex items-center px-4 gap-4 text-[11px]">
+        <div className="h-11 border-t border-white/[0.06] bg-[#0a0e17] flex items-center px-4 gap-4 text-[13px]">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50" />
             <span className="text-gray-400">KOGAS 연결정상</span>
@@ -371,7 +405,7 @@ export default function AnomalyPage() {
           <span className="text-gray-300">확신도: <b className="text-cyan-400">{(kogasResult.diagnosis_confidence * 100).toFixed(0)}%</b></span>
           <span className="text-gray-300">의심부위: <b className="text-amber-400">{kogasResult.suspected_part}</b></span>
 
-          <div className="ml-auto flex gap-1.5">
+          <div className="ml-auto flex gap-1.5 flex-wrap justify-end">
             {[
               { label: '상호영향 위험예측', path: '/risk' },
               { label: '시뮬레이션', path: '/simulation' },
@@ -379,7 +413,7 @@ export default function AnomalyPage() {
               { label: '이력관리', path: '/history' },
             ].map(({ label, path }) => (
               <a key={label} href={path}
-                className="px-2 py-0.5 rounded text-[10px] bg-white/[0.05] text-gray-400 hover:text-white hover:bg-white/[0.1] transition-colors">
+                className="px-2 py-0.5 rounded text-[12px] bg-white/[0.05] text-gray-400 hover:text-white hover:bg-white/[0.1] transition-colors">
                 {label}
               </a>
             ))}

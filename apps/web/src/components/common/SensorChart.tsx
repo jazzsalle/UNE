@@ -52,12 +52,12 @@ function ChartTooltip({ active, payload, label }: any) {
   const isWarning = d?.label === 'WARNING';
 
   return (
-    <div className={`px-3 py-2 rounded-lg border text-[11px] shadow-xl ${
+    <div className={`px-3 py-2 rounded-lg border text-[13px] shadow-xl ${
       isAnomaly ? 'bg-red-950/95 border-red-500/40' :
       isWarning ? 'bg-amber-950/95 border-amber-500/40' :
       'bg-gray-900/95 border-gray-700'
     }`}>
-      <div className="text-gray-400 text-[10px] mb-1">{label}</div>
+      <div className="text-gray-400 text-[12px] mb-1">{label}</div>
       {payload.map((p: any, i: number) => (
         <div key={i} className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
@@ -132,8 +132,8 @@ export function SensorChart({ data, sensorType, unit, threshold, height = 120, c
     <div className="bg-white/[0.02] rounded-lg p-2 relative">
       {!compact && (
         <div className="flex justify-between items-center mb-1.5">
-          <span className="text-[11px] text-gray-300 font-medium">{sensorType}</span>
-          <span className="text-[10px] text-gray-500">{unit}</span>
+          <span className="text-[13px] text-gray-300 font-medium">{sensorType}</span>
+          <span className="text-[12px] text-gray-500">{unit}</span>
         </div>
       )}
       <ResponsiveContainer width="100%" height={height}>
@@ -202,7 +202,7 @@ export function SensorChart({ data, sensorType, unit, threshold, height = 120, c
 
       {/* 마커 클릭 시 상세 정보 팝업 */}
       {selectedMarker && (
-        <div className="absolute top-2 right-2 z-20 glass px-3 py-2 text-[10px] max-w-[200px] animate-slideInRight">
+        <div className="absolute top-2 right-2 z-20 glass px-3 py-2 text-[12px] max-w-[200px] animate-slideInRight">
           <div className="flex items-center justify-between mb-1">
             <span className={`font-bold ${selectedMarker.label === 'ANOMALY' ? 'text-red-400' : 'text-amber-400'}`}>
               {selectedMarker.label === 'ANOMALY' ? '이상 감지' : '경고'}
@@ -266,7 +266,7 @@ export function AnomalyDetectionChart({ data, height = 180 }: AnomalyChartProps)
 
   if (chartData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-600 text-[11px]">
+      <div className="flex items-center justify-center h-full text-gray-600 text-[13px]">
         에뮬레이터 실행 시 데이터가 표시됩니다
       </div>
     );
@@ -275,8 +275,8 @@ export function AnomalyDetectionChart({ data, height = 180 }: AnomalyChartProps)
   return (
     <div className="bg-white/[0.02] rounded-lg p-3 relative h-full">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-[11px] text-gray-300 font-medium">이상탐지 그래프</span>
-        <div className="flex gap-4 text-[10px]">
+        <span className="text-[13px] text-gray-300 font-medium">이상탐지 그래프</span>
+        <div className="flex gap-4 text-[12px]">
           <span className="flex items-center gap-1.5">
             <span className="w-4 h-0.5 bg-cyan-400 inline-block rounded" />
             <span className="text-gray-400">실측값</span>
@@ -375,7 +375,7 @@ export function AnomalyDetectionChart({ data, height = 180 }: AnomalyChartProps)
 
       {/* 마커 클릭 시 상세 정보 */}
       {selectedMarker && (
-        <div className="absolute top-2 right-2 z-20 glass px-3 py-2 text-[10px] max-w-[220px] animate-slideInRight">
+        <div className="absolute top-2 right-2 z-20 glass px-3 py-2 text-[12px] max-w-[220px] animate-slideInRight">
           <div className="flex items-center justify-between mb-1">
             <span className={`font-bold ${selectedMarker.label === 'ANOMALY' ? 'text-red-400' : 'text-amber-400'}`}>
               {selectedMarker.label === 'ANOMALY' ? '이상 감지 상세' : '경고 상세'}

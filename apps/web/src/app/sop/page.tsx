@@ -52,6 +52,7 @@ export default function SopPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null); // sop_id to confirm
   const [permanentDeleteConfirm, setPermanentDeleteConfirm] = useState<string | null>(null);
   const { eventContext } = useAppStore();
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     api.getSops().then(setSops).catch(console.error);
@@ -211,21 +212,27 @@ export default function SopPage() {
           { key: 'history' as TabType, icon: '📋', label: '실행이력' },
         ]).map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`px-3 py-1.5 rounded text-[11px] font-bold tracking-wide transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded text-[13px] font-bold tracking-wide transition-all flex items-center gap-1.5 ${
               tab === t.key
                 ? 'bg-white/[0.08] text-white shadow-inner'
                 : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]'
             }`}>
-            <span className="text-[10px]">{t.icon}</span> {t.label}
+            <span className="text-[12px]">{t.icon}</span> {t.label}
           </button>
         ))}
+
+        {/* 도움말 */}
+        <button onClick={() => setShowHelp(!showHelp)}
+          className="ml-auto text-[11px] text-gray-500 hover:text-gray-300 border border-gray-600 px-2 py-0.5 rounded">
+          {showHelp ? '도움말 닫기' : '? SOP 안내'}
+        </button>
 
         {/* 구분선 */}
         <div className="w-px h-4 bg-white/[0.08] mx-1" />
 
         {/* 휴지통 탭 */}
         <button onClick={() => setTab('trash')}
-          className={`px-3 py-1.5 rounded text-[11px] font-bold tracking-wide transition-all flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded text-[13px] font-bold tracking-wide transition-all flex items-center gap-1.5 ${
             tab === 'trash'
               ? 'bg-red-500/10 text-red-400 shadow-inner'
               : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]'
@@ -242,7 +249,40 @@ export default function SopPage() {
         </button>
       </div>
 
-      <div className="flex-1 flex min-h-0">
+      {showHelp && (
+        <div className="px-4 py-2 bg-gray-800/80 border-b border-gray-600 text-[12px] space-y-2">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <div className="text-green-400 font-bold mb-1">실행 탭</div>
+              <ul className="text-gray-400 space-y-0.5 list-disc ml-3">
+                <li>좌측에서 SOP를 선택하면 우측에 <span className="text-white">플로우차트</span> 형태로 실행 절차가 표시됨</li>
+                <li>각 단계를 순서대로 체크하며 진행</li>
+                <li>메모를 작성하고 <span className="text-white">[실행 완료]</span> 또는 <span className="text-white">[상황 전파]</span> 가능</li>
+                <li>이벤트 연계 시 자동으로 추천 SOP가 표시됨</li>
+              </ul>
+            </div>
+            <div className="flex-1">
+              <div className="text-amber-400 font-bold mb-1">저작/편집 탭</div>
+              <ul className="text-gray-400 space-y-0.5 list-disc ml-3">
+                <li>새로운 SOP를 생성하거나 기존 SOP를 편집</li>
+                <li>단계 추가/삭제/순서변경을 <span className="text-white">플로우차트 에디터</span>로 직접 조작</li>
+                <li>카테고리(비상/안전/일상)와 우선순위 지정</li>
+                <li>대상 설비/공간 및 카메라 프리셋 연동 설정</li>
+              </ul>
+            </div>
+            <div className="flex-1">
+              <div className="text-purple-400 font-bold mb-1">실행이력 탭</div>
+              <ul className="text-gray-400 space-y-0.5 list-disc ml-3">
+                <li>과거 SOP 실행 기록을 시간순으로 조회</li>
+                <li>완료/중단 상태, 체크 이력, 작성 메모 확인</li>
+                <li>이벤트별/시나리오별 필터링 가능</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
         {/* ── 휴지통 탭일 때는 전체 콘텐츠 교체 ── */}
         {tab === 'trash' ? (
           <TrashView
@@ -260,11 +300,11 @@ export default function SopPage() {
         ) : (
           <>
             {/* ── SOP 목록 사이드바 ── */}
-            <aside className="w-[260px] border-r border-white/[0.06] bg-[#080c14] overflow-y-auto flex flex-col">
+            <aside className="w-full lg:w-[260px] border-b lg:border-b-0 lg:border-r border-white/[0.06] bg-[#080c14] overflow-y-auto flex flex-col max-h-[35vh] lg:max-h-none">
               {/* 카운트 + 카테고리 추가 */}
               <div className="p-3 border-b border-white/[0.04]">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-[10px] text-gray-500">
+                  <div className="text-[12px] text-gray-500">
                     {filteredSops.length}개 SOP {selectedCategory !== 'ALL' && `(전체 ${sops.length})`}
                   </div>
                   <button onClick={() => setShowCategoryInput(!showCategoryInput)}
@@ -278,11 +318,11 @@ export default function SopPage() {
                   <div className="mb-2 p-2 rounded-lg bg-white/[0.03] border border-purple-500/20 space-y-1.5">
                     <input value={newCategoryKey} onChange={e => setNewCategoryKey(e.target.value)}
                       placeholder="코드 (예: MAINTENANCE)"
-                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-[10px] text-white
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-[12px] text-white
                         focus:outline-none focus:border-purple-500/30 placeholder:text-gray-600" />
                     <input value={newCategoryLabel} onChange={e => setNewCategoryLabel(e.target.value)}
                       placeholder="표시명 (예: 유지보수)"
-                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-[10px] text-white
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-2 py-1 text-[12px] text-white
                         focus:outline-none focus:border-purple-500/30 placeholder:text-gray-600" />
                     <div className="flex gap-1.5">
                       <button onClick={handleAddCategory}
@@ -327,7 +367,7 @@ export default function SopPage() {
               <div className="px-2 pt-2">
                 <button onClick={handleCreateNew}
                   className="w-full py-2 rounded-lg border-2 border-dashed border-cyan-500/30 bg-cyan-500/5
-                    text-cyan-400 text-[11px] font-bold hover:bg-cyan-500/10 hover:border-cyan-500/50
+                    text-cyan-400 text-[13px] font-bold hover:bg-cyan-500/10 hover:border-cyan-500/50
                     transition-all flex items-center justify-center gap-1.5">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -367,7 +407,7 @@ export default function SopPage() {
                         </div>
 
                         {/* SOP 이름 */}
-                        <div className={`text-[11px] font-bold leading-tight ${isSelected ? 'text-white' : 'text-gray-300'}`}>
+                        <div className={`text-[13px] font-bold leading-tight ${isSelected ? 'text-white' : 'text-gray-300'}`}>
                           {sop.sop_name}
                         </div>
 
@@ -406,7 +446,7 @@ export default function SopPage() {
                   );
                 })}
                 {filteredSops.length === 0 && (
-                  <div className="text-center py-8 text-gray-600 text-[10px]">
+                  <div className="text-center py-8 text-gray-600 text-[12px]">
                     {selectedCategory === 'ALL' ? '등록된 SOP가 없습니다' : '해당 카테고리에 SOP가 없습니다'}
                   </div>
                 )}
@@ -419,7 +459,7 @@ export default function SopPage() {
                 /* 실행이력 탭 */
                 <div className="h-full overflow-y-auto p-4">
                   <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
-                    <span className="text-[10px] bg-white/[0.06] px-2 py-0.5 rounded">📋</span>
+                    <span className="text-[12px] bg-white/[0.06] px-2 py-0.5 rounded">📋</span>
                     SOP 실행이력
                   </h3>
                   <div className="space-y-2">
@@ -435,7 +475,7 @@ export default function SopPage() {
                             }`}>
                               {ex.execution_status}
                             </span>
-                            <span className="text-[11px] text-white font-bold">{ex.sop?.sop_name || ex.sop_id}</span>
+                            <span className="text-[13px] text-white font-bold">{ex.sop?.sop_name || ex.sop_id}</span>
                           </div>
                           <span className="text-[9px] text-gray-500 font-mono">
                             {new Date(ex.started_at).toLocaleDateString('ko-KR')}
@@ -527,9 +567,9 @@ function TrashView({
           </div>
           <div>
             <h2 className="text-sm font-bold text-white">휴지통</h2>
-            <p className="text-[10px] text-gray-500">삭제된 SOP는 30일간 보존됩니다. 이후 자동으로 영구 삭제됩니다.</p>
+            <p className="text-[12px] text-gray-500">삭제된 SOP는 30일간 보존됩니다. 이후 자동으로 영구 삭제됩니다.</p>
           </div>
-          <div className="ml-auto text-[10px] text-gray-500">
+          <div className="ml-auto text-[12px] text-gray-500">
             {allTrashSops.length}개 항목
           </div>
         </div>
@@ -579,7 +619,7 @@ function TrashView({
                     <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold ${catInfo.color}`}>
                       {catInfo.label}
                     </span>
-                    <span className="text-[10px] font-mono text-gray-500">{sop.sop_id}</span>
+                    <span className="text-[12px] font-mono text-gray-500">{sop.sop_id}</span>
                   </div>
                   <div className="text-[12px] font-bold text-gray-300 mb-1">{sop.sop_name}</div>
                   <div className="flex items-center gap-3 text-[9px] text-gray-500">
@@ -610,7 +650,7 @@ function TrashView({
                   <div className="flex items-center gap-1.5">
                     {/* 복원 버튼 */}
                     <button onClick={() => onRestore(sop.sop_id)}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-bold
                         bg-green-500/10 text-green-400 border border-green-500/20
                         hover:bg-green-500/20 hover:border-green-500/30 transition-all"
                       title="복원">
@@ -635,7 +675,7 @@ function TrashView({
                       </div>
                     ) : (
                       <button onClick={() => setPermanentDeleteConfirm(sop.sop_id)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-bold
                           bg-red-500/10 text-red-400/70 border border-red-500/15
                           hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition-all"
                         title="영구 삭제">
@@ -657,8 +697,8 @@ function TrashView({
             <svg className="w-16 h-16 mx-auto mb-4 text-gray-700 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            <div className="text-[11px] text-gray-600 font-bold">휴지통이 비어있습니다</div>
-            <div className="text-[10px] text-gray-700 mt-1">삭제된 SOP가 이곳에 표시됩니다</div>
+            <div className="text-[13px] text-gray-600 font-bold">휴지통이 비어있습니다</div>
+            <div className="text-[12px] text-gray-700 mt-1">삭제된 SOP가 이곳에 표시됩니다</div>
           </div>
         )}
       </div>

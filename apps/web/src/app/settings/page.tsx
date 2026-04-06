@@ -10,6 +10,7 @@ export default function SettingsPage() {
   const [selectedEquipment, setSelectedEquipment] = useState('BOG-201');
   const [thresholds, setThresholds] = useState<any[]>([]);
   const [editingThreshold, setEditingThreshold] = useState<Record<string, any>>({});
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     api.getSensorMeta().then(setSensors).catch(console.error);
@@ -50,16 +51,51 @@ export default function SettingsPage() {
 
   return (
     <div className="h-full flex flex-col p-4 overflow-y-auto">
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4 items-center">
         {[{ k: 'meta', l: '센서 메타데이터' }, { k: 'threshold', l: '임계치 관리' }, { k: 'policy', l: '운영정책' }].map(t => (
           <button key={t.k} onClick={() => setTab(t.k as any)}
             className={`text-xs px-3 py-1.5 rounded ${tab === t.k ? 'bg-accent-blue text-white' : 'text-gray-400 hover:bg-bg-tertiary'}`}>{t.l}</button>
         ))}
+        <button onClick={() => setShowHelp(!showHelp)}
+          className="ml-auto text-[11px] text-gray-500 hover:text-gray-300 border border-gray-600 px-2 py-0.5 rounded">
+          {showHelp ? '도움말 닫기' : '? 설정 안내'}
+        </button>
       </div>
 
+      {showHelp && (
+        <div className="mb-4 p-3 bg-gray-800/80 rounded border border-gray-600 text-[12px] space-y-2">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <div className="text-cyan-400 font-bold mb-1">센서 메타데이터</div>
+              <ul className="text-gray-400 space-y-0.5 list-disc ml-3">
+                <li>등록된 센서 목록(ID, 이름, 유형, 단위) 확인</li>
+                <li><span className="text-white">활성/비활성</span> 토글로 센서 데이터 수집 제어</li>
+                <li><span className="text-white">샘플링 주기</span>(초) 인라인 편집 가능</li>
+              </ul>
+            </div>
+            <div className="flex-1">
+              <div className="text-amber-400 font-bold mb-1">임계치 관리</div>
+              <ul className="text-gray-400 space-y-0.5 list-disc ml-3">
+                <li>설비별 센서의 <span className="text-white">경고/위험</span> 임계 상/하한값 설정</li>
+                <li>설비 드롭다운으로 대상 선택 후 인라인 편집</li>
+                <li>임계치 초과 시 알람 자동 발생에 활용됨</li>
+              </ul>
+            </div>
+            <div className="flex-1">
+              <div className="text-purple-400 font-bold mb-1">운영정책</div>
+              <ul className="text-gray-400 space-y-0.5 list-disc ml-3">
+                <li>SOP 자동 팝업, 보고서 자동생성 등 ON/OFF 제어</li>
+                <li>Missing Data Timeout, 기본 샘플링 주기 설정</li>
+                <li>플랫폼 전반의 운영 파라미터 관리</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {tab === 'meta' && (
-        <div className="overflow-auto">
-          <table className="w-full text-[11px]">
+        <div className="overflow-x-auto">
+          <table className="w-full text-[13px] min-w-[700px]">
             <thead><tr className="text-gray-500 border-b border-gray-700">
               <th className="text-left py-2">ID</th><th className="text-left">이름</th><th className="text-left">유형</th>
               <th className="text-left">설비</th><th className="text-left">단위</th><th className="text-left">주기(s)</th><th className="text-left">활성</th><th></th>
@@ -87,7 +123,7 @@ export default function SettingsPage() {
                       setSensors(prev => prev.map(x => x.sensor_id === s.sensor_id ? { ...x, enabled: newEnabled } : x));
                       api.updateSensorMeta(s.sensor_id, { enabled: newEnabled }).catch(console.error);
                     }}
-                      className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${s.enabled ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                      className={`px-2 py-0.5 rounded text-[12px] cursor-pointer ${s.enabled ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                       {s.enabled ? 'ON' : 'OFF'}
                     </button>
                   </td>
@@ -97,7 +133,7 @@ export default function SettingsPage() {
                         await api.updateSensorMeta(s.sensor_id, { sample_interval_sec: s.sample_interval_sec });
                         alert('저장 완료');
                       } catch (err) { console.error(err); }
-                    }} className="text-accent-blue hover:underline text-[10px]">저장</button>
+                    }} className="text-accent-blue hover:underline text-[12px]">저장</button>
                   </td>
                 </tr>
               ))}
@@ -107,8 +143,8 @@ export default function SettingsPage() {
       )}
 
       {tab === 'threshold' && (
-        <div>
-          <div className="mb-4 flex items-center gap-3">
+        <div className="overflow-x-auto">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
             <span className="text-xs text-gray-400">설비 선택:</span>
             <select value={selectedEquipment} onChange={e => setSelectedEquipment(e.target.value)}
               className="bg-bg-tertiary border border-gray-600 rounded px-2 py-1 text-xs text-white">
@@ -116,7 +152,7 @@ export default function SettingsPage() {
             </select>
           </div>
 
-          <table className="w-full text-[11px]">
+          <table className="w-full text-[13px] min-w-[600px]">
             <thead><tr className="text-gray-500 border-b border-gray-700">
               <th className="text-left py-2">센서</th>
               <th className="text-left">경고 하한</th><th className="text-left">경고 상한</th>
@@ -137,7 +173,7 @@ export default function SettingsPage() {
                   ))}
                   <td className="text-gray-400">{t.normal_value}</td>
                   <td><button onClick={() => saveThreshold(t.sensor_id)}
-                    className="text-accent-blue hover:underline text-[10px]">저장</button></td>
+                    className="text-accent-blue hover:underline text-[12px]">저장</button></td>
                 </tr>
               ))}
             </tbody>
@@ -146,12 +182,12 @@ export default function SettingsPage() {
       )}
 
       {tab === 'policy' && (
-        <div className="space-y-4 max-w-lg">
+        <div className="space-y-4 max-w-lg w-full">
           {settings.map(s => (
             <div key={s.setting_key} className="flex items-center justify-between py-2 border-b border-gray-800">
               <div>
                 <div className="text-xs text-white">{s.description || s.setting_key}</div>
-                <div className="text-[10px] text-gray-500">{s.setting_group} · {s.setting_key}</div>
+                <div className="text-[12px] text-gray-500">{s.setting_group} · {s.setting_key}</div>
               </div>
               <div className="flex items-center gap-2">
                 {s.value_type === 'BOOLEAN' ? (
@@ -164,7 +200,7 @@ export default function SettingsPage() {
                       });
                       setSettings(prev => prev.map(x => x.setting_id === s.setting_id ? { ...x, setting_value: newVal } : x));
                     } catch (err) { console.error(err); }
-                  }} className={`px-3 py-1 rounded text-[10px] transition-colors cursor-pointer ${s.setting_value === 'true' ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
+                  }} className={`px-3 py-1 rounded text-[12px] transition-colors cursor-pointer ${s.setting_value === 'true' ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
                     {s.setting_value === 'true' ? 'ON' : 'OFF'}
                   </button>
                 ) : (

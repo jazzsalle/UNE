@@ -18,6 +18,18 @@ reportRoutes.get('/:id', async (req, res) => {
   res.json({ ...report, generated_summary: report.generated_summary ? JSON.parse(report.generated_summary) : null });
 });
 
+// POST /api/reports/bulk-delete — 보고서 일괄 삭제
+reportRoutes.post('/bulk-delete', async (req, res) => {
+  const { report_ids } = req.body;
+  if (!Array.isArray(report_ids) || report_ids.length === 0) {
+    return res.status(400).json({ error: 'report_ids array required' });
+  }
+  const result = await prisma.reportDocument.deleteMany({
+    where: { report_id: { in: report_ids } },
+  });
+  res.json({ success: true, deleted_count: result.count });
+});
+
 // POST /api/reports/generate — 자동생성 (CLAUDE.md §12)
 reportRoutes.post('/generate', async (req, res) => {
   const { event_id } = req.body;
@@ -49,4 +61,14 @@ reportRoutes.patch('/:id/status', async (req, res) => {
     data: { status },
   });
   res.json(report);
+});
+
+// DELETE /api/reports/:id — 보고서 건별 삭제
+reportRoutes.delete('/:id', async (req, res) => {
+  try {
+    await prisma.reportDocument.delete({ where: { report_id: req.params.id } });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(404).json({ error: 'Report not found' });
+  }
 });

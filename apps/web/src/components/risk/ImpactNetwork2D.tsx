@@ -103,7 +103,7 @@ export function ImpactNetwork2D({ kgsResults, onNodeClick, fullscreen }: ImpactN
       data: {
         label: (
           <div className="text-center">
-            <div className="font-bold text-[10px]">{EQUIPMENT_NAMES_KR[id] || id}</div>
+            <div className="font-bold text-[12px]">{EQUIPMENT_NAMES_KR[id] || id}</div>
             <div className="text-[8px] text-gray-400">{id}</div>
             <div className="text-[9px] mt-0.5">{data.score}점 · {RISK_LEVEL_KR[data.risk] || data.risk}</div>
           </div>
@@ -147,7 +147,7 @@ export function ImpactNetwork2D({ kgsResults, onNodeClick, fullscreen }: ImpactN
 
   if (kgsResults.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center text-gray-600 text-[11px]">
+      <div className="h-full flex items-center justify-center text-gray-600 text-[13px]">
         [▶ 위험예측 실행] 을 눌러주세요
       </div>
     );

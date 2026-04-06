@@ -68,7 +68,7 @@ function CustomSelect({ value, options, onChange, placeholder }: {
     <div ref={ref} className="relative mt-0.5">
       <button type="button" onClick={() => setOpen(!open)}
         className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-md
-          px-2 py-1.5 text-[11px] text-left flex items-center justify-between
+          px-2 py-1.5 text-[13px] text-left flex items-center justify-between
           hover:border-purple-500/30 focus:outline-none focus:border-purple-500/40 transition-colors">
         <span className={selected?.color || 'text-white'}>{selected?.label || placeholder || '선택...'}</span>
         <svg className="w-3 h-3 text-gray-500 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -81,7 +81,7 @@ function CustomSelect({ value, options, onChange, placeholder }: {
           {options.map(opt => (
             <button key={opt.value} type="button"
               onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors
+              className={`w-full text-left px-3 py-1.5 text-[13px] transition-colors
                 ${opt.value === value
                   ? 'bg-purple-500/20 text-white'
                   : 'text-gray-300 hover:bg-white/[0.06] hover:text-white'
@@ -274,7 +274,7 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
     finally { setSaving(false); }
   };
 
-  const inputCls = "w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-md px-2 py-1.5 text-[11px] text-white mt-0.5 focus:outline-none focus:border-purple-500/40 placeholder:text-gray-600";
+  const inputCls = "w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-md px-2 py-1.5 text-[13px] text-white mt-0.5 focus:outline-none focus:border-purple-500/40 placeholder:text-gray-600";
 
   return (
     <div className="flex flex-col h-full" style={{ background: 'linear-gradient(180deg, #0c1220 0%, #0a0f1a 100%)' }}>
@@ -340,8 +340,8 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
       <div className="flex-1 overflow-y-auto px-3 py-3">
         {/* 시작 */}
         <div className="flex flex-col items-center mb-1">
-          <div className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-[9px] text-amber-400 font-bold">
-            비상상황 발생
+          <div className="px-5 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-[14px] text-amber-400 font-bold">
+            상황발생
           </div>
           <FlowArrowEdit />
         </div>
@@ -378,11 +378,11 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
                   </div>
                   <div className="flex-1 space-y-1.5">
                     <input value={step.title} onChange={e => updateStep(idx, 'title', e.target.value)}
-                      className="w-full bg-white/[0.03] border border-white/[0.06] rounded px-2 py-1 text-[10px] text-amber-400 font-bold
+                      className="w-full bg-white/[0.03] border border-white/[0.06] rounded px-2 py-1 text-[12px] text-amber-400 font-bold
                         focus:outline-none focus:border-amber-500/30 placeholder:text-gray-600"
                       placeholder="판단 제목 (예: 조치완료, 이상해소 여부)" />
                     <input value={step.content} onChange={e => updateStep(idx, 'content', e.target.value)}
-                      className="w-full bg-white/[0.03] border border-white/[0.06] rounded px-2 py-1 text-[10px] text-gray-200
+                      className="w-full bg-white/[0.03] border border-white/[0.06] rounded px-2 py-1 text-[12px] text-gray-200
                         focus:outline-none focus:border-amber-500/30 placeholder:text-gray-600"
                       placeholder="판단 질문 (예: 이상상태가 해소되었습니까?)" />
                   </div>
@@ -405,7 +405,7 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
                           <span className="text-green-400/40 text-[8px]">•</span>
                           <input value={item.content}
                             onChange={e => updateBranchItem(idx, 'yes_steps', i, e.target.value)}
-                            className="flex-1 bg-white/[0.02] border border-white/[0.04] rounded px-1.5 py-0.5 text-[10px] text-gray-200
+                            className="flex-1 bg-white/[0.02] border border-white/[0.04] rounded px-1.5 py-0.5 text-[12px] text-gray-200
                               focus:outline-none focus:border-green-500/30 placeholder:text-gray-600"
                             placeholder="조치 항목..." />
                           <button onClick={() => removeBranchItem(idx, 'yes_steps', i)}
@@ -432,7 +432,7 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
                           <span className="text-red-400/40 text-[8px]">•</span>
                           <input value={item.content}
                             onChange={e => updateBranchItem(idx, 'no_steps', i, e.target.value)}
-                            className="flex-1 bg-white/[0.02] border border-white/[0.04] rounded px-1.5 py-0.5 text-[10px] text-gray-200
+                            className="flex-1 bg-white/[0.02] border border-white/[0.04] rounded px-1.5 py-0.5 text-[12px] text-gray-200
                               focus:outline-none focus:border-red-500/30 placeholder:text-gray-600"
                             placeholder="조치 항목..." />
                           <button onClick={() => removeBranchItem(idx, 'no_steps', i)}
@@ -463,7 +463,7 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
                     {step.type === 'CHECK' ? '☑ 임무절차' : 'ℹ 점검사항'}
                   </button>
                   <input value={step.title} onChange={e => updateStep(idx, 'title', e.target.value)}
-                    className="flex-1 bg-transparent text-[10px] font-bold text-gray-200 focus:outline-none
+                    className="flex-1 bg-transparent text-[12px] font-bold text-gray-200 focus:outline-none
                       border-b border-transparent focus:border-white/20 placeholder:text-gray-600"
                     placeholder="단계 제목..." />
                   <button onClick={() => removeStep(idx)} className="text-red-400/40 hover:text-red-400 text-xs">✕</button>
@@ -471,7 +471,7 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
                 <div className="px-3 py-2">
                   <textarea value={step.content} onChange={e => updateStep(idx, 'content', e.target.value)}
                     rows={2}
-                    className="w-full bg-white/[0.02] border border-white/[0.06] rounded p-2 text-[11px] text-gray-200
+                    className="w-full bg-white/[0.02] border border-white/[0.06] rounded p-2 text-[13px] text-gray-200
                       resize-none focus:border-cyan-500/30 focus:outline-none placeholder:text-gray-600 leading-relaxed"
                     placeholder="단계 상세 내용. 마침표(.)로 구분하면 bullet 항목으로 표시됩니다." />
                 </div>
@@ -491,7 +491,7 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
                   ${t.value === 'CHECK' ? 'border-cyan-500/30 bg-cyan-500/5 text-cyan-400' :
                     t.value === 'TEXT' ? 'border-blue-500/30 bg-blue-500/5 text-blue-400' :
                     'border-amber-500/30 bg-amber-500/5 text-amber-400'}
-                  text-[10px] font-bold hover:brightness-125 transition-all`}>
+                  text-[12px] font-bold hover:brightness-125 transition-all`}>
                 <span>{t.icon}</span> + {t.label}
               </button>
             ))}
@@ -501,7 +501,7 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
         {/* 종료 */}
         <div className="flex flex-col items-center mt-2">
           <FlowArrowEdit />
-          <div className="px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 text-[9px] text-green-400 font-bold">
+          <div className="px-6 py-2.5 rounded-full bg-green-500/10 border border-green-500/30 text-[14px] text-green-400 font-bold">
             상황종료
           </div>
         </div>
@@ -524,7 +524,7 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
         {!isNew && onDelete && (
           showDeleteConfirm ? (
             <div className="flex items-center gap-1.5 ml-auto">
-              <span className="text-[10px] text-red-400">삭제하시겠습니까?</span>
+              <span className="text-[12px] text-red-400">삭제하시겠습니까?</span>
               <button onClick={() => onDelete(sop.sop_id)}
                 className="px-3 py-2.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-bold
                   hover:bg-red-500/30 border border-red-500/30 transition-colors">

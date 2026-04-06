@@ -100,10 +100,33 @@ export function TestbedModel({
   const prevStates = useRef<Record<string, VisualState>>({});
   const [positionsReady, setPositionsReady] = useState(false);
 
-  // Darken terrain + compute positions on initial load
+  // Darken terrain + make pipes semi-transparent + compute positions on initial load
   useEffect(() => {
     if (!scene) return;
     darkenTerrain(scene);
+
+    // 메인 배관 반투명 처리 — 유량 흐름 애니메이션 가시성 향상
+    const pipEmpty = scene.getObjectByName('PIP-501');
+    if (pipEmpty) {
+      pipEmpty.traverse((child) => {
+        if (!(child as THREE.Mesh).isMesh) return;
+        const mesh = child as THREE.Mesh;
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        mats.forEach((m, i) => {
+          const cloned = m.clone();
+          (cloned as THREE.MeshStandardMaterial).transparent = true;
+          (cloned as THREE.MeshStandardMaterial).opacity = 0.5;
+          (cloned as THREE.MeshStandardMaterial).depthWrite = false;
+          if (Array.isArray(mesh.material)) {
+            mesh.material[i] = cloned;
+          } else {
+            mesh.material = cloned;
+          }
+        });
+        mesh.renderOrder = 1; // 반투명 렌더 순서
+      });
+    }
+
     // Compute equipment positions after load
     const timer = setTimeout(() => {
       for (const eqId of EQUIPMENT_IDS) {

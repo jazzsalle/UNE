@@ -7,13 +7,19 @@ import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { computeEquipmentBBox } from './equipmentUtils';
 
+// 전체 설비 ID 목록 (TERRAIN/GROUND 제외)
+const ALL_EQUIPMENT_IDS = [
+  'SHP-001', 'ARM-101', 'TK-101', 'TK-102', 'BOG-201',
+  'PMP-301', 'VAP-401', 'REL-701', 'VAL-601', 'VAL-602', 'PIP-501',
+];
+
 interface TopViewSwitcherProps {
-  /** 프레이밍할 설비 ID 목록 (없으면 전체 뷰) */
+  /** 프레이밍할 설비 ID 목록 (없으면 전체 설비 뷰) */
   equipmentIds?: string[] | null;
 }
 
 export function TopViewSwitcher({ equipmentIds }: TopViewSwitcherProps) {
-  const { camera, scene, controls } = useThree();
+  const { camera, scene, controls, size: canvasSize } = useThree();
   const applied = useRef(false);
   const prevKey = useRef<string>('');
 
@@ -27,31 +33,38 @@ export function TopViewSwitcher({ equipmentIds }: TopViewSwitcherProps) {
     const applyTopView = () => {
       // 프레이밍 대상 바운딩박스 계산
       const unionBox = new THREE.Box3();
+      const targetIds = (equipmentIds && equipmentIds.length > 0) ? equipmentIds : ALL_EQUIPMENT_IDS;
 
-      if (equipmentIds && equipmentIds.length > 0) {
-        let found = 0;
-        for (const eqId of equipmentIds) {
-          const box = computeEquipmentBBox(scene, eqId);
-          if (box) { unionBox.union(box); found++; }
-        }
-        if (found === 0) return false;
-      } else {
-        // 전체 씬 바운딩박스 (CLAUDE.md 기준)
-        unionBox.set(
-          new THREE.Vector3(-165, -14, -337),
-          new THREE.Vector3(335, 80, 401)
-        );
+      let found = 0;
+      for (const eqId of targetIds) {
+        const box = computeEquipmentBBox(scene, eqId);
+        if (box) { unionBox.union(box); found++; }
       }
+      if (found === 0) return false;
 
       const center = new THREE.Vector3();
       const size = new THREE.Vector3();
       unionBox.getCenter(center);
       unionBox.getSize(size);
 
-      // Top View: 카메라를 바로 위에 배치, 여유 1.5배
-      const maxSpan = Math.max(size.x, size.z) * 1.5;
-      const fov = (camera as THREE.PerspectiveCamera).fov * (Math.PI / 180);
-      const dist = (maxSpan / 2) / Math.tan(fov / 2);
+      // 캔버스 종횡비를 고려하여 카메라 높이 결정
+      const aspect = canvasSize.width / canvasSize.height;
+      const fovRad = (camera as THREE.PerspectiveCamera).fov * (Math.PI / 180);
+      const padding = 1.15; // 여유 15%
+
+      // 수직 FOV 기준: Z 방향 스팬이 화면 높이에 맞도록
+      // 수평 FOV 기준: X 방향 스팬이 화면 너비에 맞도록
+      const spanX = size.x * padding;
+      const spanZ = size.z * padding;
+
+      // 수직 FOV로 Z 스팬을 맞추는 데 필요한 거리
+      const distForZ = (spanZ / 2) / Math.tan(fovRad / 2);
+      // 수평 FOV로 X 스팬을 맞추는 데 필요한 거리
+      const hFov = 2 * Math.atan(Math.tan(fovRad / 2) * aspect);
+      const distForX = (spanX / 2) / Math.tan(hFov / 2);
+
+      // 둘 중 큰 값 사용 (모든 설비가 화면에 들어오도록)
+      const dist = Math.max(distForZ, distForX);
 
       const targetPos = new THREE.Vector3(center.x, center.y, center.z);
       const cameraPos = new THREE.Vector3(center.x, center.y + dist, center.z + 0.01); // 약간 z 오프셋으로 업벡터 안정화
@@ -101,7 +114,7 @@ export function TopViewSwitcher({ equipmentIds }: TopViewSwitcherProps) {
       }
       applied.current = false;
     };
-  }, [equipmentIds, camera, scene, controls]);
+  }, [equipmentIds, camera, scene, controls, canvasSize]);
 
   return null;
 }

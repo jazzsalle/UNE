@@ -73,10 +73,10 @@ export const SEVERITY_KR: Record<string, string> = {
 // Phase 한글 매핑
 export const PHASE_KR: Record<string, string> = {
   NORMAL: '정상',
-  SYMPTOM: '증상감지',
+  SYMPTOM: '이상감지',
   FAULT: '고장',
-  SECONDARY_IMPACT: '2차영향',
-  RESPONSE: '대응',
+  SECONDARY_IMPACT: '시뮬레이션',
+  RESPONSE: '대응/복구',
 };
 
 // 알람 라벨 한글 매핑

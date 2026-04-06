@@ -24,6 +24,8 @@ export const api = {
   // Emulator
   startEmulator: (scenario_id: string, speed: number) => apiFetch('/api/emulator/start', { method: 'POST', body: JSON.stringify({ scenario_id, speed }) }),
   stopEmulator: () => apiFetch('/api/emulator/stop', { method: 'POST' }),
+  pauseEmulator: () => apiFetch('/api/emulator/pause', { method: 'POST' }),
+  resumeEmulator: () => apiFetch('/api/emulator/resume', { method: 'POST' }),
   getEmulatorStatus: () => apiFetch('/api/emulator/status'),
 
   // Events
@@ -64,6 +66,8 @@ export const api = {
   generateReport: (event_id: string) => apiFetch('/api/reports/generate', { method: 'POST', body: JSON.stringify({ event_id }) }),
   updateReport: (id: string, data: any) => apiFetch(`/api/reports/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   submitReport: (id: string) => apiFetch(`/api/reports/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'SUBMITTED' }) }),
+  deleteReport: (id: string) => apiFetch(`/api/reports/${id}`, { method: 'DELETE' }),
+  bulkDeleteReports: (reportIds: string[]) => apiFetch('/api/reports/bulk-delete', { method: 'POST', body: JSON.stringify({ report_ids: reportIds }) }),
 
   // Settings
   getSettings: () => apiFetch('/api/settings'),

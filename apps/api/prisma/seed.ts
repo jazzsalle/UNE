@@ -415,6 +415,12 @@ async function main() {
         recommended_option_a: k.recommended_option_a || null,
         recommended_option_b: k.recommended_option_b || null,
         expected_stabilization_min: k.expected_stabilization_min || null,
+        option_a_stabilization_min: k.option_a_stabilization_min || null,
+        option_b_stabilization_min: k.option_b_stabilization_min || null,
+        option_a_risk: k.option_a_risk || null,
+        option_b_risk: k.option_b_risk || null,
+        option_a_detail: k.option_a_detail || null,
+        option_b_detail: k.option_b_detail || null,
       },
       create: {
         simulation_id: k.simulation_id,
@@ -424,6 +430,12 @@ async function main() {
         recommended_option_a: k.recommended_option_a || null,
         recommended_option_b: k.recommended_option_b || null,
         expected_stabilization_min: k.expected_stabilization_min || null,
+        option_a_stabilization_min: k.option_a_stabilization_min || null,
+        option_b_stabilization_min: k.option_b_stabilization_min || null,
+        option_a_risk: k.option_a_risk || null,
+        option_b_risk: k.option_b_risk || null,
+        option_a_detail: k.option_a_detail || null,
+        option_b_detail: k.option_b_detail || null,
       },
     });
   }

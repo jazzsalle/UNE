@@ -4,6 +4,7 @@ import { create } from 'zustand';
 
 interface EmulatorState {
   running: boolean;
+  paused: boolean;
   scenario_id: string | null;
   elapsed_sec: number;
   phase: string;
@@ -16,6 +17,7 @@ interface EmulatorState {
 
 export const useEmulatorStore = create<EmulatorState>((set) => ({
   running: false,
+  paused: false,
   scenario_id: null,
   elapsed_sec: 0,
   phase: 'NORMAL',
@@ -23,5 +25,5 @@ export const useEmulatorStore = create<EmulatorState>((set) => ({
   total_duration: 900,
 
   setStatus: (status) => set((state) => ({ ...state, ...status })),
-  reset: () => set({ running: false, scenario_id: null, elapsed_sec: 0, phase: 'NORMAL', speed: 10, total_duration: 900 }),
+  reset: () => set({ running: false, paused: false, scenario_id: null, elapsed_sec: 0, phase: 'NORMAL', speed: 10, total_duration: 900 }),
 }));

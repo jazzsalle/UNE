@@ -22,6 +22,7 @@ type EventListener = (event: any) => void;
 
 export class EmulatorEngine {
   private running = false;
+  private paused = false;
   private scenarioId: string | null = null;
   private speed = 10;
   private elapsedSec = 0;
@@ -35,6 +36,7 @@ export class EmulatorEngine {
   private eventCreated = false;
   private eventClosed = false;
   private createdEventId: string | null = null;
+  private symptomEnriched = false;
 
   private readonly SEED_DIR = process.env.SEED_DIR || path.join(__dirname, '../../../../seed');
 
@@ -52,6 +54,7 @@ export class EmulatorEngine {
     this.eventCreated = false;
     this.eventClosed = false;
     this.createdEventId = null;
+    this.symptomEnriched = false;
     this.lastSentSec = -1;
 
     // Load timeseries and compute elapsed_sec from timestamp
@@ -78,7 +81,7 @@ export class EmulatorEngine {
     const secPerTick = speed * (tickIntervalMs / 1000);
 
     this.timer = setInterval(() => {
-      if (!this.running) return;
+      if (!this.running || this.paused) return;
 
       this.elapsedSec += secPerTick;
 
@@ -99,6 +102,11 @@ export class EmulatorEngine {
           elapsed_sec: Math.floor(this.elapsedSec),
           data: { phase: newPhase },
         });
+
+        // Emit SYMPTOM enrichment (세이프티아 이력 + KOGAS 초기 진단)
+        if (newPhase === 'SYMPTOM' && !this.symptomEnriched) {
+          this.emitSymptomEnrichment();
+        }
 
         // Create event on FAULT phase
         if (newPhase === 'FAULT' && !this.eventCreated) {
@@ -121,7 +129,17 @@ export class EmulatorEngine {
   }
 
   stop() {
+    if (this.running) {
+      this.emit({
+        type: 'SCENARIO_RESET',
+        timestamp: new Date().toISOString(),
+        phase: 'NORMAL',
+        elapsed_sec: 0,
+        data: {},
+      });
+    }
     this.running = false;
+    this.paused = false;
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
@@ -131,9 +149,34 @@ export class EmulatorEngine {
     this.currentPhase = 'NORMAL';
   }
 
+  pause() {
+    if (!this.running || this.paused) return;
+    this.paused = true;
+    this.emit({
+      type: 'EMULATOR_PAUSED',
+      timestamp: new Date().toISOString(),
+      phase: this.currentPhase,
+      elapsed_sec: Math.floor(this.elapsedSec),
+      data: {},
+    });
+  }
+
+  resume() {
+    if (!this.running || !this.paused) return;
+    this.paused = false;
+    this.emit({
+      type: 'EMULATOR_RESUMED',
+      timestamp: new Date().toISOString(),
+      phase: this.currentPhase,
+      elapsed_sec: Math.floor(this.elapsedSec),
+      data: {},
+    });
+  }
+
   getStatus() {
     return {
       running: this.running,
+      paused: this.paused,
       scenario_id: this.scenarioId,
       elapsed_sec: Math.floor(this.elapsedSec),
       phase: this.currentPhase,
@@ -217,6 +260,37 @@ export class EmulatorEngine {
         elapsed_sec: currentSec,
         data: alarms.map(a => ({ sensor_id: a.sensor_id, value: a.value, label: a.label })),
       });
+    }
+  }
+
+  private async emitSymptomEnrichment() {
+    if (!this.scenarioId) return;
+    this.symptomEnriched = true;
+
+    try {
+      const scenario = await prisma.scenarioMaster.findUnique({ where: { scenario_id: this.scenarioId } });
+      if (!scenario) return;
+
+      // Fetch 세이프티아 이력 + KOGAS 초기 진단 at SYMPTOM phase
+      const [safetia, kogas] = await Promise.all([
+        prisma.mockSafetiaHistory.findMany({ where: { scenario_id: this.scenarioId } }),
+        prisma.mockKogasResult.findFirst({ where: { scenario_id: this.scenarioId } }),
+      ]);
+
+      this.emit({
+        type: 'SYMPTOM_ENRICHMENT',
+        timestamp: new Date().toISOString(),
+        phase: 'SYMPTOM',
+        elapsed_sec: Math.floor(this.elapsedSec),
+        data: {
+          scenario_id: this.scenarioId,
+          trigger_equipment_id: scenario.trigger_equipment_id,
+          safetia_history: safetia,
+          kogas_result: kogas,
+        },
+      });
+    } catch (err) {
+      console.error('Failed to emit symptom enrichment:', err);
     }
   }
 

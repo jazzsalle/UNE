@@ -8,12 +8,23 @@ import { api } from '@/lib/api';
 import type { VisualState } from '@/lib/constants';
 import { CameraControlsOverlay, getSavedCamera, type CameraBookmarkRef } from '@/components/viewer3d/CameraBookmark';
 
+const EQ_KR: Record<string, string> = {
+  'SHP-001': 'LH2 운반선',   'ARM-101': '로딩암',
+  'TK-101':  '저장탱크 #1',  'TK-102':  '저장탱크 #2',
+  'BOG-201': 'BOG 압축기',   'PMP-301': '이송펌프',
+  'VAP-401': '기화기',       'REL-701': '재액화기',
+  'VAL-601': '벤트스택 #1',  'VAL-602': '벤트스택 #2',
+  'PIP-501': '메인배관',     'SWP-001': '해수펌프',
+};
+const eqName = (id: string) => EQ_KR[id] || id;
+
 const ThreeCanvas = dynamic(() => import('@/components/viewer3d/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })), { ssr: false });
 const TestbedModel = dynamic(() => import('@/components/viewer3d/TestbedModel').then(m => ({ default: m.TestbedModel })), { ssr: false });
 const CameraController = dynamic(() => import('@/components/viewer3d/CameraController').then(m => ({ default: m.CameraController })), { ssr: false });
 const ImpactNetwork2D = dynamic(() => import('@/components/risk/ImpactNetwork2D').then(m => ({ default: m.ImpactNetwork2D })), { ssr: false });
 const CameraBookmarkInner = dynamic(() => import('@/components/viewer3d/CameraBookmark').then(m => ({ default: m.CameraBookmark })), { ssr: false });
 const RiskPOIs = dynamic(() => import('@/components/risk/RiskPOIs').then(m => ({ default: m.RiskPOIs })), { ssr: false });
+const EquipmentPOIs = dynamic(() => import('@/components/viewer3d/EquipmentPOI').then(m => ({ default: m.EquipmentPOIs })), { ssr: false });
 const EnvironmentScene = dynamic(() => import('@/components/viewer3d/EnvironmentScene').then(m => ({ default: m.EnvironmentScene })), { ssr: false });
 const TopViewSwitcher = dynamic(() => import('@/components/viewer3d/TopViewSwitcher').then(m => ({ default: m.TopViewSwitcher })), { ssr: false });
 
@@ -83,16 +94,16 @@ const DAMAGE_NODE_DATA: Record<string, {
 
 const FIRE_COLORS = ['#2196F3', '#4CAF50', '#FFC107', '#FF9800', '#F44336'];
 
-function RiskDetailPanel({ hazop, kgsResults }: { hazop: any; kgsResults: any[] }) {
+function RiskDetailPanel({ hazop, kgsResults, onClose }: { hazop: any; kgsResults: any[]; onClose?: () => void }) {
   const [tab, setTab] = useState<'risk' | 'damage'>('risk');
 
   return (
-    <div className="w-[22%] border-l border-gray-700 flex flex-col overflow-hidden">
+    <div className="w-full border-t lg:border-t-0 lg:border-l border-gray-700 flex flex-col overflow-hidden max-h-[50vh] lg:max-h-none">
       {/* 탭 헤더 */}
       <div className="flex border-b border-gray-700 shrink-0">
         <button
           onClick={() => setTab('risk')}
-          className={`flex-1 py-2 text-[11px] font-bold transition-colors ${
+          className={`flex-1 py-2 text-[13px] font-bold transition-colors ${
             tab === 'risk'
               ? 'text-cyan-400 border-b-2 border-cyan-400 bg-cyan-500/5'
               : 'text-gray-500 hover:text-gray-300'
@@ -102,7 +113,7 @@ function RiskDetailPanel({ hazop, kgsResults }: { hazop: any; kgsResults: any[] 
         </button>
         <button
           onClick={() => setTab('damage')}
-          className={`flex-1 py-2 text-[11px] font-bold transition-colors ${
+          className={`flex-1 py-2 text-[13px] font-bold transition-colors ${
             tab === 'damage'
               ? 'text-orange-400 border-b-2 border-orange-400 bg-orange-500/5'
               : 'text-gray-500 hover:text-gray-300'
@@ -134,19 +145,19 @@ function RiskDetailPanel({ hazop, kgsResults }: { hazop: any; kgsResults: any[] 
                 { label: '이벤트 시나리오', value: hazop.event_scenario },
                 { label: '위험 시나리오', value: hazop.hazard_scenario },
               ].map(({ label, value }) => (
-                <div key={label} className="text-[11px]">
-                  <span className="text-gray-500 text-[10px]">{label}</span>
+                <div key={label} className="text-[13px]">
+                  <span className="text-gray-500 text-[12px]">{label}</span>
                   <div className="text-white mt-0.5">{value}</div>
                 </div>
               ))}
 
               <div className="pt-2 border-t border-gray-700 space-y-2">
-                <div className="text-[11px]">
-                  <span className="text-gray-500 text-[10px]">예방 조치</span>
+                <div className="text-[13px]">
+                  <span className="text-gray-500 text-[12px]">예방 조치</span>
                   <div className="text-white mt-0.5">{hazop.preventive_action}</div>
                 </div>
-                <div className="text-[11px]">
-                  <span className="text-gray-500 text-[10px]">비상 대응</span>
+                <div className="text-[13px]">
+                  <span className="text-gray-500 text-[12px]">비상 대응</span>
                   <div className="text-orange-400 mt-0.5">{hazop.emergency_response}</div>
                 </div>
               </div>
@@ -154,9 +165,9 @@ function RiskDetailPanel({ hazop, kgsResults }: { hazop: any; kgsResults: any[] 
               {/* 권고조치 */}
               {kgsResults.filter(r => r.recommended_action).length > 0 && (
                 <div className="pt-2 border-t border-gray-700">
-                  <span className="text-gray-500 text-[10px]">권고조치</span>
+                  <span className="text-gray-500 text-[12px]">권고조치</span>
                   {kgsResults.filter(r => r.recommended_action).slice(0, 3).map((r, i) => (
-                    <div key={i} className="text-[11px] text-gray-300 mt-1">• {r.recommended_action}</div>
+                    <div key={i} className="text-[13px] text-gray-300 mt-1">• {r.recommended_action}</div>
                   ))}
                 </div>
               )}
@@ -164,20 +175,20 @@ function RiskDetailPanel({ hazop, kgsResults }: { hazop: any; kgsResults: any[] 
               {/* 연계 SOP */}
               {hazop.linked_sop_id && (
                 <div className="mt-2 p-2 bg-bg-tertiary rounded">
-                  <div className="text-[10px] text-gray-400">연계 SOP</div>
-                  <div className="text-accent-blue text-[11px]">{hazop.linked_sop_id}</div>
-                  <button className="text-[10px] text-accent-blue mt-1 hover:underline">[SOP 실행]</button>
+                  <div className="text-[12px] text-gray-400">연계 SOP</div>
+                  <div className="text-accent-blue text-[13px]">{hazop.linked_sop_id}</div>
+                  <button className="text-[12px] text-accent-blue mt-1 hover:underline">[SOP 실행]</button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-gray-600 text-[11px] text-center mt-8">위험예측 실행 후 데이터가 표시됩니다</div>
+            <div className="text-gray-600 text-[13px] text-center mt-8">위험예측 실행 후 데이터가 표시됩니다</div>
           )
         ) : (
           /* 피해범위 예측 탭 */
           kgsResults.length > 0 ? (
             <div className="space-y-4">
-              <div className="text-[10px] text-gray-500 mb-2">
+              <div className="text-[12px] text-gray-500 mb-2">
                 전체 <span className="text-cyan-400 font-bold">{Object.keys(DAMAGE_NODE_DATA).length}건</span>의 정보가 조회되었습니다
               </div>
               {kgsResults.map((r, idx) => {
@@ -187,7 +198,7 @@ function RiskDetailPanel({ hazop, kgsResults }: { hazop: any; kgsResults: any[] 
                 return (
                   <div key={idx} className="border border-gray-700 rounded-lg p-3">
                     <div className="text-[12px] font-bold text-white mb-2">{nodeData.name}</div>
-                    <div className="space-y-1.5 text-[11px]">
+                    <div className="space-y-1.5 text-[13px]">
                       <div className="flex justify-between">
                         <span className="text-gray-500">압력(MPa)</span>
                         <span className="text-white">{nodeData.pressure}</span>
@@ -212,7 +223,7 @@ function RiskDetailPanel({ hazop, kgsResults }: { hazop: any; kgsResults: any[] 
 
                     {/* 화재강도 */}
                     <div className="mt-3 flex items-center gap-3">
-                      <div className="text-[10px] text-gray-500">화재강도</div>
+                      <div className="text-[12px] text-gray-500">화재강도</div>
                       <div className="relative w-10 h-10">
                         {[...nodeData.fireIntensity].reverse().map((fi, i) => (
                           <div
@@ -243,7 +254,7 @@ function RiskDetailPanel({ hazop, kgsResults }: { hazop: any; kgsResults: any[] 
               })}
             </div>
           ) : (
-            <div className="text-gray-600 text-[11px] text-center mt-8">위험예측 실행 후 피해범위가 표시됩니다</div>
+            <div className="text-gray-600 text-[13px] text-center mt-8">위험예측 실행 후 피해범위가 표시됩니다</div>
           )
         )}
       </div>
@@ -252,7 +263,8 @@ function RiskDetailPanel({ hazop, kgsResults }: { hazop: any; kgsResults: any[] 
 }
 
 export default function RiskPage() {
-  const { eventContext, setSelectedEquipment } = useAppStore();
+  const { eventContext, setSelectedEquipment, sensorData } = useAppStore();
+  const [equipment, setEquipment] = useState<any[]>([]);
   const emulatorPhase = useEmulatorStore((s) => s.phase);
   const emulatorRunning = useEmulatorStore((s) => s.running);
   const emulatorScenarioId = useEmulatorStore((s) => s.scenario_id);
@@ -263,12 +275,30 @@ export default function RiskPage() {
   const cameraRef = useRef<CameraBookmarkRef | null>(null);
   const savedCamera = useMemo(() => getSavedCamera('risk'), []);
   const [timeSlider, setTimeSlider] = useState(0);
-  const [viewMode, setViewMode] = useState<'3D' | '2D'>('3D');
+  const [viewMode, setViewModeRaw] = useState<'3D' | '2D'>('3D');
+  const setViewMode = useCallback((mode: '3D' | '2D') => {
+    setViewModeRaw(mode);
+    if (mode === '3D') {
+      // 3D 복귀 시 카메라 리셋 트리거
+      setCameraTarget(null);
+      setTimeout(() => cameraRef.current?.reset(), 100);
+    }
+  }, []);
   const [leftWidth, setLeftWidth] = useState(240);
+  const [mounted, setMounted] = useState(false);
+  const [showLeftPanel, setShowLeftPanel] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const resizing = useRef(false);
   const startX = useRef(0);
   const startW = useRef(0);
   const autoLoadedRef = useRef<string | null>(null);
+
+  // 마운트 상태 (SSR 하이드레이션 안전)
+  useEffect(() => { setMounted(true); }, []);
+
+  // 설비 목록 로드 (EquipmentPOIs용)
+  useEffect(() => { api.getEquipment().then(setEquipment).catch(console.error); }, []);
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -364,10 +394,10 @@ export default function RiskPage() {
   return (
     <div className="h-full flex flex-col">
       {/* 분석 입력 패널 */}
-      <div className="h-14 bg-bg-secondary border-b border-gray-700 flex items-center px-4 gap-4 text-xs">
+      <div className="h-auto lg:h-14 bg-bg-secondary border-b border-gray-700 flex flex-wrap items-center px-4 py-2 lg:py-0 gap-2 lg:gap-4 text-xs">
         <span className="text-gray-400">이벤트 연계: <b className="text-white">{scenarioId}</b></span>
         {eventContext?.trigger_equipment_id && (
-          <span className="text-gray-400">트리거: <b className="text-orange-400">{eventContext.trigger_equipment_id}</b></span>
+          <span className="text-gray-400">트리거: <b className="text-orange-400">{eqName(eventContext.trigger_equipment_id || '')}</b></span>
         )}
         <span className="text-green-400">🟢 KGS 연결정상</span>
         <button onClick={handleRun} disabled={loading}
@@ -376,14 +406,62 @@ export default function RiskPage() {
         </button>
         <button onClick={() => { setKgsResults([]); setHazop(null); setTimeSlider(0); }}
           className="text-gray-400 hover:text-white px-2 py-1">↻ 초기화</button>
+        <button onClick={() => setShowHelp(!showHelp)}
+          className="ml-auto text-[11px] text-gray-500 hover:text-gray-300 border border-gray-600 px-2 py-0.5 rounded">
+          {showHelp ? '도움말 닫기' : '? 위험예측 안내'}
+        </button>
+      </div>
+
+      {showHelp && (
+        <div className="px-4 py-2 bg-gray-800/80 border-b border-gray-600 text-[12px] space-y-2">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <div className="text-cyan-400 font-bold mb-1">2D 영향 네트워크 (좌측)</div>
+              <ul className="text-gray-400 space-y-0.5 list-disc ml-3">
+                <li>KGS 분석 결과를 <span className="text-white">노드-엣지 그래프</span>로 시각화</li>
+                <li>노드 크기 = 영향 점수, 엣지 = 전파 경로</li>
+                <li>노드 클릭 시 3D 카메라가 해당 설비로 이동</li>
+                <li>시간축 슬라이더로 전파 진행 단계 확인 가능</li>
+              </ul>
+            </div>
+            <div className="flex-1">
+              <div className="text-amber-400 font-bold mb-1">3D 영향 컬러링 (중앙)</div>
+              <ul className="text-gray-400 space-y-0.5 list-disc ml-3">
+                <li>트리거 설비: <span className="text-red-400">적색</span>, 영향 설비: <span className="text-yellow-400">황색</span></li>
+                <li>시간축에 따라 영향 범위가 점진적으로 확대</li>
+                <li>2D 노드 클릭과 3D 카메라 연동</li>
+              </ul>
+            </div>
+            <div className="flex-1">
+              <div className="text-purple-400 font-bold mb-1">HAZOP + 상세 (우측)</div>
+              <ul className="text-gray-400 space-y-0.5 list-disc ml-3">
+                <li>시나리오별 HAZOP 분석 결과(원인, 위험, 조치) 표시</li>
+                <li>KGS 권고 조치 및 연계 SOP 확인</li>
+                <li><span className="text-white">[▶ 위험예측 실행]</span> 버튼으로 KGS 분석 요청</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 모바일 패널 토글 버튼 */}
+      <div className="flex lg:hidden border-b border-gray-700 bg-bg-secondary px-2 py-1 gap-1">
+        <button onClick={() => { setShowLeftPanel(!showLeftPanel); setShowRightPanel(false); }}
+          className={`text-[11px] px-2 py-1 rounded ${showLeftPanel ? 'bg-cyan-500/20 text-cyan-400' : 'text-gray-400'}`}>
+          영향도 분석
+        </button>
+        <button onClick={() => { setShowRightPanel(!showRightPanel); setShowLeftPanel(false); }}
+          className={`text-[11px] px-2 py-1 rounded ${showRightPanel ? 'bg-cyan-500/20 text-cyan-400' : 'text-gray-400'}`}>
+          위험도 예측
+        </button>
       </div>
 
       {/* 3분할 */}
-      <div className="flex-1 flex min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
         {/* 좌: 설비 영향도 네트워크 (리사이즈 가능) */}
-        <div className="flex flex-col shrink-0 relative" style={{ width: leftWidth }}>
+        <div className={`${showLeftPanel ? 'flex' : 'hidden'} lg:flex flex-col shrink-0 relative h-[40vh] lg:h-auto`} style={{ width: mounted ? leftWidth : 240 }}>
           <div className="px-3 py-2 border-b border-gray-700 flex items-center gap-2">
-            <span className="text-[11px] font-bold text-cyan-400">설비 영향도 분석</span>
+            <span className="text-[13px] font-bold text-cyan-400">설비 영향도 분석</span>
             {kgsResults.length > 0 && (
               <span className="text-[9px] text-gray-500">
                 — 트리거 설비에서 영향 받는 설비 간 위험 전파 관계도
@@ -395,7 +473,7 @@ export default function RiskPage() {
           </div>
           {/* 리사이즈 핸들 */}
           <div
-            className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize group z-10 hover:bg-cyan-500/30 active:bg-cyan-500/50 transition-colors"
+            className="hidden lg:block absolute top-0 right-0 w-1.5 h-full cursor-col-resize group z-10 hover:bg-cyan-500/30 active:bg-cyan-500/50 transition-colors"
             onMouseDown={(e) => {
               e.preventDefault();
               resizing.current = true;
@@ -415,7 +493,7 @@ export default function RiskPage() {
             <div className="absolute top-2 right-2 z-20 flex bg-black/60 rounded-lg overflow-hidden border border-gray-600/50 backdrop-blur-sm">
               <button
                 onClick={() => setViewMode('3D')}
-                className={`px-3 py-1.5 text-[11px] font-bold transition-colors ${
+                className={`px-3 py-1.5 text-[13px] font-bold transition-colors ${
                   viewMode === '3D'
                     ? 'bg-cyan-500/30 text-cyan-400 border-r border-cyan-500/30'
                     : 'text-gray-400 hover:text-white border-r border-gray-600/50'
@@ -425,7 +503,7 @@ export default function RiskPage() {
               </button>
               <button
                 onClick={() => setViewMode('2D')}
-                className={`px-3 py-1.5 text-[11px] font-bold transition-colors ${
+                className={`px-3 py-1.5 text-[13px] font-bold transition-colors ${
                   viewMode === '2D'
                     ? 'bg-cyan-500/30 text-cyan-400'
                     : 'text-gray-400 hover:text-white'
@@ -452,6 +530,14 @@ export default function RiskPage() {
                   .map(r => ({ from: r.trigger_equipment_id, to: r.affected_equipment_id, impactScore: r.impact_score }))}
               />
               <EnvironmentScene />
+              <EquipmentPOIs
+                equipment={equipment}
+                equipmentStates={equipmentStates}
+                selectedId={cameraTarget}
+                onSelect={handleNodeClick}
+                sensorData={sensorData}
+                forceLOD={viewMode === '2D' ? 'near' : undefined}
+              />
               <RiskPOIs kgsResults={kgsResults} onNodeClick={handleNodeClick} />
               {viewMode === '3D' ? (
                 <CameraController targetEquipmentId={cameraTarget} frameEquipmentIds={frameEquipmentIds} />
@@ -465,19 +551,21 @@ export default function RiskPage() {
           {/* 시간축 슬라이더 */}
           {kgsResults.length > 0 && (
             <div className="h-10 bg-bg-secondary border-t border-gray-700 flex items-center px-4 gap-3">
-              <span className="text-[10px] text-gray-500">시간축:</span>
+              <span className="text-[12px] text-gray-500">시간축:</span>
               <input
                 type="range" min={0} max={60} value={timeSlider}
                 onChange={(e) => setTimeSlider(Number(e.target.value))}
                 className="flex-1 h-1 accent-cyan-500"
               />
-              <span className="text-[10px] text-gray-400 w-12">{timeSlider}분</span>
+              <span className="text-[12px] text-gray-400 w-12">{timeSlider}분</span>
             </div>
           )}
         </div>
 
         {/* 우: 위험도 예측 / 피해범위 예측 탭 패널 */}
-        <RiskDetailPanel hazop={hazop} kgsResults={kgsResults} />
+        <div className={`${showRightPanel ? 'block' : 'hidden'} lg:flex w-full lg:w-[22%] shrink-0`}>
+          <RiskDetailPanel hazop={hazop} kgsResults={kgsResults} onClose={() => setShowRightPanel(false)} />
+        </div>
       </div>
     </div>
   );

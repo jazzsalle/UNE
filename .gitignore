@@ -13,7 +13,7 @@ dist/
 !apps/web/public/models/*.glb
 
 # Prisma
-prisma/migrations/**/migration_lock.toml
+# migration_lock.toml은 배포에 필요하므로 추적
 
 # OS/IDE
 .DS_Store
@@ -24,6 +24,7 @@ desktop.ini
 
 # 빌드 결과물
 output/
+*.tsbuildinfo
 
 # Claude Code 로컬 설정
 .claude/settings.local.json

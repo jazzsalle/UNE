@@ -5,7 +5,7 @@
     "buildCommand": "cd apps/api && npm install --include=dev && npx prisma generate && npm run build"
   },
   "deploy": {
-    "startCommand": "cd apps/api && npx prisma migrate deploy || echo 'migrate skipped' ; SEED_DIR=../../seed npx prisma db seed || echo 'seed skipped' ; node dist/index.js",
+    "startCommand": "cd apps/api && npx prisma migrate resolve --rolled-back 0001_init 2>/dev/null ; npx prisma migrate deploy && SEED_DIR=../../seed npx prisma db seed || echo 'seed skipped' ; node dist/index.js",
     "healthcheckPath": "/api/health",
     "restartPolicyType": "ON_FAILURE"
   }

@@ -62,7 +62,7 @@ export default function SopPage() {
     if (tab === 'history') {
       const params: Record<string, string> = {};
       if (eventContext?.scenario_id) params.scenario_id = eventContext.scenario_id;
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sop/executions${Object.keys(params).length ? '?' + new URLSearchParams(params) : ''}`)
+      fetch(`/api/sop/executions${Object.keys(params).length ? '?' + new URLSearchParams(params) : ''}`)
         .then(r => r.json()).then(setExecutions).catch(() => {});
     }
     if (tab === 'trash') {

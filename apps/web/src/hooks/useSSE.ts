@@ -5,7 +5,7 @@ import { useAppStore } from '@/stores/appStore';
 import { useEmulatorStore } from '@/stores/emulatorStore';
 import { api } from '@/lib/api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
 
 export function useSSE() {
   const esRef = useRef<EventSource | null>(null);

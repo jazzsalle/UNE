@@ -230,7 +230,7 @@ export function SopFlowEditor({ sop, isNew = false, onSave, onCancel, onDelete, 
         }
         return base;
       });
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const baseUrl = '';
 
       if (isNew) {
         // 신규 생성 (POST)

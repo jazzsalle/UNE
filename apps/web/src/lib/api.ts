@@ -1,5 +1,9 @@
 // ref: CLAUDE.md §15.2 — API 클라이언트
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// 브라우저에서는 같은 도메인의 /api/* 경로로 호출 (next.config.js rewrite가 Railway로 프록시)
+// 서버사이드에서는 Railway URL 직접 호출
+const API_URL = typeof window !== 'undefined'
+  ? ''  // 브라우저: 상대경로 → Vercel rewrite 프록시 사용
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
 
 export async function apiFetch<T = any>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {

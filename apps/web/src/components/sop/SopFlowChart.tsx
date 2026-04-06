@@ -158,7 +158,7 @@ export function SopFlowChart({ sop, compact = false, eventId, onClose }: SopFlow
   const handleBroadcast = async () => {
     if (!executionId) return;
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sop/execution/${executionId}/broadcast`, {
+      await fetch(`/api/sop/execution/${executionId}/broadcast`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: sop.broadcast_action || '상황전파' }),
       });

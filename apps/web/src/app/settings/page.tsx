@@ -194,7 +194,7 @@ export default function SettingsPage() {
                   <button onClick={async () => {
                     const newVal = s.setting_value === 'true' ? 'false' : 'true';
                     try {
-                      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/settings/${s.setting_id}`, {
+                      await fetch(`/api/settings/${s.setting_id}`, {
                         method: 'PUT', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ setting_value: newVal }),
                       });
